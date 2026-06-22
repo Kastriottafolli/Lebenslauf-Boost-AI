@@ -101,10 +101,26 @@ lebenslauf-boost-ai/
 │   ├── export.py          # PDF (ReportLab) & DOCX (python-docx), 3 Designs
 │   ├── llm/               # Claude- & OpenAI-Anbieter + Orchestrierung
 │   └── static/            # Frontend (HTML/CSS/JS, DE/EN)
+├── docs/
+│   ├── schema.png         # Datenbankschema (Diagramm)
+│   ├── schema.sql         # CREATE-TABLE-Anweisungen (SQLite)
+│   └── schema.dbml        # Schema für dbdiagram.io
 ├── requirements.txt
 ├── .env.example
 └── README.md
 ```
+
+## 🗄️ Datenbank
+
+SQLite mit vier Tabellen (SQLAlchemy-ORM). `sessions` ist die zentrale Tabelle —
+alles hängt per `session_id` daran: **1:1** zu `cv_documents`, **1:n** zu
+`generations` und `messages`. Beim Löschen einer Sitzung werden die Kind-Datensätze
+per `ON DELETE CASCADE` mitgelöscht.
+
+![Datenbankschema](docs/schema.png)
+
+- **SQL-Schema:** [`docs/schema.sql`](docs/schema.sql)
+- **dbdiagram.io:** [`docs/schema.dbml`](docs/schema.dbml) (Inhalt auf [dbdiagram.io](https://dbdiagram.io) einfügen)
 
 ## 🧭 Ablauf (UX)
 

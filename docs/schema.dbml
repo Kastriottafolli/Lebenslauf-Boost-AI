@@ -1,0 +1,44 @@
+// ════════════════════════════════════════════════════════════════
+//  Lebenslauf Boost AI — Datenbankschema (DBML)
+//  Diesen Inhalt auf https://dbdiagram.io einfügen -> fertiges ER-Diagramm
+// ════════════════════════════════════════════════════════════════
+
+Table sessions {
+  id              text     [pk, note: 'UUID']
+  language        text     [default: 'de']
+  job_description text
+  wishes          text
+  created_at      datetime
+}
+
+Table cv_documents {
+  id             text     [pk, note: 'UUID']
+  session_id     text     [ref: - sessions.id]   // 1:1
+  filename       text
+  content        text     [note: 'extrahierter Volltext']
+  index_json     text     [note: 'RAG: chunks + embeddings (JSON)']
+  photo_data_url text     [note: 'erkanntes Foto (base64)']
+  created_at     datetime
+}
+
+Table generations {
+  id               text     [pk, note: 'UUID']
+  session_id       text     [ref: > sessions.id]  // n:1
+  provider         text     [note: 'claude | openai']
+  model            text
+  technique        text     [note: 'auto | few_shot | chain_of_thought | refine']
+  content          text     [note: 'Lebenslauf (Markdown)']
+  ats_score        float    [note: '0-100']
+  matched_keywords text     [note: 'JSON-Array']
+  missing_keywords text     [note: 'JSON-Array']
+  is_selected      boolean
+  created_at       datetime
+}
+
+Table messages {
+  id         text     [pk, note: 'UUID']
+  session_id text     [ref: > sessions.id]  // n:1
+  role       text     [note: 'user | assistant']
+  content    text
+  created_at datetime
+}
