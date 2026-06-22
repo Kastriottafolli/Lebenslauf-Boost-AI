@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lebenslauf Boost AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="/static/logo.svg" />
+</head>
+<body>
+  <!-- ── Animierter Hintergrund ── -->
+  <div class="aurora" aria-hidden="true">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- ── Header ── -->
+  <header class="topbar">
+    <div class="brand">
+      <img class="logo" src="/static/logo.svg" alt="Lebenslauf Boost AI Logo" width="30" height="30" />
+      <div>
+        <h1>Lebenslauf <span class="grad">Boost</span> AI</h1>
+        <p class="tagline" data-i18n="tagline">KI-optimierte Lebensläufe – passgenau zur Stelle</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="providerBadges" class="badges"></div>
+      <div class="lang-toggle" id="langToggle">
+        <button data-lang="de" class="active">DE</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Hero ── -->
+  <section class="hero reveal" id="hero">
+    <span class="hero-eyebrow" data-i18n="heroEyebrow">⚡ KI-Engineering · FastAPI · RAG</span>
+    <h2 class="hero-title">
+      <span data-i18n="heroTitle1">Dein Lebenslauf,</span>
+      <span class="grad-anim" data-i18n="heroTitle2">in Sekunden auf die Stelle zugeschnitten.</span>
+    </h2>
+    <p class="hero-sub" data-i18n="heroSub">Lade deinen Lebenslauf hoch, füge die Stellenanzeige ein — zwei KI-Modelle schreiben, vergleichen und optimieren einen ATS-tauglichen Entwurf. Du bearbeitest ihn, wählst ein Design und lädst PDF oder Word herunter.</p>
+    <div class="hero-chips">
+      <span class="hero-chip" style="--d:0">📄 RAG-Analyse</span>
+      <span class="hero-chip" style="--d:1">🧠 2 Prompt-Techniken</span>
+      <span class="hero-chip" style="--d:2">⚖️ Claude vs. OpenAI</span>
+      <span class="hero-chip" style="--d:3">🎯 ATS-Score</span>
+      <span class="hero-chip" style="--d:4">📸 Foto-Erkennung</span>
+      <span class="hero-chip" style="--d:5">🎨 3 Designs</span>
+    </div>
+  </section>
+
+  <!-- ── Stepper ── -->
+  <nav class="stepper" id="stepper">
+    <div class="step active" data-step="1"><span class="dot">1</span><label data-i18n="step1">Eingabe &amp; Lebenslauf</label></div>
+    <div class="step" data-step="2"><span class="dot">2</span><label data-i18n="step2">Bearbeiten</label></div>
+    <div class="step" data-step="3"><span class="dot">3</span><label data-i18n="step3">Design &amp; Download</label></div>
+  </nav>
+
+  <main>
+    <!-- ════════ STEP 1 ════════ -->
+    <section class="panel active" id="panel-1">
+
+      <!-- ── So funktioniert's ── -->
+      <div class="howto reveal">
+        <div class="howto-head">
+          <h3 data-i18n="howTitle">So funktioniert's</h3>
+          <p data-i18n="howSub">Eine KI-Engineering-Pipeline in sechs Schritten — vollständig nachvollziehbar.</p>
+        </div>
+        <div class="pipeline">
+          <div class="pstep" style="--d:0"><span class="pico">📤</span><b data-i18n="pl1t">1 · Hochladen</b><small data-i18n="pl1d">Lebenslauf als PDF oder Word hochladen — Text und Foto werden automatisch übernommen.</small></div>
+          <div class="pstep" style="--d:1"><span class="pico">🔎</span><b data-i18n="pl2t">2 · Verstehen</b><small data-i18n="pl2d">Die App liest deinen Lebenslauf und erkennt deine wichtigsten Stärken.</small></div>
+          <div class="pstep" style="--d:2"><span class="pico">✍️</span><b data-i18n="pl3t">3 · Umschreiben</b><small data-i18n="pl3d">Die KI formuliert ihn passend zur Stelle — immer auf Basis deiner echten Angaben.</small></div>
+          <div class="pstep" style="--d:3"><span class="pico">🤝</span><b data-i18n="pl4t">4 · Zwei Vorschläge</b><small data-i18n="pl4d">Zwei KIs erstellen je eine Version, damit du die Wahl hast.</small></div>
+          <div class="pstep" style="--d:4"><span class="pico">⚖️</span><b data-i18n="pl5t">5 · Vergleichen</b><small data-i18n="pl5d">Du siehst, welche Version besser passt, und wählst deinen Favoriten.</small></div>
+          <div class="pstep" style="--d:5"><span class="pico">📥</span><b data-i18n="pl6t">6 · Herunterladen</b><small data-i18n="pl6d">Feinschliff, Design wählen und als PDF oder Word speichern.</small></div>
+        </div>
+
+        <details class="tech-details">
+          <summary data-i18n="techMore">🔬 Was steckt dahinter? (einfach erklärt)</summary>
+          <div class="feature-grid">
+            <div class="feature"><span class="fico">🔎</span><b data-i18n="f1t">Bleibt bei deinen echten Daten</b><p data-i18n="f1d">Die App liest deinen Lebenslauf und verwendet genau die Teile, die zur Stelle passen. So wird nichts erfunden — alles basiert auf deinen Angaben. (Fachbegriff: RAG)</p></div>
+            <div class="feature"><span class="fico">🧠</span><b data-i18n="f2t">Schreibt wie ein Bewerbungs-Coach</b><p data-i18n="f2d">Die KI bekommt gute Beispiele und geht Schritt für Schritt vor: erst die Stelle verstehen, dann deine Erfahrung überzeugend formulieren — wie ein Profi.</p></div>
+            <div class="feature"><span class="fico">🤝</span><b data-i18n="f3t">Zwei KIs zur Auswahl</b><p data-i18n="f3d">Zwei führende KIs (Claude und ChatGPT) erstellen je eine Version. Deinen eigenen Zugang trägst du selbst ein — er bleibt nur bei dir im Browser.</p></div>
+            <div class="feature"><span class="fico">⚖️</span><b data-i18n="f4t">Zeigt, wie gut du passt</b><p data-i18n="f4d">Ein Wert zeigt dir, wie viele wichtige Begriffe der Stellenanzeige in deinem Lebenslauf vorkommen — so siehst du sofort, welche Version stärker ist. (Fachbegriff: ATS-Score)</p></div>
+            <div class="feature"><span class="fico">💬</span><b data-i18n="f5t">Du kannst nachschärfen</b><p data-i18n="f5d">Sag einfach „kürzer" oder „mehr Zahlen" — die KI merkt sich den Verlauf und passt gezielt an, ohne von vorne zu beginnen.</p></div>
+            <div class="feature"><span class="fico">🔒</span><b data-i18n="f6t">Sicher und ohne Anmeldung</b><p data-i18n="f6d">Deine Daten bleiben auf deinem Gerät, dein KI-Zugang wird nie gespeichert. Auch ohne Zugang gibt es einen Demo-Modus zum Ausprobieren.</p></div>
+          </div>
+        </details>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h2 data-i18n="jobTitle">1 · Stellenbeschreibung</h2>
+          <p class="hint" data-i18n="jobHint">Füge hier die komplette Stellenanzeige ein.</p>
+          <textarea id="jobDescription" rows="10" data-i18n-ph="jobPh"
+            placeholder="z. B. Wir suchen eine/n Senior Frontend Developer …"></textarea>
+
+          <h2 class="mt" data-i18n="wishesTitle">Deine Wünsche <small>(optional)</small></h2>
+          <p class="hint" data-i18n="wishesHint">Wie soll der Lebenslauf wirken? Ton, Schwerpunkte, Länge …</p>
+          <textarea id="wishes" rows="4" data-i18n-ph="wishesPh"
+            placeholder="z. B. modern und kompakt, Fokus auf Leadership, max. 1 Seite"></textarea>
+        </div>
+
+        <div class="card">
+          <h2 data-i18n="cvTitle">2 · Lebenslauf hochladen <small>(RAG)</small></h2>
+          <p class="hint" data-i18n="cvHint">PDF, Word (.docx) oder TXT. Die KI analysiert ihn und passt ihn an.</p>
+
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden />
+            <div class="dz-inner">
+              <span class="dz-icon">📄</span>
+              <span class="dz-text" data-i18n="dropText">Datei hierher ziehen oder klicken</span>
+              <span class="dz-sub" data-i18n="dropSub">PDF · DOCX · TXT — max. 10 MB</span>
+            </div>
+          </label>
+          <div id="uploadStatus" class="upload-status"></div>
+
+          <h2 class="mt" data-i18n="providerTitle">3 · KI-Anbieter</h2>
+          <div class="provider-select" id="providerSelect">
+            <label class="prov"><input type="radio" name="provider" value="claude" checked><span>Claude</span></label>
+            <label class="prov"><input type="radio" name="provider" value="openai"><span>OpenAI</span></label>
+            <label class="prov"><input type="radio" name="provider" value="compare"><span data-i18n="compare">Vergleich ⚖️</span></label>
+          </div>
+
+          <div class="api-keys" id="apiKeys">
+            <div class="key-field" data-key="anthropic" hidden>
+              <label>🔑 <span data-i18n="keyAnthropic">Anthropic API Key (Claude)</span></label>
+              <div class="key-input">
+                <input type="password" id="keyAnthropic" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" />
+                <button type="button" class="key-eye" data-target="keyAnthropic" title="anzeigen">👁</button>
+              </div>
+              <a class="key-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" data-i18n="keyGetAnthropic">Key holen →</a>
+            </div>
+            <div class="key-field" data-key="openai" hidden>
+              <label>🔑 <span data-i18n="keyOpenai">OpenAI API Key</span></label>
+              <div class="key-input">
+                <input type="password" id="keyOpenai" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+                <button type="button" class="key-eye" data-target="keyOpenai" title="anzeigen">👁</button>
+              </div>
+              <a class="key-link" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" data-i18n="keyGetOpenai">Key holen →</a>
+            </div>
+            <p class="key-note" data-i18n="keyNote">🔒 Dein Key bleibt nur in deinem Browser und wird ausschließlich an deinen lokalen Server gesendet — nie dauerhaft gespeichert. Leer lassen = Demo-Modus.</p>
+          </div>
+
+          <details class="advanced">
+            <summary data-i18n="advanced">Erweitert: Prompt-Technik</summary>
+            <select id="technique">
+              <option value="auto" data-i18n="techAuto">Auto (Few-shot + Chain-of-Thought)</option>
+              <option value="few_shot">Few-shot</option>
+              <option value="chain_of_thought">Chain-of-Thought</option>
+            </select>
+          </details>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary lg" id="generateBtn" data-i18n="generate">✨ Lebenslauf generieren</button>
+      </div>
+    </section>
+
+    <!-- ════════ STEP 2 ════════ -->
+    <section class="panel" id="panel-2">
+      <div id="compareBar" class="compare-bar hidden"></div>
+
+      <div class="grid-edit">
+        <div class="card">
+          <div class="card-head">
+            <h2 data-i18n="editTitle">Generierter Lebenslauf</h2>
+            <span id="genMeta" class="gen-meta"></span>
+          </div>
+          <p class="hint" data-i18n="editHint">Du kannst den Text direkt bearbeiten. Markdown-Format beibehalten.</p>
+          <textarea id="cvEditor" rows="22" spellcheck="false"></textarea>
+
+          <div class="refine">
+            <input type="text" id="refineInput" data-i18n-ph="refinePh"
+              placeholder="z. B. kürzer machen, mehr Kennzahlen, förmlicher …" />
+            <button class="btn secondary" id="refineBtn" data-i18n="refine">↻ Anpassen</button>
+          </div>
+          <div class="chips refine-chips" id="refineChips"></div>
+        </div>
+
+        <div class="card analysis">
+          <h2 data-i18n="analysisTitle">Analyse</h2>
+          <div class="score-wrap">
+            <div class="score-ring" id="scoreRing"><span id="scoreVal">0%</span></div>
+            <div>
+              <strong data-i18n="atsTitle">ATS-Abdeckung</strong>
+              <p class="hint" data-i18n="atsHint">Anteil der Stellen-Keywords im Lebenslauf.</p>
+            </div>
+          </div>
+          <h3 data-i18n="matched">✓ Enthaltene Keywords</h3>
+          <div class="chips" id="matchedChips"></div>
+          <h3 data-i18n="missing">✗ Fehlende Keywords</h3>
+          <div class="chips" id="missingChips"></div>
+        </div>
+      </div>
+
+      <div class="actions split">
+        <button class="btn ghost" id="backTo1" data-i18n="back">← Zurück</button>
+        <button class="btn primary" id="toStep3" data-i18n="next">Weiter zu Design &amp; Download →</button>
+      </div>
+    </section>
+
+    <!-- ════════ STEP 3 ════════ -->
+    <section class="panel" id="panel-3">
+      <div class="grid-export">
+        <div class="card">
+          <h2 data-i18n="designTitle">Design wählen</h2>
+          <div class="designs" id="designs">
+            <button class="design-card active" data-design="modern">
+              <div class="dp dp-modern"><span></span><span></span><span></span></div>
+              <strong>Modern</strong><small data-i18n="dModern">Akzentfarbe, klar</small>
+            </button>
+            <button class="design-card" data-design="classic">
+              <div class="dp dp-classic"><span></span><span></span><span></span></div>
+              <strong>Classic</strong><small data-i18n="dClassic">Serif, seriös</small>
+            </button>
+            <button class="design-card" data-design="minimal">
+              <div class="dp dp-minimal"><span></span><span></span><span></span></div>
+              <strong>Minimal</strong><small data-i18n="dMinimal">Reduziert, viel Weißraum</small>
+            </button>
+          </div>
+
+          <h2 class="mt" data-i18n="photoTitle">Foto</h2>
+          <p class="hint" data-i18n="photoHint">Automatisch aus deinem Lebenslauf erkannt — du kannst es ersetzen oder entfernen.</p>
+          <div class="photo-row">
+            <div class="photo-thumb" id="photoThumb"><span data-i18n="noPhoto">Kein Foto</span></div>
+            <div class="photo-actions">
+              <label class="btn secondary sm">
+                <input type="file" id="photoInput" accept="image/png,image/jpeg,image/webp" hidden />
+                <span data-i18n="photoUpload">📷 Foto hochladen</span>
+              </label>
+              <button class="btn ghost sm" id="photoRemove" data-i18n="photoRemove">Entfernen</button>
+            </div>
+          </div>
+
+          <h2 class="mt" data-i18n="formatTitle">Format</h2>
+          <div class="format-select" id="formatSelect">
+            <label class="fmt active"><input type="radio" name="format" value="pdf" checked><span>📕 PDF</span></label>
+            <label class="fmt"><input type="radio" name="format" value="docx"><span>📘 Word</span></label>
+          </div>
+
+          <h2 class="mt" data-i18n="filenameTitle">Dateiname</h2>
+          <input type="text" id="filename" value="Lebenslauf" />
+
+          <div class="actions split mt">
+            <button class="btn ghost" id="backTo2" data-i18n="back">← Zurück</button>
+            <button class="btn primary lg" id="downloadBtn" data-i18n="download">⬇ Herunterladen</button>
+          </div>
+        </div>
+
+        <div class="card preview-card">
+          <h2 data-i18n="previewTitle">Vorschau</h2>
+          <div class="paper" id="preview"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ── Loading overlay ── -->
+  <div class="overlay hidden" id="overlay">
+    <div class="loader">
+      <div class="spinner"></div>
+      <p id="loaderMsg" data-i18n="loading">Lebenslauf wird generiert …</p>
+    </div>
+  </div>
+
+  <!-- ── Toast ── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <footer class="foot">
+    <span data-i18n="disclaimer">⚠️ KI-Entwurf — bitte vor Nutzung fachlich prüfen.</span>
+    · FastAPI · SQLite · Claude + OpenAI · RAG
+  </footer>
+
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
