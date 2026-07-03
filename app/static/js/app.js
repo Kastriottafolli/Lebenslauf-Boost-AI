@@ -31,6 +31,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("scroll", () => {
     document.querySelector(".topbar").classList.toggle("scrolled", window.scrollY > 8);
   }, { passive: true });
+  // Cursor-folgendes Licht im Hero
+  const heroEl = $("#hero");
+  if (heroEl) {
+    heroEl.addEventListener("mousemove", (e) => {
+      const r = heroEl.getBoundingClientRect();
+      heroEl.style.setProperty("--mx", `${((e.clientX - r.left) / r.width) * 100}%`);
+      heroEl.style.setProperty("--my", `${((e.clientY - r.top) / r.height) * 100}%`);
+    }, { passive: true });
+  }
   await loadStatus();
   await createSession();
 });
@@ -333,9 +342,21 @@ function renderAnalysis(a) {
   const n = a.matched_keywords.length;
   const total = n + a.missing_keywords.length;
   const pill = $("#scorePill");
-  if (pill) pill.textContent = total ? `${n}/${total}` : "–";
+  if (pill) {
+    if (!total) { pill.textContent = "–"; }
+    else {
+      const start = performance.now(), dur = 700;
+      const tick = (now) => {
+        const p = Math.min(1, (now - start) / dur);
+        const cur = Math.round((1 - Math.pow(1 - p, 3)) * n);
+        pill.textContent = `${cur}/${total}`;
+        if (p < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+  }
   const fill = $("#scoreBarFill");
-  if (fill) fill.style.width = (a.ats_score || 0) + "%";
+  if (fill) { fill.style.width = "0%"; requestAnimationFrame(() => { fill.style.width = (a.ats_score || 0) + "%"; }); }
   const matched = $("#matchedChips"), missing = $("#missingChips");
   matched.innerHTML = n
     ? a.matched_keywords.map((k) => `<span class="chip good">${esc(k)}</span>`).join("")
