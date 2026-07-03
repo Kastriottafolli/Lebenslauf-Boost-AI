@@ -300,6 +300,85 @@ textarea:focus, input:focus, select:focus { outline: none; border-color: var(--a
   .refine { flex-direction: column; }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   Pro-Polish & Animationen
+   ════════════════════════════════════════════════════════════════ */
+
+/* Scroll-Reveal: Elemente gleiten gestaffelt ins Bild */
+.rv { opacity: 0; transform: translateY(16px); }
+.rv.in {
+  opacity: 1; transform: none;
+  transition: opacity 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) var(--rvd, 0ms),
+              transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) var(--rvd, 0ms);
+}
+
+/* Header: Schatten erst beim Scrollen */
+.topbar { transition: box-shadow 0.25s ease; }
+.topbar.scrolled { box-shadow: 0 1px 14px rgba(0, 0, 0, 0.07); }
+
+/* Karten: sanfte Tiefe beim Hover */
+.card { transition: box-shadow 0.3s ease, transform 0.3s ease; }
+.card:hover { box-shadow: var(--shadow); }
+
+/* Buttons: hochwertige Micro-Interactions */
+.btn { transition: background 0.2s, transform 0.15s ease, box-shadow 0.25s ease, border-color 0.2s; }
+.btn.primary { background: linear-gradient(180deg, #1a82f0, var(--accent)); }
+.btn.primary:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0, 113, 227, 0.28); }
+.btn.primary:active { transform: translateY(0); box-shadow: 0 3px 10px rgba(0, 113, 227, 0.2); }
+.btn.ghost:hover, .btn.secondary:hover { transform: translateY(-1px); }
+
+/* Stepper: Fortschrittslinie färbt sich, aktiver Punkt atmet dezent */
+.step .dot { transition: background 0.3s, color 0.3s, transform 0.3s; }
+.step.active .dot { transform: scale(1.08); box-shadow: 0 0 0 5px var(--accent-soft); }
+.step:not(:last-child)::after { transition: background 0.4s ease; }
+.step.done:not(:last-child)::after { background: var(--accent); }
+
+/* Auswahl-Kacheln: leichtes Anheben */
+.prov:hover, .fmt:hover, .design-card:hover { transform: translateY(-2px); }
+.prov, .fmt, .design-card { transition: border-color 0.2s, background 0.2s, transform 0.2s ease, box-shadow 0.2s; }
+
+/* Dropzone: reagiert lebendig, zeigt Erfolg */
+.dropzone { transition: border-color 0.2s, background 0.2s, transform 0.2s ease; }
+.dropzone.drag { transform: scale(1.015); }
+.dz-icon { display: inline-block; transition: transform 0.25s ease; }
+.dropzone:hover .dz-icon, .dropzone.drag .dz-icon { transform: translateY(-3px); }
+.dropzone.dz-ok { border-color: var(--good); background: var(--good-bg); border-style: solid; }
+
+/* Lade-Dialog: Karte mit live durchlaufenden Schritten */
+.loader-card {
+  background: var(--bg); border-radius: var(--radius); padding: 30px 36px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.16); text-align: center; min-width: 320px;
+  animation: revealUp 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.loader-card .spinner { width: 34px; height: 34px; border-width: 3px; margin-bottom: 14px; }
+.loader-card #loaderMsg { margin: 0 0 14px; font-size: 15px; font-weight: 600; color: var(--ink); }
+.loader-steps { list-style: none; margin: 0; padding: 0; text-align: left; }
+.loader-steps li {
+  position: relative; padding: 6px 0 6px 26px; font-size: 13.5px; color: var(--faint);
+  transition: color 0.3s;
+}
+.loader-steps li::before {
+  content: ""; position: absolute; left: 4px; top: 50%; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%; background: var(--line);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.loader-steps li.act { color: var(--ink); font-weight: 500; }
+.loader-steps li.act::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); animation: stepPulse 1.2s ease-in-out infinite; }
+.loader-steps li.done { color: var(--muted); }
+.loader-steps li.done::before { background: var(--good); box-shadow: none; }
+@keyframes stepPulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft); }
+  50% { box-shadow: 0 0 0 7px rgba(0, 113, 227, 0.08); }
+}
+
+/* Ausklapp-Bereich: Inhalt gleitet auf */
+.tech-details[open] .feature-grid { animation: revealUp 0.4s ease both; }
+
+/* Keyword-Chips: dezentes Einpoppen */
+.chip { animation: chipIn 0.3s ease both; }
+@keyframes chipIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: none; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  .rv { opacity: 1 !important; transform: none !important; }
 }

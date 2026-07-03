@@ -27,6 +27,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderRefineChips();
   updateKeyFields();
   updatePhotoThumb();
+  initReveal();
+  window.addEventListener("scroll", () => {
+    document.querySelector(".topbar").classList.toggle("scrolled", window.scrollY > 8);
+  }, { passive: true });
   await loadStatus();
   await createSession();
 });
@@ -203,6 +207,8 @@ function updateKeyFields() {
 // ── Upload (RAG) ──
 async function uploadCv(file) {
   const status = $("#uploadStatus");
+  const dz = $("#dropzone");
+  dz.classList.remove("dz-ok");
   status.className = "upload-status";
   status.textContent = t("uploading");
   const fd = new FormData();
@@ -214,6 +220,7 @@ async function uploadCv(file) {
     if (!r.ok) throw new Error((await r.json()).detail || "Upload-Fehler");
     const d = await r.json();
     state.hasCv = true;
+    dz.classList.add("dz-ok");
     status.className = "upload-status ok";
     let msg = t("uploadOk")(d.filename, d.characters, d.rag_mode);
     if (d.photo) {
@@ -254,7 +261,10 @@ async function generate() {
   if (job.length < 10) { toast(t("needJob"), "err"); return; }
   if (!state.hasCv) toast(t("needCv"), "");
 
-  showOverlay(state.provider === "compare" ? t("comparing") : t("generating"));
+  showOverlay(
+    state.provider === "compare" ? t("comparing") : t("generating"),
+    t("loadSteps")
+  );
   try {
     const body = {
       session_id: state.sessionId,
@@ -456,8 +466,50 @@ async function download() {
 }
 
 // ── Helpers ──
-function showOverlay(msg) { $("#loaderMsg").textContent = msg; $("#overlay").classList.remove("hidden"); }
-function hideOverlay() { $("#overlay").classList.add("hidden"); }
+let stepTimer = null;
+function showOverlay(msg, steps) {
+  $("#loaderMsg").textContent = msg;
+  const ul = $("#loaderSteps");
+  clearInterval(stepTimer);
+  if (ul) {
+    ul.innerHTML = "";
+    if (steps && steps.length) {
+      steps.forEach((s, i) => {
+        const li = document.createElement("li");
+        li.textContent = s;
+        if (i === 0) li.className = "act";
+        ul.appendChild(li);
+      });
+      let i = 0;
+      stepTimer = setInterval(() => {
+        const items = ul.children;
+        if (i < items.length - 1) {
+          items[i].className = "done";
+          i += 1;
+          items[i].className = "act";
+        }
+      }, 1800);
+    }
+  }
+  $("#overlay").classList.remove("hidden");
+}
+function hideOverlay() { clearInterval(stepTimer); $("#overlay").classList.add("hidden"); }
+
+// ── Scroll-Reveal: Elemente gleiten gestaffelt ins Bild ──
+function initReveal() {
+  const els = document.querySelectorAll(".card, .pstep, .feature, .howto-head, .hero > *");
+  if (!("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  els.forEach((el, i) => {
+    el.classList.add("rv");
+    el.style.setProperty("--rvd", `${(i % 6) * 70}ms`);
+    io.observe(el);
+  });
+}
 let toastTimer;
 function toast(msg, kind = "") {
   const el = $("#toast");
