@@ -184,17 +184,15 @@
         </div>
 
         <div class="card analysis">
-          <h2 data-i18n="analysisTitle">Analyse</h2>
-          <div class="score-wrap">
-            <div class="score-ring" id="scoreRing"><span id="scoreVal">0%</span></div>
-            <div>
-              <strong data-i18n="atsTitle">ATS-Abdeckung</strong>
-              <p class="hint" data-i18n="atsHint">Anteil der Stellen-Keywords im Lebenslauf.</p>
-            </div>
+          <div class="card-head">
+            <h2 data-i18n="analysisTitle">Keyword-Check</h2>
+            <span class="score-pill" id="scorePill">–</span>
           </div>
-          <h3 data-i18n="matched">✓ Enthaltene Keywords</h3>
+          <p class="hint" data-i18n="atsHint">Wie viele wichtige Begriffe der Stelle im Lebenslauf vorkommen.</p>
+          <div class="score-bar"><span id="scoreBarFill"></span></div>
+          <h3 data-i18n="matched">✓ Enthalten</h3>
           <div class="chips" id="matchedChips"></div>
-          <h3 data-i18n="missing">✗ Fehlende Keywords</h3>
+          <h3 data-i18n="missing">✗ Fehlt noch</h3>
           <div class="chips" id="missingChips"></div>
         </div>
       </div>

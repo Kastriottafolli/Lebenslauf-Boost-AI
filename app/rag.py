@@ -40,6 +40,30 @@ _STOPWORDS = set(
     """.split()
 )
 
+# Kurze, aber echte Fachbegriffe, die trotz Kürze als Keyword zählen.
+_TECH_SHORT = {
+    "sql", "git", "api", "css", "html", "php", "aws", "gcp", "ci", "cd", "qa", "ux",
+    "ui", "seo", "c++", "c#", "go", "erp", "crm", "kfz", "haccp", "ihk", "sap", "tüv",
+    "b2b", "b2c", "hr", "ki", "ml", "ai", "vr", "ar", "saas", "rest", "npm",
+}
+
+# Generische Stellenanzeigen-Wörter, die KEINE echten Keywords sind.
+_GENERIC = set(
+    """
+    stelle stellen position mitarbeiter mitarbeiterin mitarbeitende kollegen kolleginnen
+    team teams kunde kunden kundinnen unternehmen firma bereich abteilung standort
+    aufgabe aufgaben anforderung anforderungen voraussetzung voraussetzungen umfeld
+    rahmen monat monate jahr jahre woche tag tage zeit gehören gehört bringst bietest
+    freuen freust abgeschlossene abgeschlossenes erfolgreich gerne ideale idealer
+    umgang chance chancen möglichkeit möglichkeiten weiterbildung vollzeit teilzeit
+    festanstellung einsatz einstieg beginn person personen bewerbung bewerber
+    """.split()
+)
+
+
+def _is_tech_token(low: str) -> bool:
+    return low in _TECH_SHORT or "+" in low or "#" in low or any(c.isdigit() for c in low)
+
 
 def tokenize(text: str) -> List[str]:
     out: List[str] = []
@@ -164,12 +188,38 @@ def _tfidf_retrieve(chunks: List[str], query: str, top_k: int) -> List[str]:
 # ──────────────────────────────────────────────────────────────────────────
 # Use-Case-spezifische Keyword-/ATS-Analyse
 # ──────────────────────────────────────────────────────────────────────────
-def extract_keywords(job_description: str, limit: int = 20) -> List[str]:
-    """Wichtigste Begriffe der Stellenbeschreibung (für ATS-Score & Vergleich)."""
-    counts: Counter = Counter(
-        t for t in tokenize(job_description) if t not in _STOPWORDS and len(t) > 2
-    )
-    return [w for w, _ in counts.most_common(limit)]
+def extract_keywords(job_description: str, limit: int = 12) -> List[str]:
+    """Die wichtigsten, aussagekräftigen Begriffe der Stellenanzeige.
+
+    Bevorzugt echte Fach-/Kompetenzbegriffe statt Füllwörter. Signale:
+    im Original großgeschrieben (DE-Nomen/Skill), Fachbegriff, Wortlänge.
+    """
+    scores: dict = {}
+    for tok in _WORD_RE.findall(job_description or ""):
+        low = tok.strip(".-+#").lower()
+        if not low or low in _STOPWORDS or low in _GENERIC:
+            continue
+        tech = _is_tech_token(low)
+        if len(low) < 4 and not tech:  # kurze Wörter nur, wenn Fachbegriff
+            continue
+        score = 1.0
+        if tok[:1].isupper():           # großgeschrieben -> meist Nomen/Skill
+            score += 1.5
+        if tech:                        # Technologie/Zertifikat
+            score += 1.5
+        score += min(len(low), 12) / 12.0  # längere Begriffe leicht bevorzugen
+        scores[low] = scores.get(low, 0.0) + score
+
+    ranked = sorted(scores, key=lambda k: scores[k], reverse=True)
+    result: List[str] = []
+    for low in ranked:
+        # Zusammengesetzte Dubletten vermeiden ("haccp" vs "haccp-standards").
+        hit = next((i for i, a in enumerate(result) if a in low or low in a), None)
+        if hit is None:
+            result.append(low)
+        elif len(low) < len(result[hit]):
+            result[hit] = low  # kürzeren Kernbegriff bevorzugen (matcht besser)
+    return result[:limit]
 
 
 def analyze(job_description: str, cv_text: str) -> dict:

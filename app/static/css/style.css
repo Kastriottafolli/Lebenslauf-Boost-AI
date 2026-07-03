@@ -209,10 +209,10 @@ textarea:focus, input:focus, select:focus { outline: none; border-color: var(--a
 .cmp-pick .pscore { font-size: 26px; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; }
 
 /* ── Analysis ── */
-.score-wrap { display: flex; align-items: center; gap: 18px; margin: 8px 0 4px; }
-.score-ring { width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--accent) 0%, var(--line-soft) 0%); position: relative; flex-shrink: 0; transition: background 0.6s ease; }
-.score-ring::before { content: ""; position: absolute; inset: 8px; background: var(--bg); border-radius: 50%; }
-.score-ring span { position: relative; font-weight: 600; font-size: 20px; color: var(--ink); letter-spacing: -0.02em; }
+/* Minimaler Keyword-Check statt großem ATS-Ring */
+.score-pill { font-size: 13px; font-weight: 600; color: var(--muted); background: var(--bg-alt); border-radius: 980px; padding: 3px 11px; }
+.score-bar { height: 6px; border-radius: 3px; background: var(--line-soft); overflow: hidden; margin: 4px 0 4px; }
+.score-bar span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width 0.6s ease; }
 .chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip { font-size: 12.5px; padding: 5px 12px; border-radius: 980px; font-weight: 500; }
 .chip.good { background: var(--good-bg); color: var(--good); }

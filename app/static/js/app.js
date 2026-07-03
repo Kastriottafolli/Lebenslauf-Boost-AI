@@ -229,6 +229,26 @@ async function uploadCv(file) {
 }
 
 // ── Generate ──
+// POST mit Zeitabschaltung (verhindert ewiges „wird generiert …").
+async function postJSON(url, body, timeoutMs = 90000) {
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+  } finally { clearTimeout(tid); }
+}
+
+function errMsg(e) {
+  if (e.name === "AbortError") return t("timeout");
+  if (e.message === "Failed to fetch") return t("noServer");
+  return e.message;
+}
+
 async function generate() {
   const job = $("#jobDescription").value.trim();
   if (job.length < 10) { toast(t("needJob"), "err"); return; }
@@ -245,16 +265,14 @@ async function generate() {
       technique: $("#technique").value,
       keys: getKeys(),
     };
-    const r = await fetch(`${API}/api/generate`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    });
+    const r = await postJSON(`${API}/api/generate`, body);
     if (!r.ok) throw new Error((await r.json()).detail || "Fehler");
     const data = await r.json();
     state.results = data.results;
     renderResult(data);
     goStep(2);
   } catch (e) {
-    toast("⚠️ " + e.message, "err");
+    toast("⚠️ " + errMsg(e), "err");
   } finally { hideOverlay(); }
 }
 
@@ -300,29 +318,19 @@ function chooseResult(res) {
 }
 
 function renderAnalysis(a) {
-  animateScore(a.ats_score);
+  const n = a.matched_keywords.length;
+  const total = n + a.missing_keywords.length;
+  const pill = $("#scorePill");
+  if (pill) pill.textContent = total ? `${n}/${total}` : "–";
+  const fill = $("#scoreBarFill");
+  if (fill) fill.style.width = (a.ats_score || 0) + "%";
   const matched = $("#matchedChips"), missing = $("#missingChips");
-  matched.innerHTML = a.matched_keywords.length
+  matched.innerHTML = n
     ? a.matched_keywords.map((k) => `<span class="chip good">${esc(k)}</span>`).join("")
     : "<span class='hint'>—</span>";
   missing.innerHTML = a.missing_keywords.length
     ? a.missing_keywords.map((k) => `<span class="chip warn">${esc(k)}</span>`).join("")
     : "<span class='hint'>—</span>";
-}
-
-// Score zählt animiert hoch + Ring füllt sich.
-function animateScore(target) {
-  const ring = $("#scoreRing"), valEl = $("#scoreVal");
-  const start = performance.now(), dur = 900;
-  const step = (now) => {
-    const p = Math.min(1, (now - start) / dur);
-    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-    const v = target * eased;
-    valEl.textContent = `${Math.round(v)}%`;
-    ring.style.background = `conic-gradient(var(--accent) ${v}%, var(--line-soft) 0%)`;
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
 }
 
 // ── Refine (Conversation History) ──
@@ -349,16 +357,14 @@ async function refine(instruction) {
       language: LANG,
       keys: getKeys(),
     };
-    const r = await fetch(`${API}/api/refine`, {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
-    });
+    const r = await postJSON(`${API}/api/refine`, body);
     if (!r.ok) throw new Error((await r.json()).detail || "Fehler");
     const res = await r.json();
     chooseResult(res);
     $("#refineInput").value = "";
     $("#compareBar").classList.add("hidden");
   } catch (e) {
-    toast("⚠️ " + e.message, "err");
+    toast("⚠️ " + errMsg(e), "err");
   } finally { hideOverlay(); }
 }
 
