@@ -32,7 +32,7 @@ from reportlab.platypus import (
 # Farb- und Stilpalette je Design.
 _PALETTE = {
     "classic": {"accent": "#1A1A1A", "muted": "#444444", "rule": "#1A1A1A", "serif": True},
-    "modern": {"accent": "#0F766E", "muted": "#555555", "rule": "#0F766E", "serif": False},
+    "modern": {"accent": "#A06A24", "muted": "#5A5248", "rule": "#A06A24", "serif": False},
     "minimal": {"accent": "#222222", "muted": "#777777", "rule": "#CCCCCC", "serif": False},
 }
 
