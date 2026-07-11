@@ -70,7 +70,7 @@ def status():
 # ──────────────────────────────────────────────────────────────────────────
 @app.post("/api/session", response_model=schemas.SessionOut)
 def create_session(language: str = "de", db: DBSession = Depends(get_db)):
-    sess = Session(language=language)
+    sess = Session(language=language if language in ("de", "en") else "de")
     db.add(sess)
     db.commit()
     db.refresh(sess)

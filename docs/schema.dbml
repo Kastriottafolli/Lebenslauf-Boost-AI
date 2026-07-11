@@ -1,44 +1,96 @@
-// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 //  Lebenslauf Boost AI — Datenbankschema (DBML)
-//  Diesen Inhalt auf https://dbdiagram.io einfügen -> fertiges ER-Diagramm
-// ════════════════════════════════════════════════════════════════
+//  Auf https://dbdiagram.io einfügen → interaktives ER-Diagramm.
+//  Quelle der Wahrheit: app/models.py · Ausführliche Doku: docs/DATABASE.md
+// ════════════════════════════════════════════════════════════════════════
+
+Project lebenslauf_boost_ai {
+  database_type: 'SQLite'
+  Note: '''
+    KI-Lebenslauf-Optimierer — FastAPI + SQLAlchemy.
+    4 Tabellen um den zentralen Hub `sessions`:
+    1:1 zu cv_documents (UNIQUE FK), 1:n zu generations & messages.
+    Löschen kaskadiert (ORM: all, delete-orphan / DDL: ON DELETE CASCADE).
+    IDs sind UUIDv4-Strings.
+  '''
+}
+
+Enum language_enum {
+  de
+  en
+}
+
+Enum provider_enum {
+  claude   [note: 'Anthropic']
+  openai   [note: 'OpenAI (auch Embeddings für RAG)']
+}
+
+Enum technique_enum {
+  auto              [note: 'Few-shot + Chain-of-Thought kombiniert']
+  few_shot
+  chain_of_thought
+  refine            [note: 'iterative Verfeinerung (/api/refine)']
+}
+
+Enum role_enum {
+  user
+  assistant
+}
 
 Table sessions {
-  id              text     [pk, note: 'UUID']
-  language        text     [default: 'de']
-  job_description text
-  wishes          text
-  created_at      datetime
+  id              varchar(36)  [pk, note: 'UUIDv4 — nicht erratbar']
+  language        language_enum [not null, default: 'de']
+  job_description text         [not null, default: '', note: 'eingefügte Stellenanzeige']
+  wishes          text         [not null, default: '', note: 'optionale Nutzerwünsche']
+  created_at      datetime     [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Nutzersitzung — zentraler Hub. POST /api/session'
 }
 
 Table cv_documents {
-  id             text     [pk, note: 'UUID']
-  session_id     text     [ref: - sessions.id]   // 1:1
-  filename       text
-  content        text     [note: 'extrahierter Volltext']
-  index_json     text     [note: 'RAG: chunks + embeddings (JSON)']
-  photo_data_url text     [note: 'erkanntes Foto (base64)']
-  created_at     datetime
+  id             varchar(36)  [pk, note: 'UUIDv4']
+  session_id     varchar(36)  [not null, unique, ref: - sessions.id, note: 'UNIQUE ⇒ 1:1 · ON DELETE CASCADE']
+  filename       varchar(255) [not null, note: 'Original-Dateiname des Uploads']
+  content        text         [not null, note: 'extrahierter Volltext (pypdf/python-docx)']
+  index_json     text         [not null, note: 'RAG: {"chunks":[…], "embeddings":[[1536×float]…]|null}']
+  photo_data_url text         [note: 'data:image/jpeg;base64,… (Portrait 4:5) | NULL']
+  created_at     datetime     [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: 'Lebenslauf + RAG-Index + Foto. Re-Upload ersetzt die Zeile. POST /api/upload-cv'
 }
 
 Table generations {
-  id               text     [pk, note: 'UUID']
-  session_id       text     [ref: > sessions.id]  // n:1
-  provider         text     [note: 'claude | openai']
-  model            text
-  technique        text     [note: 'auto | few_shot | chain_of_thought | refine']
-  content          text     [note: 'Lebenslauf (Markdown)']
-  ats_score        float    [note: '0-100']
-  matched_keywords text     [note: 'JSON-Array']
-  missing_keywords text     [note: 'JSON-Array']
-  is_selected      boolean
-  created_at       datetime
+  id               varchar(36)    [pk, note: 'UUIDv4']
+  session_id       varchar(36)    [not null, ref: > sessions.id, note: 'INDEX · ON DELETE CASCADE']
+  provider         provider_enum  [not null]
+  model            varchar(64)    [not null, note: "z. B. 'gpt-4o-mini' | 'claude-sonnet-4-6' | 'demo'"]
+  technique        technique_enum [not null]
+  content          text           [not null, note: 'Lebenslauf als Markdown (# Name / ## Profil / …)']
+  ats_score        float          [not null, default: 0, note: 'CHECK 0–100 · Keyword-Abdeckung %']
+  matched_keywords text           [not null, default: '[]', note: 'JSON-Array, lowercase']
+  missing_keywords text           [not null, default: '[]', note: 'JSON-Array, lowercase']
+  is_selected      boolean        [not null, default: false, note: 'reserviert für UI-Favorit']
+  created_at       datetime       [not null, default: `CURRENT_TIMESTAMP`]
+
+  Note: 'KI-Entwürfe + Bewertung. Vergleichsmodus ⇒ 2 Zeilen (claude & openai). POST /api/generate|refine'
 }
 
 Table messages {
-  id         text     [pk, note: 'UUID']
-  session_id text     [ref: > sessions.id]  // n:1
-  role       text     [note: 'user | assistant']
-  content    text
-  created_at datetime
+  id         varchar(36) [pk, note: 'UUIDv4']
+  session_id varchar(36) [not null, ref: > sessions.id, note: 'INDEX · ON DELETE CASCADE']
+  role       role_enum   [not null]
+  content    text        [not null]
+  created_at datetime    [not null, default: `CURRENT_TIMESTAMP`, note: 'Sortierkriterium des Verlaufs']
+
+  Note: 'Conversation History für iteratives Verfeinern (Retaining Conversation History)'
+}
+
+TableGroup "Sitzung & Dokument" {
+  sessions
+  cv_documents
+}
+
+TableGroup "KI-Ausgaben" {
+  generations
+  messages
 }

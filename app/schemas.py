@@ -1,6 +1,6 @@
 """Pydantic-Schemas für Requests und Responses (strukturierte Validierung)."""
 
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -32,9 +32,9 @@ class GenerateRequest(BaseModel):
     session_id: str
     job_description: str = Field(..., min_length=10)
     wishes: Optional[str] = ""
-    provider: str = "claude"  # claude | openai | compare
-    language: str = "de"
-    technique: str = "auto"  # few_shot | chain_of_thought | auto
+    provider: Literal["claude", "openai", "compare"] = "claude"
+    language: Literal["de", "en"] = "de"
+    technique: Literal["auto", "few_shot", "chain_of_thought"] = "auto"
     keys: Optional[ApiKeys] = None
 
 
@@ -65,17 +65,17 @@ class RefineRequest(BaseModel):
     session_id: str
     instruction: str = Field(..., min_length=2)
     current_content: Optional[str] = None
-    provider: str = "claude"  # claude | openai
-    language: str = "de"
+    provider: Literal["claude", "openai"] = "claude"
+    language: Literal["de", "en"] = "de"
     keys: Optional[ApiKeys] = None
 
 
 class ExportRequest(BaseModel):
     session_id: Optional[str] = None
     content: str = Field(..., min_length=10)
-    format: str = "pdf"  # pdf | docx
-    design: str = "modern"  # classic | modern | minimal
-    language: str = "de"
+    format: Literal["pdf", "docx"] = "pdf"
+    design: Literal["modern", "classic", "minimal"] = "modern"
+    language: Literal["de", "en"] = "de"
     filename: Optional[str] = "Lebenslauf"
     photo: Optional[str] = None  # data:image/...;base64,... oder leer/None
 
