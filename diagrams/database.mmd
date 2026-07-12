@@ -1,0 +1,44 @@
+erDiagram
+    cv_documents |o--|| sessions : references
+    generations }o--|| sessions : references
+    messages }o--|| sessions : references
+
+    sessions {
+        TEXT id PK
+        TEXT language
+        TEXT job_description
+        TEXT wishes
+        DATETIME created_at
+    }
+
+    cv_documents {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT filename
+        TEXT content
+        TEXT index_json
+        TEXT photo_data_url
+        DATETIME created_at
+    }
+
+    generations {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT provider
+        TEXT model
+        TEXT technique
+        TEXT content
+        FLOAT ats_score
+        TEXT matched_keywords
+        TEXT missing_keywords
+        BOOLEAN is_selected
+        DATETIME created_at
+    }
+
+    messages {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT role
+        TEXT content
+        DATETIME created_at
+    }

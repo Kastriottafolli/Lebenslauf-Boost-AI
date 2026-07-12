@@ -1,0 +1,77 @@
+graph TB
+    subgraph Client["Client layer"]
+        UI["Frontend — frontend/ (SPA, DE/EN, Boosti)"]
+        Swagger["FastAPI Swagger UI (/docs)"]
+    end
+
+    subgraph Backend["Backend layer (FastAPI)"]
+        Controller["Main — backend/main.py"]
+        Schemas["Schemas — schemas.py"]
+        Models["Models — models.py"]
+        Database["database.py"]
+
+        subgraph Routers["Router layer (routers/)"]
+            direction LR
+            SystemRouter["system.py"]
+            SessionRouter["sessions.py"]
+            DocumentRouter["documents.py"]
+            GenerationRouter["generations.py"]
+            ExportRouter["exports.py"]
+            FrontendRouter["frontend.py"]
+            SystemRouter ~~~ SessionRouter
+            SessionRouter ~~~ DocumentRouter
+            DocumentRouter ~~~ GenerationRouter
+            GenerationRouter ~~~ ExportRouter
+            ExportRouter ~~~ FrontendRouter
+        end
+
+        subgraph Services["Service layer (services/)"]
+            direction LR
+            SessionSvc["session_service.py"]
+            DocumentSvc["document_service.py"]
+            ExtractionSvc["extraction_service.py"]
+            RagSvc["rag_service.py"]
+            GenerationSvc["generation_service.py"]
+            ExportSvc["export_service.py"]
+            SessionSvc ~~~ DocumentSvc
+            DocumentSvc ~~~ ExtractionSvc
+            ExtractionSvc ~~~ RagSvc
+            RagSvc ~~~ GenerationSvc
+            GenerationSvc ~~~ ExportSvc
+        end
+
+        subgraph LLMServices["LLM Service layer (llm/)"]
+            LLM["llm_service.py"]
+            Prompts["prompts.py"]
+            Anthropic["anthropic_provider.py"]
+            OpenAIProvider["openai_provider.py"]
+        end
+
+        Controller --> Routers
+        Routers <-->|validation| Schemas
+        Services <-->|Data| Database
+        Routers --> Services
+        Services <--> LLMServices
+    end
+
+    subgraph PromptFiles["Prompt templates"]
+        PT["prompts/*.txt — Few-shot · CoT · Role · Format"]
+    end
+
+    subgraph DB["Database layer"]
+        SQLite[("SQLite")]
+    end
+
+    subgraph AI["External AI APIs"]
+        Claude["Anthropic · Claude"]
+        OpenAI["OpenAI · GPT + Embeddings"]
+    end
+
+    UI -->|fetch / JSON| Controller
+    Swagger -->|HTTP / JSON| Controller
+    Prompts --> PT
+    LLM -->|HTTPS / API Key| Claude
+    LLM -->|HTTPS / API Key| OpenAI
+    Schemas <--> Models
+    Models <--> Database
+    Database <-->|SQLAlchemy| SQLite

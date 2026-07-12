@@ -1,0 +1,35 @@
+flowchart TD
+
+    Start([Start])
+
+    OpenApp[Open App — Boosti Tour starts]
+    PasteJob[Paste job description]
+    UploadCV[Upload CV — PDF / DOCX / TXT]
+    SetWishes[Optional wishes]
+    ChooseProvider[Choose AI provider]
+    EnterKey[Enter API key — BYOK]
+    Generate[Generate resume]
+
+    EditCV[Edit generated CV]
+    KeywordCheck[Keyword check — ATS score]
+    ChooseDesign[Choose design — 6 themes]
+    AddPhoto[Optional photo]
+    SetFilename[Set filename]
+    Download[Download PDF or Word]
+
+    Start --> OpenApp
+    OpenApp --> PasteJob
+    PasteJob --> UploadCV
+    UploadCV --> SetWishes
+    SetWishes --> ChooseProvider
+    ChooseProvider --> EnterKey
+    EnterKey --> Generate
+
+    Generate --> EditCV
+    EditCV --> KeywordCheck
+    KeywordCheck --> ChooseDesign
+    ChooseDesign --> AddPhoto
+    AddPhoto --> SetFilename
+    SetFilename --> Download
+
+    Download --> End([Done])

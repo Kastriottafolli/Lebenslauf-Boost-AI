@@ -202,119 +202,217 @@ Ein Befehl committet & pusht alle Änderungen:
 
 ---
 
-## Architektur
+## Architecture
 
-> **Für Einsteiger:** Das Diagramm unten erklärt Schritt für Schritt — von deinem Klick im Browser
-> bis zur fertigen PDF — ohne Vorkenntnisse. Lies einfach von oben nach unten.
-
-Das Backend ist in klar getrennte Schichten aufgeteilt — jeder Request läuft von
-oben nach unten durch: **Router** (HTTP) → **Service** (Geschäftslogik) → **LLM/DB**.
-
-![Architektur-Diagramm — Anfänger-Infografik mit 8 Schritten und Mini-Lexikon](docs/architecture.png)
-
-<details>
-<summary>Mermaid-Diagramm (interaktiv)</summary>
+### Backend
 
 ```mermaid
 graph TB
-    subgraph Client["Client-Schicht"]
-        UI["Frontend — frontend/ (SPA, DE/EN)"]
-        Swagger["Swagger UI (/docs)"]
+    subgraph Client["Client layer"]
+        UI["Frontend — frontend/ (SPA, DE/EN, Boosti)"]
+        Swagger["FastAPI Swagger UI (/docs)"]
     end
 
-    subgraph Backend["Backend-Schicht (FastAPI)"]
-        Main["main.py — App-Fabrik"]
-        Schemas["schemas.py — Pydantic-Validierung"]
-        Models["models.py — ORM-Modelle"]
+    subgraph Backend["Backend layer (FastAPI)"]
+        Controller["Main — backend/main.py"]
+        Schemas["Schemas — schemas.py"]
+        Models["Models — models.py"]
         Database["database.py"]
 
-        subgraph Routers["Router-Schicht (backend/routers/)"]
+        subgraph Routers["Router layer (routers/)"]
             direction LR
-            R1["system.py"]
-            R2["sessions.py"]
-            R3["documents.py"]
-            R4["generations.py"]
-            R5["exports.py"]
-            R1 ~~~ R2
-            R2 ~~~ R3
-            R3 ~~~ R4
-            R4 ~~~ R5
+            SystemRouter["system.py"]
+            SessionRouter["sessions.py"]
+            DocumentRouter["documents.py"]
+            GenerationRouter["generations.py"]
+            ExportRouter["exports.py"]
+            FrontendRouter["frontend.py"]
+            SystemRouter ~~~ SessionRouter
+            SessionRouter ~~~ DocumentRouter
+            DocumentRouter ~~~ GenerationRouter
+            GenerationRouter ~~~ ExportRouter
+            ExportRouter ~~~ FrontendRouter
         end
 
-        subgraph Services["Service-Schicht (backend/services/)"]
+        subgraph Services["Service layer (services/)"]
             direction LR
-            S1["session_service.py"]
-            S2["document_service.py"]
-            S3["generation_service.py"]
-            S4["export_service.py"]
-            S5["rag_service.py"]
-            S6["extraction_service.py"]
-            S1 ~~~ S2
-            S2 ~~~ S3
-            S3 ~~~ S4
-            S4 ~~~ S5
-            S5 ~~~ S6
+            SessionSvc["session_service.py"]
+            DocumentSvc["document_service.py"]
+            ExtractionSvc["extraction_service.py"]
+            RagSvc["rag_service.py"]
+            GenerationSvc["generation_service.py"]
+            ExportSvc["export_service.py"]
+            SessionSvc ~~~ DocumentSvc
+            DocumentSvc ~~~ ExtractionSvc
+            ExtractionSvc ~~~ RagSvc
+            RagSvc ~~~ GenerationSvc
+            GenerationSvc ~~~ ExportSvc
         end
 
-        subgraph LLM["LLM-Schicht (backend/llm/)"]
-            LSVC["llm_service.py — Vergleich · Demo-Fallback"]
-            PR["prompts.py — lädt Vorlagen aus prompts/"]
+        subgraph LLMServices["LLM Service layer (llm/)"]
+            LLM["llm_service.py"]
+            Prompts["prompts.py"]
+            Anthropic["anthropic_provider.py"]
+            OpenAIProvider["openai_provider.py"]
         end
 
-        Main --> Routers
-        Routers <-->|Validierung| Schemas
+        Controller --> Routers
+        Routers <-->|validation| Schemas
+        Services <-->|Data| Database
         Routers --> Services
-        Services <--> LLM
-        Services <-->|Daten| Database
-        Schemas <--> Models
-        Models <--> Database
+        Services <--> LLMServices
     end
 
-    subgraph Vorlagen["Prompt-Vorlagen"]
-        PT["prompts/*.txt — Few-shot · CoT · Rolle · Format"]
+    subgraph PromptFiles["Prompt templates"]
+        PT["prompts/*.txt — Few-shot · CoT · Role · Format"]
     end
 
-    subgraph DB["Datenbank-Schicht"]
-        SQLITE[("SQLite<br/>sessions · cv_documents<br/>generations · messages")]
+    subgraph DB["Database layer"]
+        SQLite[("SQLite")]
     end
 
-    subgraph AI["Externe KI-APIs"]
-        CL["Anthropic Claude"]
-        OA["OpenAI GPT + Embeddings"]
+    subgraph AI["External AI APIs"]
+        Claude["Anthropic · Claude"]
+        OpenAI["OpenAI · GPT + Embeddings"]
     end
 
-    UI -->|"fetch (JSON)"| Main
-    Swagger -->|HTTP| Main
-    PR --> PT
-    LSVC -->|HTTPS / API-Key| CL
-    LSVC -->|HTTPS / API-Key| OA
-    Database <-->|SQLAlchemy| SQLITE
+    UI -->|fetch / JSON| Controller
+    Swagger -->|HTTP / JSON| Controller
+    Prompts --> PT
+    LLM -->|HTTPS / API Key| Claude
+    LLM -->|HTTPS / API Key| OpenAI
+    Schemas <--> Models
+    Models <--> Database
+    Database <-->|SQLAlchemy| SQLite
 ```
+
+Source: [`diagrams/architecture.mmd`](diagrams/architecture.mmd)
+
+**Request flow `POST /api/generate`:**
+Pydantic validation → RAG retrieves relevant CV chunks → prompt build (role + few-shot + CoT + injected context) → provider call (both if `compare`) → ATS analysis → persist (generation + message) → JSON response.
+
+<details>
+<summary>User flow (Boosti tour)</summary>
+
+```mermaid
+flowchart TD
+
+    Start([Start])
+
+    OpenApp[Open App — Boosti Tour starts]
+    PasteJob[Paste job description]
+    UploadCV[Upload CV — PDF / DOCX / TXT]
+    SetWishes[Optional wishes]
+    ChooseProvider[Choose AI provider]
+    EnterKey[Enter API key — BYOK]
+    Generate[Generate resume]
+
+    EditCV[Edit generated CV]
+    KeywordCheck[Keyword check — ATS score]
+    ChooseDesign[Choose design — 6 themes]
+    AddPhoto[Optional photo]
+    SetFilename[Set filename]
+    Download[Download PDF or Word]
+
+    Start --> OpenApp
+    OpenApp --> PasteJob
+    PasteJob --> UploadCV
+    UploadCV --> SetWishes
+    SetWishes --> ChooseProvider
+    ChooseProvider --> EnterKey
+    EnterKey --> Generate
+
+    Generate --> EditCV
+    EditCV --> KeywordCheck
+    KeywordCheck --> ChooseDesign
+    ChooseDesign --> AddPhoto
+    AddPhoto --> SetFilename
+    SetFilename --> Download
+
+    Download --> End([Done])
+```
+
+Source: [`diagrams/user_flowchart.mmd`](diagrams/user_flowchart.mmd)
 
 </details>
 
-**Request-Ablauf `POST /api/generate`:**
-Pydantic-Validierung → RAG holt relevante CV-Chunks → Prompt-Bau (Rolle + Few-shot + CoT +
-injizierter Kontext) → Provider-Aufruf (bei `compare` beide) → ATS-Analyse → Persistenz
-(Generation + Message) → JSON-Response.
+<details>
+<summary>Beginner infographic (PNG)</summary>
+
+![Architektur — Anfänger-Infografik](docs/architecture.png)
+
+</details>
 
 ---
 
-## Datenbankschema
+## Database
 
-> **Für Einsteiger:** Stell dir die Datenbank als **Bewerbungsordner** vor.
-> `sessions` ist der Ordner, die anderen Tabellen sind der Inhalt darin.
-> Das Diagramm zeigt alle 8 Schritte, alle Felder und ein Mini-Lexikon (PK, FK, 1:n …).
+### Diagram
 
-`sessions` ist die zentrale Tabelle — **1 : 0..1** zu `cv_documents` (per **UNIQUE**-FK
-erzwungen), **1 : n** zu `generations` und `messages`. Alle Fremdschlüssel sind
-`NOT NULL` + indiziert, Wertebereiche (`language`, `provider`, `technique`, `role`,
-`ats_score`) per **CHECK-Constraints** abgesichert, Löschen kaskadiert. IDs sind UUIDv4.
+```mermaid
+erDiagram
+    cv_documents |o--|| sessions : references
+    generations }o--|| sessions : references
+    messages }o--|| sessions : references
 
-![Datenbankschema — Anfänger-Infografik mit Ablauf, Beziehungen und allen Feldern](docs/schema.png)
+    sessions {
+        TEXT id PK
+        TEXT language
+        TEXT job_description
+        TEXT wishes
+        DATETIME created_at
+    }
+
+    cv_documents {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT filename
+        TEXT content
+        TEXT index_json
+        TEXT photo_data_url
+        DATETIME created_at
+    }
+
+    generations {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT provider
+        TEXT model
+        TEXT technique
+        TEXT content
+        FLOAT ats_score
+        TEXT matched_keywords
+        TEXT missing_keywords
+        BOOLEAN is_selected
+        DATETIME created_at
+    }
+
+    messages {
+        TEXT id PK
+        TEXT session_id FK
+        TEXT role
+        TEXT content
+        DATETIME created_at
+    }
+```
+
+Source: [`diagrams/database.mmd`](diagrams/database.mmd)
+
+`sessions` is the central hub — **1 : 0..1** to `cv_documents` (enforced by **UNIQUE** FK),
+**1 : n** to `generations` and `messages`. All foreign keys are `NOT NULL` + indexed,
+value ranges (`language`, `provider`, `technique`, `role`, `ats_score`) secured by **CHECK**
+constraints, deletes cascade. IDs are UUIDv4.
+
+<details>
+<summary>Beginner infographic (PNG)</summary>
+
+![Datenbankschema — Anfänger-Infografik](docs/schema.png)
+
+</details>
 
 | Dokument | Inhalt |
 |---|---|
+| [`diagrams/database.mmd`](diagrams/database.mmd) | Mermaid ER-Diagramm (GitHub-rendered) |
 | 📘 [`docs/DATABASE.md`](docs/DATABASE.md) | **Ausführliche Doku**: Spalten-Wörterbücher, JSON-Strukturen, Datenfluss je Endpoint |
 | [`docs/schema.svg`](docs/schema.svg) | Erweiterte SVG-Infografik (skalierbar, gleicher Inhalt wie PNG) |
 | [`docs/schema-extended.svg`](docs/schema-extended.svg) | Vollversion inkl. Roadmap-Tabellen |
@@ -385,10 +483,14 @@ lebenslauf-boost-ai/
 │   └── types/
 │       └── api.d.ts                 # Geteilte API-Typen (Frontend/Backend-Vertrag)
 ├── static/                          # Statische Assets (Boosti-Maskottchen, Logo)
-├── docs/                            # Schema, Screenshots, Architektur, Präsentation, Video
-│   ├── architecture.svg / .png      # Architektur-Diagramm (Sapphire Nightfall)
-│   ├── schema.svg / .png            # ER-Diagramm (4 Tabellen)
-│   └── make_diagrams.py             # PNG-Generierung für README
+├── diagrams/                        # Mermaid source files (architecture, database, user flow)
+│   ├── architecture.mmd
+│   ├── database.mmd
+│   └── user_flowchart.mmd
+├── docs/                            # Schema docs, screenshots, PNG infographics, presentation
+│   ├── DATABASE.md · schema.sql · schema.dbml
+│   ├── architecture.png · schema.png
+│   └── make_diagrams.py
 ├── requirements.txt
 ├── run.py / run.sh                  # Start-Skripte
 ├── update.sh                        # Ein-Befehl-Update zu GitHub
@@ -414,7 +516,7 @@ lebenslauf-boost-ai/
 - [x] Zweisprachige UI (DE/EN), „Sapphire Nightfall"-Design mit 3D-Effekten
 - [x] **Boosti-Maskottchen** mit geführter Tour (Erledigt-Buttons, Fluganimation, sanftes Scrollen)
 - [x] Gewichtete Keyword-Extraktion (Nomen/Fachbegriffe statt Füllwörter)
-- [x] Datenbankschema-Doku (PNG/SQL/DBML) & Architektur-Diagramm
+- [x] Architecture diagrams (Mermaid) — [`diagrams/`](diagrams/)
 - [x] Code-Refactoring: Schichten-Architektur (routers/ · services/ · llm/ · prompts/)
 - [x] Tests (pytest) + CI (GitHub Actions: ruff + pytest)
 
