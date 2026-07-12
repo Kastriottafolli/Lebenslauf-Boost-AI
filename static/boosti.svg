@@ -1,0 +1,24 @@
+<svg viewBox="0 0 96 104" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boosti">
+  <ellipse cx="48" cy="99" rx="24" ry="4.5" fill="rgba(38,43,64,0.15)"/>
+  <g>
+    <path d="M26 62 Q10 66 8 78" stroke="#262b40" stroke-width="3.4" stroke-linecap="round"/>
+    <circle cx="8" cy="79" r="4.4" fill="#f4dcc4"/>
+  </g>
+  <rect x="27" y="30" width="43" height="56" rx="9" fill="#ffffff" stroke="#262b40" stroke-width="2.2"/>
+  <rect x="27" y="30" width="43" height="11" rx="9" fill="#0474c4"/>
+  <rect x="27" y="36" width="43" height="5" fill="#0474c4"/>
+  <line x1="35" y1="52" x2="61" y2="52" stroke="#dce6f5" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="35" y1="60" x2="57" y2="60" stroke="#dce6f5" stroke-width="2.8" stroke-linecap="round"/>
+  <line x1="35" y1="68" x2="52" y2="68" stroke="#dce6f5" stroke-width="2.8" stroke-linecap="round"/>
+  <circle cx="40" cy="23" r="3.5" fill="#262b40"/>
+  <circle cx="57" cy="23" r="3.5" fill="#262b40"/>
+  <circle cx="41" cy="22" r="1.1" fill="#ffffff"/>
+  <circle cx="58" cy="22" r="1.1" fill="#ffffff"/>
+  <path d="M42 30 Q48.5 34.5 55 30" stroke="#262b40" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <g>
+    <path d="M71 62 Q84 58 89 49" stroke="#262b40" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M87 47 L94 42.5 L91.5 51 Z" fill="#a8c4ec"/>
+    <circle cx="89" cy="50" r="4.4" fill="#f4dcc4"/>
+  </g>
+  <path d="M38 86 Q48.5 93 59 86 L56.5 95 Q48.5 99.5 40.5 95 Z" fill="#0474c4"/>
+</svg>

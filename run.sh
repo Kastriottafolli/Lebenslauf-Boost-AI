@@ -18,4 +18,4 @@ if [ ! -f ".env" ]; then
 fi
 
 echo "→ Starte Server auf http://127.0.0.1:8000"
-uvicorn app.main:app --reload
+uvicorn backend.main:app --reload

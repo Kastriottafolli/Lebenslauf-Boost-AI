@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/static/logo.svg" width="72" alt="Lebenslauf Boost AI Logo" />
+<img src="static/logo.svg" width="72" alt="Lebenslauf Boost AI Logo" />
 
 # Lebenslauf Boost AI
 
@@ -50,6 +50,25 @@ in drei Designs, inklusive automatisch erkanntem Bewerbungsfoto.
 
 ---
 
+## Projektvideo
+
+Die vollständige deutschsprachige Projektvorstellung zeigt den Ablauf von
+CV-Upload und RAG über den KI-Vergleich bis zum PDF-/Word-Export:
+
+- [Projektvideo öffnen (MP4, 4:59 Minuten)](docs/video/lebenslauf-boost-ai-projektvideo.mp4)
+- [Deutsche Untertitel](docs/video/lebenslauf-boost-ai-projektvideo.srt)
+- [Sprechertext und Kapitel](docs/video/README.md)
+
+---
+
+## Projektpräsentation
+
+- [PowerPoint-Präsentation (5 Folien)](docs/presentation/lebenslauf-boost-ai-praesentation.pptx)
+- [PDF-Präsentation (5 Seiten)](docs/presentation/lebenslauf-boost-ai-praesentation.pdf)
+- [Sprechertext (ca. 4 Minuten)](docs/presentation/sprechertext.md)
+
+---
+
 ## Endpoints
 
 ### System
@@ -95,7 +114,8 @@ Interaktive API-Doku (Swagger): `http://127.0.0.1:8000/docs`
 | RAG-Fallback   | Eigenes TF-IDF (pure Python, offline)               |
 | Datei-Parsing  | pypdf · python-docx · Pillow (Foto-Erkennung)       |
 | Export         | ReportLab (PDF) · python-docx (Word)                |
-| Frontend       | Vanilla HTML/CSS/JS · DE/EN · „Editorial Dark Luxe" |
+| Frontend       | Vanilla HTML/CSS/JS (ES-Module) · DE/EN · „Warm Editorial" |
+| CI             | GitHub Actions (ruff + pytest)                      |
 
 ---
 
@@ -103,14 +123,14 @@ Interaktive API-Doku (Swagger): `http://127.0.0.1:8000/docs`
 
 | Anforderung                          | Umsetzung                                                          |
 |--------------------------------------|---------------------------------------------------------------------|
-| FastAPI API                          | `app/main.py` — 7 REST-Endpoints                                   |
-| SQLite DB                            | 4 Tabellen via SQLAlchemy (`app/models.py`)                        |
+| FastAPI API                          | `backend/routers/` — 7 REST-Endpoints (dünne Router-Schicht)       |
+| SQLite DB                            | 4 Tabellen via SQLAlchemy (`backend/models.py`)                    |
 | Use-case-spezifische Vergleichsanalyse | `provider=compare`: Claude vs. OpenAI + ATS-Score + Empfehlung   |
-| 2 Prompt-Engineering-Techniken       | **Few-shot** + **Chain-of-Thought** (+ Role-Prompting), `prompts.py` |
-| 2 Text-Generierungs-APIs             | Anthropic & OpenAI, getrennt gekapselt (`app/llm/`)                |
+| 2 Prompt-Engineering-Techniken       | **Few-shot** + **Chain-of-Thought** (+ Role-Prompting), Vorlagen in `prompts/` |
+| 2 Text-Generierungs-APIs             | Anthropic & OpenAI, getrennt gekapselt (`backend/llm/`)            |
 | Conversation History                 | `/api/refine` nutzt den gespeicherten Nachrichtenverlauf           |
 | Dynamic Context Injection            | RAG-Auszüge + Stellenanzeige + Wünsche werden zur Laufzeit injiziert |
-| RAG (optional)                       | Chunking → Embeddings/TF-IDF → Retrieval (`app/rag.py`)            |
+| RAG (optional)                       | Chunking → Embeddings/TF-IDF → Retrieval (`backend/services/rag_service.py`) |
 
 ---
 
@@ -167,48 +187,83 @@ Ein Befehl committet & pusht alle Änderungen:
 
 ## Architektur
 
+Das Backend ist in klar getrennte Schichten aufgeteilt — jeder Request läuft von
+oben nach unten durch: **Router** (HTTP) → **Service** (Geschäftslogik) → **LLM/DB**.
+
 ```mermaid
 graph TB
-    subgraph Client["Frontend (app/static/)"]
-        UI["index.html · style.css · app.js · i18n.js (DE/EN)"]
+    subgraph Client["Client-Schicht"]
+        UI["Frontend — frontend/ (SPA, DE/EN)"]
+        Swagger["Swagger UI (/docs)"]
     end
 
-    subgraph Backend["Backend (FastAPI)"]
-        EP["main.py — Endpoints & Orchestrierung"]
-        SCH["schemas.py — Pydantic-Validierung"]
+    subgraph Backend["Backend-Schicht (FastAPI)"]
+        Main["main.py — App-Fabrik"]
+        Schemas["schemas.py — Pydantic-Validierung"]
+        Models["models.py — ORM-Modelle"]
+        Database["database.py"]
 
-        subgraph Services["Fachlogik"]
+        subgraph Routers["Router-Schicht (backend/routers/)"]
             direction LR
-            EX["extract.py<br/>Text & Foto"]
-            RAG["rag.py<br/>RAG + Keyword-Check"]
-            PR["prompts.py<br/>Few-shot · CoT · Rolle"]
-            EXP["export.py<br/>PDF · DOCX · 3 Designs"]
-            EX ~~~ RAG
-            RAG ~~~ PR
-            PR ~~~ EXP
+            R1["system.py"]
+            R2["sessions.py"]
+            R3["documents.py"]
+            R4["generations.py"]
+            R5["exports.py"]
+            R1 ~~~ R2
+            R2 ~~~ R3
+            R3 ~~~ R4
+            R4 ~~~ R5
         end
 
-        subgraph LLM["LLM-Schicht (app/llm/)"]
+        subgraph Services["Service-Schicht (backend/services/)"]
             direction LR
-            SVC["service.py<br/>Vergleich · Demo-Fallback"]
-            CL["anthropic_provider.py"]
-            OA["openai_provider.py"]
-            SVC ~~~ CL
-            CL ~~~ OA
+            S1["session_service.py"]
+            S2["document_service.py"]
+            S3["generation_service.py"]
+            S4["export_service.py"]
+            S5["rag_service.py"]
+            S6["extraction_service.py"]
+            S1 ~~~ S2
+            S2 ~~~ S3
+            S3 ~~~ S4
+            S4 ~~~ S5
+            S5 ~~~ S6
         end
+
+        subgraph LLM["LLM-Schicht (backend/llm/)"]
+            LSVC["llm_service.py — Vergleich · Demo-Fallback"]
+            PR["prompts.py — lädt Vorlagen aus prompts/"]
+        end
+
+        Main --> Routers
+        Routers <-->|Validierung| Schemas
+        Routers --> Services
+        Services <--> LLM
+        Services <-->|Daten| Database
+        Schemas <--> Models
+        Models <--> Database
     end
 
-    subgraph DB["Persistenz"]
+    subgraph Vorlagen["Prompt-Vorlagen"]
+        PT["prompts/*.txt — Few-shot · CoT · Rolle · Format"]
+    end
+
+    subgraph DB["Datenbank-Schicht"]
         SQLITE[("SQLite<br/>sessions · cv_documents<br/>generations · messages")]
     end
 
-    UI -->|"fetch (JSON)"| EP
-    EP <-->|Validierung| SCH
-    EP --> Services
-    EP --> SVC
-    SVC --> CL & OA
-    OA -.->|Embeddings| RAG
-    EP <-->|SQLAlchemy| SQLITE
+    subgraph AI["Externe KI-APIs"]
+        CL["Anthropic Claude"]
+        OA["OpenAI GPT + Embeddings"]
+    end
+
+    UI -->|"fetch (JSON)"| Main
+    Swagger -->|HTTP| Main
+    PR --> PT
+    LSVC -->|HTTPS / API-Key| CL
+    LSVC -->|HTTPS / API-Key| OA
+    Database <-->|SQLAlchemy| SQLITE
 ```
 
 **Request-Ablauf `POST /api/generate`:**
@@ -252,28 +307,55 @@ In der UI wählbar unter *Erweitert: Prompt-Technik* (`auto` kombiniert Few-shot
 
 ```
 lebenslauf-boost-ai/
-├── app/
-│   ├── main.py                  # FastAPI-App & Endpoints
-│   ├── config.py                # .env-Konfiguration (pydantic-settings)
-│   ├── database.py              # SQLite/SQLAlchemy Engine & Session
-│   ├── models.py                # ORM: sessions, cv_documents, generations, messages
-│   ├── schemas.py               # Pydantic Request/Response-Schemas
-│   ├── extract.py               # PDF/DOCX/TXT-Text + Foto-Erkennung (Pillow)
-│   ├── rag.py                   # Chunking · Embeddings/TF-IDF · Keyword-Check
-│   ├── prompts.py               # Few-shot · Chain-of-Thought · Role
-│   ├── export.py                # PDF (ReportLab) & DOCX (python-docx), 3 Designs
-│   ├── llm/
-│   │   ├── base.py              # Abstrakte Provider-Schnittstelle
-│   │   ├── anthropic_provider.py
-│   │   ├── openai_provider.py   # + Embeddings für RAG
-│   │   └── service.py           # Orchestrierung · Vergleich · Demo-Fallback
-│   └── static/                  # Frontend (HTML/CSS/JS, DE/EN)
-├── docs/
-│   ├── schema.png|svg|sql|dbml  # Datenbankschema
-│   └── screenshots/             # App-Screenshots
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # CI: Lint (ruff) + Tests (pytest)
+├── backend/                         # ── FastAPI-Backend (Schichten-Architektur) ──
+│   ├── main.py                      # App-Fabrik: Router registrieren, Frontend mounten
+│   ├── config.py                    # .env-Konfiguration (pydantic-settings)
+│   ├── database.py                  # SQLite/SQLAlchemy Engine & Session
+│   ├── models.py                    # ORM: sessions, cv_documents, generations, messages
+│   ├── schemas.py                   # Pydantic Request/Response-Schemas
+│   ├── routers/                     # HTTP-Endpunkte (dünn, delegieren an Services)
+│   │   ├── system.py                #   GET  /api/status
+│   │   ├── sessions.py              #   POST /api/session
+│   │   ├── documents.py             #   POST /api/upload-cv
+│   │   ├── generations.py           #   POST /api/generate · /api/refine
+│   │   ├── exports.py               #   POST /api/export
+│   │   └── frontend.py              #   GET  /
+│   ├── services/                    # Geschäftslogik
+│   │   ├── session_service.py       #   Sitzungen anlegen/laden
+│   │   ├── document_service.py      #   Upload: Text/Foto + RAG-Index
+│   │   ├── extraction_service.py    #   PDF/DOCX/TXT-Text + Foto-Erkennung (Pillow)
+│   │   ├── rag_service.py           #   Chunking · Embeddings/TF-IDF · Keyword-Check
+│   │   ├── generation_service.py    #   Generieren · Vergleichen · Verfeinern
+│   │   └── export_service.py        #   PDF (ReportLab) & DOCX (python-docx), 3 Designs
+│   ├── llm/                         # KI-Anbieter-Schicht
+│   │   ├── base.py                  #   Abstrakte Provider-Schnittstelle
+│   │   ├── anthropic_provider.py    #   Claude
+│   │   ├── openai_provider.py       #   GPT + Embeddings für RAG
+│   │   ├── llm_service.py           #   Orchestrierung · Vergleich · Demo-Fallback
+│   │   └── prompts.py               #   Lädt Vorlagen aus prompts/ (mit Cache)
+│   └── tests/
+│       └── test_api.py              # API-Tests (offline, Demo-Modus)
+├── frontend/                        # ── Single-Page-App (Vanilla JS, ES-Module) ──
+│   ├── index.html
+│   ├── css/                         # tokens · base · layout · components
+│   └── js/                          # api · state · i18n · ui/ (upload, generate, …)
+├── prompts/                         # ── Prompt-Vorlagen als Textdateien (DE/EN) ──
+│   ├── system_*.txt                 # Role Prompting
+│   ├── few_shot_*.txt               # Few-shot-Beispiele
+│   ├── chain_of_thought_*.txt       # CoT-Anleitung
+│   ├── format_*.txt                 # Verbindliches Ausgabeformat
+│   └── user_message_*.txt           # Haupt-Prompt mit Platzhaltern
+├── src/
+│   └── types/
+│       └── api.d.ts                 # Geteilte API-Typen (Frontend/Backend-Vertrag)
+├── static/                          # Statische Assets (Logo)
+├── docs/                            # Schema, Screenshots, Präsentation, Video
 ├── requirements.txt
-├── run.py / run.sh              # Start-Skripte
-├── update.sh                    # Ein-Befehl-Update zu GitHub
+├── run.py / run.sh                  # Start-Skripte
+├── update.sh                        # Ein-Befehl-Update zu GitHub
 └── .env.example
 ```
 
@@ -293,9 +375,11 @@ lebenslauf-boost-ai/
 - [x] Iteratives Verfeinern mit Conversation History
 - [x] Export: PDF & Word in 3 Designs, Foto je Design positioniert
 - [x] Bring-your-own-key (Keys nur im Browser) + Demo-Modus
-- [x] Zweisprachige UI (DE/EN), „Editorial Dark Luxe"-Design mit Animationen
+- [x] Zweisprachige UI (DE/EN), ruhiges „Warm Editorial"-Design
 - [x] Gewichtete Keyword-Extraktion (Nomen/Fachbegriffe statt Füllwörter)
 - [x] Datenbankschema-Doku (PNG/SQL/DBML) & Architektur-Diagramm
+- [x] Code-Refactoring: Schichten-Architektur (routers/ · services/ · llm/ · prompts/)
+- [x] Tests (pytest) + CI (GitHub Actions: ruff + pytest)
 
 ### Geplant
 
@@ -303,7 +387,7 @@ lebenslauf-boost-ai/
 - [ ] Formatierte Live-Vorschau im Editor (statt Roh-Markdown)
 - [ ] Anschreiben-Generator
 - [ ] Versions-Verlauf mit Zurückspringen
-- [ ] Tests (pytest) & Docker-Image
+- [ ] Docker-Image
 - [ ] Login & Nutzerkonten
 
 ---

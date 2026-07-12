@@ -1,0 +1,4 @@
+Revise the previous CV according to this instruction: "{instruction}".
+Keep everything truthful. Return the full updated CV.
+
+{format}

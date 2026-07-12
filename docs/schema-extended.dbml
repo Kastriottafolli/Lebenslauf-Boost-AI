@@ -1,0 +1,186 @@
+// ════════════════════════════════════════════════════════════════════════
+//  Lebenslauf Boost AI — Erweitertes Datenbankschema (DBML)
+//  MVP (4 Tabellen) + Roadmap (5 Tabellen) = 9 Tabellen gesamt
+//  Auf https://dbdiagram.io einfügen → interaktives ER-Diagramm
+//  Quelle: backend/models.py · docs/DATABASE.md
+// ════════════════════════════════════════════════════════════════════════
+
+Project lebenslauf_boost_ai_extended {
+  database_type: 'PostgreSQL'
+  Note: '''
+    KI-Lebenslauf-Optimierer — FastAPI + SQLAlchemy.
+    MVP: 4 Tabellen (session-zentriert, SQLite).
+    Roadmap: +5 Tabellen (user-zentriert, PostgreSQL).
+    Gestrichelte Tabellen = noch nicht implementiert.
+  '''
+}
+
+// ── Enums ──────────────────────────────────────────────────────────────
+
+Enum language_enum {
+  de
+  en
+}
+
+Enum provider_enum {
+  claude   [note: 'Anthropic']
+  openai   [note: 'OpenAI + Embeddings']
+}
+
+Enum technique_enum {
+  auto
+  few_shot
+  chain_of_thought
+  refine
+}
+
+Enum role_enum {
+  user
+  assistant
+}
+
+Enum plan_enum {
+  free
+  pro
+  team
+}
+
+Enum subscription_status_enum {
+  active
+  canceled
+  past_due
+  trialing
+}
+
+// ── MVP (implementiert) ──────────────────────────────────────────────────
+
+TableGroup "MVP — Sitzung & Hub" {
+  sessions
+  cv_documents
+}
+
+TableGroup "MVP — KI-Ausgaben" {
+  generations
+  messages
+}
+
+Table sessions {
+  id              varchar(36)  [pk, note: 'UUIDv4 — Zugangs-Token']
+  language        language_enum [not null, default: 'de']
+  job_description text         [not null, default: '']
+  wishes          text         [not null, default: '']
+  user_id         varchar(36)  [ref: > users.id, note: 'Roadmap — nullable FK']
+  created_at      timestamptz  [not null, default: `now()`]
+
+  Note: 'Zentraler Hub. MVP: anonym. Roadmap: optional user_id.'
+}
+
+Table cv_documents {
+  id             varchar(36)  [pk]
+  session_id     varchar(36)  [not null, unique, ref: - sessions.id]
+  filename       varchar(255) [not null]
+  content        text         [not null, note: 'Extrahierter Volltext']
+  index_json     jsonb        [not null, note: 'RAG: {chunks, embeddings}']
+  photo_data_url text         [note: 'data:image/jpeg;base64,… | NULL']
+  created_at     timestamptz  [not null, default: `now()`]
+
+  Note: '1:1 mit sessions (UNIQUE FK). Re-Upload ersetzt Zeile.'
+}
+
+Table generations {
+  id               varchar(36)    [pk]
+  session_id       varchar(36)    [not null, ref: > sessions.id]
+  provider         provider_enum  [not null]
+  model            varchar(64)    [not null]
+  technique        technique_enum [not null]
+  content          text           [not null, note: 'Markdown-Lebenslauf']
+  ats_score        float          [not null, default: 0, note: 'CHECK 0–100']
+  matched_keywords jsonb          [not null, default: '[]']
+  missing_keywords jsonb          [not null, default: '[]']
+  is_selected      boolean        [not null, default: false]
+  template_id      varchar(36)    [ref: > export_templates.id, note: 'Roadmap']
+  created_at       timestamptz    [not null, default: `now()`]
+
+  Note: 'Versionshistorie — nichts wird überschrieben.'
+}
+
+Table messages {
+  id         varchar(36) [pk]
+  session_id varchar(36) [not null, ref: > sessions.id]
+  role       role_enum   [not null]
+  content    text        [not null]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Conversation History für /api/refine'
+}
+
+// ── Roadmap (geplant) ────────────────────────────────────────────────────
+
+TableGroup "Roadmap — Auth & Billing" {
+  users
+  api_keys
+  subscriptions
+}
+
+TableGroup "Roadmap — Erweiterte Inhalte" {
+  cover_letters
+  export_templates
+}
+
+Table users {
+  id              varchar(36)  [pk]
+  email           varchar(255) [not null, unique]
+  password_hash   varchar(255) [not null]
+  display_name    varchar(128)
+  plan            plan_enum    [not null, default: 'free']
+  email_verified  boolean      [not null, default: false]
+  created_at      timestamptz  [not null, default: `now()`]
+  last_login_at   timestamptz
+
+  Note: 'Registrierte Benutzer — E-Mail-Login'
+}
+
+Table api_keys {
+  id            varchar(36)   [pk]
+  user_id       varchar(36)   [not null, ref: > users.id]
+  provider      provider_enum [not null]
+  encrypted_key text          [not null, note: 'AES-256-GCM verschlüsselt']
+  label         varchar(64)   [note: 'z. B. Persönlich, Arbeit']
+  created_at    timestamptz   [not null, default: `now()`]
+
+  Note: 'Optional serverseitige LLM-Keys (Alternative zu BYOK)'
+}
+
+Table subscriptions {
+  id                     varchar(36)              [pk]
+  user_id                varchar(36)              [not null, ref: > users.id]
+  stripe_customer_id     varchar(64)              [not null, unique]
+  stripe_subscription_id varchar(64)
+  plan                   plan_enum                [not null]
+  status                 subscription_status_enum [not null, default: 'active']
+  current_period_end     timestamptz
+  created_at             timestamptz              [not null, default: `now()`]
+
+  Note: 'Stripe-Abonnements'
+}
+
+Table cover_letters {
+  id         varchar(36)   [pk]
+  session_id varchar(36)   [not null, ref: > sessions.id]
+  provider   provider_enum [not null]
+  content    text          [not null, note: 'Markdown-Anschreiben']
+  created_at timestamptz   [not null, default: `now()`]
+
+  Note: 'KI-Anschreiben-Generator (Roadmap)'
+}
+
+Table export_templates {
+  id          varchar(36) [pk]
+  slug        varchar(32) [not null, unique, note: 'modern | classic | minimal']
+  name        varchar(64) [not null]
+  config_json jsonb       [not null, note: 'Farben, Fonts, Layout']
+  is_active   boolean     [not null, default: true]
+  created_at  timestamptz [not null, default: `now()`]
+
+  Note: 'DB-gestützte Export-Designs statt Hardcoding'
+}

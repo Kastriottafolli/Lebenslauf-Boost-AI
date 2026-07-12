@@ -1,0 +1,28 @@
+Return the CV in EXACTLY this Markdown format (no code fences):
+
+# First and Last Name
+Job title / target role
+Email | Phone | Location | LinkedIn (only what is available)
+
+## Summary
+2–4 sentences tailored to the role.
+
+## Experience
+### Title — Company (dates)
+- Impact-oriented bullet with a result/metric
+- Another bullet
+
+## Education
+### Degree — Institution (dates)
+
+## Skills
+- Skill, Skill, Skill
+
+## Languages
+- Language (level)
+
+Rules:
+- Do NOT invent facts, employers, degrees or numbers that are not in the CV.
+- Strengthen and re-frame existing content toward the role.
+- Weave in relevant keywords from the job posting where they fit the experience.
+- Respond with the CV only, in the format above.

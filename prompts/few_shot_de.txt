@@ -1,0 +1,4 @@
+Hier sind Beispiele, wie Bulletpoints gestärkt werden (schwach -> stark):
+- 'Zuständig für den Vertrieb' -> 'Steigerte den regionalen B2B-Umsatz um 27% p.a. durch Neuaufbau der Outbound-Pipeline und Coaching von 4 Mitarbeitenden.'
+- 'Bei der Website geholfen' -> 'Lieferte ein React-Redesign aus, das die Ladezeit um 40% senkte und die Registrierungs-Conversion um 12% erhöhte.'
+- 'Kundensupport gemacht' -> 'Löste 60+ Tickets/Woche bei 4,9/5 CSAT und erstellte eine Hilfe-FAQ, die Wiederholungsanfragen um 18% reduzierte.'

@@ -1,7 +1,26 @@
 # Datenbank-Dokumentation
 
-**Lebenslauf Boost AI** · SQLite · SQLAlchemy ORM · 4 Tabellen
-Quelle der Wahrheit: [`app/models.py`](../app/models.py) · DDL: [`schema.sql`](schema.sql) · DBML: [`schema.dbml`](schema.dbml)
+**Lebenslauf Boost AI** · SQLite (MVP) / PostgreSQL (Roadmap) · SQLAlchemy ORM · 4–9 Tabellen
+Quelle der Wahrheit: [`backend/models.py`](../backend/models.py) · DDL: [`schema.sql`](schema.sql) · DBML: [`schema.dbml`](schema.dbml)
+
+**Empfohlener Einstieg für Anfänger:innen:**
+1. [`schema-extended.svg`](schema-extended.svg) öffnen: Die Infografik erklärt den kompletten App-Ablauf in acht nummerierten Schritten.
+2. Das [interaktive Datenbank-Canvas](/Users/kastriottafolli/.cursor/projects/Users-kastriottafolli-claude-code-tafolli-lebenslauf-boost-ai/canvases/datenbank-schema.canvas.tsx) öffnen: Dort können Ablauf, Beziehungen, alle Felder und die Roadmap getrennt betrachtet werden.
+3. Erst danach diese technische Dokumentation und die DDL lesen.
+
+**Alle Schema-Artefakte:**
+- Anfänger-Infografik mit MVP + Roadmap: [`schema-extended.svg`](schema-extended.svg)
+- Interaktive Schritt-für-Schritt-Erklärung: [`datenbank-schema.canvas.tsx`](/Users/kastriottafolli/.cursor/projects/Users-kastriottafolli-claude-code-tafolli-lebenslauf-boost-ai/canvases/datenbank-schema.canvas.tsx)
+- Kompaktes MVP-Diagramm: [`schema.svg`](schema.svg)
+- Aktuelles SQLite-DDL: [`schema.sql`](schema.sql)
+- Aktuelles SQLite-DBML: [`schema.dbml`](schema.dbml)
+- Geplantes PostgreSQL-DDL: [`schema-extended.sql`](schema-extended.sql)
+- Geplantes PostgreSQL-DBML: [`schema-extended.dbml`](schema-extended.dbml)
+
+> **Wichtige Trennung:** Die vier Tabellen `sessions`, `cv_documents`,
+> `generations` und `messages` sind im MVP implementiert. `users`, `api_keys`,
+> `subscriptions`, `cover_letters` und `export_templates` sind ein
+> Ausbauvorschlag und noch nicht Bestandteil von `backend/models.py`.
 
 ---
 
@@ -299,7 +318,7 @@ FROM cv_documents;
 ## 9 · Betrieb
 
 - **Anlegen:** Tabellen entstehen automatisch beim App-Start
-  (`Base.metadata.create_all` in [`app/database.py`](../app/database.py)) — Datei `data/app.db`.
+  (`Base.metadata.create_all` in [`backend/database.py`](../backend/database.py)) — Datei `data/app.db`.
 - **Schema-Änderungen:** `create_all` ändert bestehende Tabellen **nicht**
   (kein `ALTER`). In der Entwicklung: `rm data/app.db` → Neustart.
   Für Produktion wäre *Alembic* der nächste Schritt (siehe Roadmap).

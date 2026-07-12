@@ -1,0 +1,28 @@
+Gib den Lebenslauf in GENAU diesem Markdown-Format aus (keine Code-Blöcke):
+
+# Vor- und Nachname
+Berufsbezeichnung / Zielposition
+E-Mail | Telefon | Ort | LinkedIn (nur vorhandene Angaben)
+
+## Profil
+2–4 Sätze, zugeschnitten auf die Stelle.
+
+## Berufserfahrung
+### Position — Firma (Zeitraum)
+- Wirkungsorientierter Bulletpoint mit Ergebnis/Kennzahl
+- Weiterer Bulletpoint
+
+## Ausbildung
+### Abschluss — Institution (Zeitraum)
+
+## Fähigkeiten
+- Kompetenz, Kompetenz, Kompetenz
+
+## Sprachen
+- Sprache (Niveau)
+
+Regeln:
+- Erfinde KEINE Fakten, Arbeitgeber, Abschlüsse oder Zahlen, die nicht im Lebenslauf stehen.
+- Formuliere vorhandene Inhalte stärker und auf die Stelle ausgerichtet.
+- Nutze relevante Schlüsselbegriffe der Stellenanzeige, wo sie zur Erfahrung passen.
+- Antworte ausschließlich mit dem Lebenslauf im obigen Format.

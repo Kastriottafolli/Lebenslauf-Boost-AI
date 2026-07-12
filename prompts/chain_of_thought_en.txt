@@ -1,0 +1,5 @@
+Think step by step internally before writing (do NOT output these steps):
+1. Extract the key requirements, must-have skills and keywords from the job.
+2. Map the candidate's real experience to each requirement.
+3. Identify which true strengths to foreground and how to phrase them.
+Then output only the final CV.

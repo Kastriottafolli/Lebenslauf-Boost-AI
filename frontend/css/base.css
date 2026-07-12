@@ -1,0 +1,84 @@
+/* ── Reset & Grundtypografie ── */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent-soft); color: var(--accent-2); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+h1, h2, h3 { font-weight: 600; }
+a { color: var(--accent); }
+
+.ic {
+  width: 17px; height: 17px; flex-shrink: 0;
+  fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; vertical-align: -3px;
+}
+
+.hidden { display: none !important; }
+
+/* ── Formulare ── */
+textarea, input[type="text"], input[type="password"], select {
+  width: 100%;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  resize: vertical;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+textarea::placeholder, input::placeholder { color: var(--faint); }
+textarea:hover, input:hover { border-color: var(--faint); }
+textarea:focus, input:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+#cvEditor { font-family: var(--mono); font-size: 13px; line-height: 1.6; background: #fbfdff; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 6px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--faint); background-clip: content-box; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 11px 22px;
+  font-size: 15px; font-weight: 500; font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s var(--ease);
+}
+.btn .ic { width: 16px; height: 16px; }
+.btn:active { transform: translateY(1px); }
+.btn.lg { padding: 13px 28px; font-size: 15.5px; }
+.btn.sm { padding: 7px 14px; font-size: 13.5px; }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: #000; }
+.btn.secondary { background: var(--accent-soft); color: var(--accent-2); border-color: var(--accent-line); }
+.btn.secondary:hover { background: #dcebf8; }
+.btn.ghost { background: transparent; color: var(--ink-2); border-color: var(--line-2); }
+.btn.ghost:hover { background: var(--paper-2); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Hinweise / Meta ── */
+.hint { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; line-height: 1.55; }
+.gen-meta { font-size: 12px; color: var(--faint); }
+.mt { margin-top: 26px; }
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+}

@@ -1,0 +1,13 @@
+Create an optimized, ATS-friendly CV tailored to the job below.
+
+### JOB POSTING
+{job_description}
+
+### CANDIDATE WISHES (optional)
+{wishes}
+
+### RELEVANT CV EXCERPTS (RAG)
+{cv_context}
+
+{technique_block}
+{format}

@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════════════════════════════
 //  Lebenslauf Boost AI — Datenbankschema (DBML)
 //  Auf https://dbdiagram.io einfügen → interaktives ER-Diagramm.
-//  Quelle der Wahrheit: app/models.py · Ausführliche Doku: docs/DATABASE.md
+//  Quelle der Wahrheit: backend/models.py · Ausführliche Doku: docs/DATABASE.md
 // ════════════════════════════════════════════════════════════════════════
 
 Project lebenslauf_boost_ai {

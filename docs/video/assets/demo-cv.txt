@@ -1,0 +1,28 @@
+MAX MUSTERMANN
+Senior Software Developer
+Berlin | max.mustermann@example.com | +49 170 1234567
+
+PROFIL
+Softwareentwickler mit sechs Jahren Erfahrung in der Entwicklung und Wartung
+webbasierter Anwendungen. Schwerpunkt auf Python, FastAPI, JavaScript und
+relationalen Datenbanken. Erfahrung in agilen Teams und technischer Dokumentation.
+
+BERUFSERFAHRUNG
+
+Software Developer | TechSolutions GmbH | 2021 - heute
+- Entwicklung und Wartung von REST-APIs mit Python und FastAPI
+- Modellierung relationaler Daten mit PostgreSQL und SQLAlchemy
+- Umsetzung responsiver Oberflächen mit JavaScript, HTML und CSS
+- Durchführung von Code Reviews und Zusammenarbeit in einem Scrum-Team
+
+Junior Software Developer | DigitalWorks AG | 2018 - 2021
+- Implementierung interner Webanwendungen mit Python und JavaScript
+- Erstellung automatisierter Tests und technischer Dokumentationen
+- Analyse und Behebung von Fehlern in produktiven Anwendungen
+
+AUSBILDUNG
+B.Sc. Informatik | Technische Hochschule Berlin | 2015 - 2018
+
+KENNTNISSE
+Python, FastAPI, SQLAlchemy, PostgreSQL, SQLite, JavaScript, HTML, CSS,
+REST APIs, Git, Docker, Scrum, Deutsch, Englisch

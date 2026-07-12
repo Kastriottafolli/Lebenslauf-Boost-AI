@@ -1,0 +1,13 @@
+Erstelle einen optimierten, ATS-freundlichen Lebenslauf, zugeschnitten auf die folgende Stelle.
+
+### STELLENANZEIGE
+{job_description}
+
+### WÜNSCHE DER BEWERBER:IN (optional)
+{wishes}
+
+### RELEVANTE LEBENSLAUF-AUSZÜGE (RAG)
+{cv_context}
+
+{technique_block}
+{format}

@@ -1,6 +1,6 @@
 -- ════════════════════════════════════════════════════════════════════════
 --  Lebenslauf Boost AI — Datenbankschema (SQLite)
---  Entspricht app/models.py (SQLAlchemy erzeugt die Tabellen via create_all).
+--  Entspricht backend/models.py (SQLAlchemy erzeugt die Tabellen via create_all).
 --  Ausführliche Doku: docs/DATABASE.md
 -- ════════════════════════════════════════════════════════════════════════
 PRAGMA foreign_keys = ON;   -- FK-Durchsetzung in SQLite aktivieren

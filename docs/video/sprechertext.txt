@@ -1,0 +1,29 @@
+1. TITLE
+Hallo und willkommen zur Vorstellung von Lebenslauf Boost AI. Das Projekt optimiert einen vorhandenen Lebenslauf gezielt für eine Stellenanzeige. Dabei verbindet es zwei Sprachmodelle, Retrieval Augmented Generation, einen ATS Keyword Check und den Export als PDF oder Word in einer einzigen Anwendung.
+
+2. PROBLEM
+Die Ausgangssituation ist einfach: Bewerberinnen und Bewerber müssen ihren Lebenslauf für jede Stelle neu anpassen. Das kostet Zeit, und generative KI kann dabei Fakten erfinden. Lebenslauf Boost AI löst beide Probleme. Die Anwendung verwendet nur Inhalte aus dem hochgeladenen Lebenslauf, wählt die für die Stelle relevanten Abschnitte aus und erstellt daraus einen nachvollziehbaren Entwurf. Die gesamte Oberfläche ist auf Deutsch und Englisch verfügbar und funktioniert ohne Anmeldung.
+
+3. INPUT
+Im ersten Schritt wird die vollständige Stellenanzeige eingefügt. Zusätzlich lassen sich Wünsche zu Ton, Schwerpunkt und Länge festlegen. Danach wird der Lebenslauf als PDF, Word Dokument oder Textdatei hochgeladen. Die App extrahiert den Text und kann sogar ein Bewerbungsfoto erkennen. Anschließend zerlegt das RAG Modul den Inhalt in Abschnitte und erstellt einen Suchindex. Ohne OpenAI Key wird automatisch ein lokaler TF IDF Fallback verwendet. So bleibt die Demo vollständig nutzbar.
+
+4. GENERATION
+Für die Generierung kann Claude, OpenAI oder der direkte Vergleich gewählt werden. Die Prompt Pipeline kombiniert Rollen Prompting, Few Shot Beispiele und eine strukturierte Analyse. Stellenanzeige, Nutzerwünsche und passende RAG Auszüge werden dynamisch in den Prompt eingesetzt. Im Vergleichsmodus entstehen zwei unabhängige Versionen. Danach berechnet die App für beide einen ATS Score. Hier zeigt die Demo eine vollständige Abdeckung der erkannten Schlüsselbegriffe. Gleichzeitig bleiben Anbieter, Modell, Prompt Technik und Demo Status transparent sichtbar.
+
+5. REFINE
+Der generierte Inhalt kann direkt bearbeitet werden. Noch wichtiger ist die iterative Verbesserung. Eine Anweisung wie kürzer, technischer oder formeller wird zusammen mit dem bisherigen Gesprächsverlauf an das Modell gesendet. Jede neue Antwort wird als eigene Version gespeichert. Dadurch geht der vorherige Stand nicht verloren und das Modell behält den Kontext, ohne den gesamten Prozess neu zu starten.
+
+6. EXPORT
+Im letzten Anwendungsschritt wird ein Design ausgewählt. Zur Verfügung stehen Modern, Classic und Minimal. Die Vorschau zeigt sofort, wie der Lebenslauf aufgebaut sein wird. Auch ein automatisch erkanntes Foto kann ersetzt oder entfernt werden. Danach wählt die Person PDF oder Word, legt den Dateinamen fest und lädt das fertige Dokument herunter. Der Export ist zustandslos und speichert keine zusätzliche Datei in der Datenbank.
+
+7. ARCHITECTURE
+Technisch besteht das Projekt aus einem schlanken Vanilla JavaScript Frontend und einem FastAPI Backend. Pydantic validiert alle Requests. Eine eigene Provider Schicht kapselt Anthropic Claude und OpenAI, sodass beide über dieselbe Schnittstelle angesprochen werden. Die Fachlogik ist getrennt in Datei Extraktion, RAG und Keyword Analyse, Prompt Aufbau sowie PDF und DOCX Export. SQLAlchemy verbindet die Anwendung mit SQLite. API Keys folgen dem Bring Your Own Key Prinzip: Sie bleiben im Browser, werden nur für den Request übertragen und niemals serverseitig gespeichert.
+
+8. DATABASE
+Die Datenbank ist um die Tabelle sessions aufgebaut. Eine Sitzung besitzt höchstens ein CV Dokument und beliebig viele Generierungen sowie Nachrichten. CV documents speichert extrahierten Text, RAG Index und optional das Foto. Generations bildet die komplette Versionshistorie inklusive Anbieter, Modell, Prompt Technik, ATS Score und Keyword Listen. Messages enthält den Dialog für die iterative Verbesserung. Foreign Keys, Indizes, Check Constraints und kaskadierendes Löschen sichern die Datenintegrität.
+
+9. QUALITY
+Damit erfüllt das Projekt die zentralen KI Engineering Anforderungen: zwei Text APIs, mehrere Prompt Techniken, dynamische Kontextinjektion, RAG, Conversation History, eine anwendungsspezifische Vergleichsanalyse und persistente Datenhaltung. Der Demo Modus macht alle Schritte ohne kostenpflichtigen API Aufruf prüfbar. Für einen produktiven Mehrbenutzerbetrieb wären PostgreSQL, Alembic Migrationen, Authentifizierung und Objektspeicher die nächsten sinnvollen Ausbaustufen.
+
+10. OUTRO
+Lebenslauf Boost AI zeigt damit einen vollständigen End to End Workflow: echte Daten hochladen, relevanten Kontext finden, zwei KI Entwürfe vergleichen, gezielt nachbessern und ein professionelles Dokument exportieren. Vielen Dank für das Ansehen.

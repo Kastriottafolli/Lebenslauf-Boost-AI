@@ -1,0 +1,272 @@
+/* Boosti — Maskottchen, Sprechblase & Gleit-Tour */
+.mascot-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 55;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  max-width: min(340px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.mascot-wrap > * { pointer-events: auto; }
+
+/* Tour: Boosti gleitet zu Zielen */
+.mascot-wrap.touring {
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: min(320px, calc(100vw - 24px));
+}
+.mascot-wrap.touring.side-left { align-items: flex-start; }
+.mascot-bubble.place-right { border-radius: 16px 16px 4px 16px; transform-origin: bottom right; }
+.mascot-wrap.gliding {
+  transition:
+    top 0.9s cubic-bezier(0.45, 0.05, 0.25, 1),
+    left 0.9s cubic-bezier(0.45, 0.05, 0.25, 1),
+    transform 0.9s cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+/* Fluganimation beim Seitenwechsel: Abheben, in Flugrichtung neigen, landen */
+.mascot-wrap.touring .mascot-body.fly-right,
+.mascot-body.fly-right { animation: boosti-fly-right 0.95s cubic-bezier(0.45, 0.05, 0.25, 1); }
+.mascot-wrap.touring .mascot-body.fly-left,
+.mascot-body.fly-left { animation: boosti-fly-left 0.95s cubic-bezier(0.45, 0.05, 0.25, 1); }
+@keyframes boosti-fly-right {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  18% { transform: translateY(-22px) rotate(14deg) scale(1.05, 0.95); }
+  55% { transform: translateY(-30px) rotate(10deg) scale(1.04, 0.96); }
+  82% { transform: translateY(-8px) rotate(-4deg) scale(0.97, 1.04); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+@keyframes boosti-fly-left {
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  18% { transform: translateY(-22px) rotate(-14deg) scale(1.05, 0.95); }
+  55% { transform: translateY(-30px) rotate(-10deg) scale(1.04, 0.96); }
+  82% { transform: translateY(-8px) rotate(4deg) scale(0.97, 1.04); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
+}
+.mascot-wrap.tour-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.92);
+}
+
+.mascot-bubble {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px 16px 4px 16px;
+  padding: 14px 16px 12px;
+  box-shadow: var(--sh-lg);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  animation: bubble-in 0.4s var(--ease-spring);
+  transform-origin: bottom right;
+}
+.mascot-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -8px; right: 28px;
+  width: 16px; height: 16px;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: rotate(45deg);
+  border-radius: 0 0 4px 0;
+}
+.mascot-bubble.place-left {
+  border-radius: 16px 16px 16px 4px;
+  transform-origin: bottom left;
+}
+.mascot-bubble.place-left::after {
+  right: auto; left: 28px;
+  border-right: none; border-left: 1px solid var(--line);
+  border-radius: 0 0 0 4px;
+}
+.mascot-bubble.place-bottom {
+  border-radius: 16px 16px 16px 16px;
+  transform-origin: top center;
+}
+.mascot-bubble.place-bottom::after {
+  bottom: auto; top: -8px; right: auto; left: 50%;
+  margin-left: -8px;
+  border-bottom: none; border-top: 1px solid var(--line);
+  transform: rotate(45deg);
+}
+.mascot-bubble strong {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.mascot-bubble p { margin: 0; }
+.mascot-bubble.hidden { display: none; }
+
+/* Erledigt-Button in der Sprechblase */
+.mascot-submit {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(165deg, #0474c4, #06457f);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(4, 116, 196, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
+}
+.mascot-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(4, 116, 196, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.mascot-submit:active { transform: translateY(0); }
+.mascot-submit.hidden { display: none; }
+
+.mascot-bubble.kind-warn {
+  border-color: rgba(154, 107, 26, 0.35);
+  background: linear-gradient(165deg, #fff, var(--warn-bg));
+}
+.mascot-bubble.kind-warn strong { color: var(--warn); }
+.mascot-bubble.kind-ok {
+  border-color: var(--accent-line);
+  background: linear-gradient(165deg, #fff, var(--good-bg));
+}
+.mascot-bubble.kind-err {
+  border-color: rgba(176, 61, 50, 0.3);
+  background: linear-gradient(165deg, #fff, var(--danger-bg));
+}
+.mascot-bubble.kind-err strong { color: var(--danger); }
+
+@keyframes bubble-in {
+  from { opacity: 0; transform: scale(0.88) translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.mascot-body {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 8px 20px rgba(10, 12, 16, 0.18));
+  transition: transform 0.35s var(--ease-spring);
+}
+.mascot-wrap.touring .mascot-body {
+  animation: boosti-glide-float 2.8s ease-in-out infinite;
+}
+@keyframes boosti-glide-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.mascot-body:hover { transform: scale(1.04) translateY(-2px); }
+.mascot-body:active { transform: scale(0.98); }
+
+.boosti {
+  width: 88px;
+  height: 96px;
+  display: block;
+  overflow: visible;
+}
+
+.boosti { animation: boosti-float 3.2s ease-in-out infinite; }
+@keyframes boosti-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.mascot-wrap.touring .boosti { animation: none; }
+
+.boosti .eye { transform-origin: center; transition: transform 0.25s; }
+
+.mood-think .boosti { animation: boosti-think 2s ease-in-out infinite; }
+@keyframes boosti-think {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-2deg); }
+}
+
+.mood-warn .boosti { animation: boosti-warn 0.5s ease-in-out infinite; }
+@keyframes boosti-warn {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px) rotate(-2deg); }
+  75% { transform: translateX(3px) rotate(2deg); }
+}
+
+.mood-happy .boosti { animation: boosti-hop 0.55s var(--ease-spring); }
+@keyframes boosti-hop {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-12px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.mood-celebrate .boosti { animation: boosti-celebrate 0.7s var(--ease-spring) infinite; }
+@keyframes boosti-celebrate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-10px) rotate(-6deg); }
+  75% { transform: translateY(-10px) rotate(6deg); }
+}
+
+.mood-point .boosti { animation: none; transform: translateX(-4px); }
+.mood-point .boosti .arm-right {
+  transform: rotate(-55deg) translateX(4px);
+  transform-origin: 58px 58px;
+  animation: arm-point 1s ease-in-out infinite;
+}
+@keyframes arm-point {
+  0%, 100% { transform: rotate(-50deg) translateX(4px); }
+  50% { transform: rotate(-62deg) translateX(8px); }
+}
+
+.mood-write .boosti .arm-right {
+  animation: arm-write 0.8s ease-in-out infinite;
+  transform-origin: 58px 58px;
+}
+@keyframes arm-write {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(-35deg) translateY(2px); }
+}
+
+.mascot-wrap.minimized .mascot-bubble { display: none; }
+.mascot-wrap.minimized .mascot-body { opacity: 0.85; }
+
+.boosti-target {
+  outline: 2px solid var(--accent) !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--accent-soft), var(--sh) !important;
+  animation: target-pulse 1.6s ease-in-out infinite;
+  scroll-margin: 100px;
+}
+@keyframes target-pulse {
+  0%, 100% { box-shadow: 0 0 0 4px var(--accent-soft), var(--sh); }
+  50% { box-shadow: 0 0 0 10px rgba(4, 116, 196, 0.08), var(--sh-lg); }
+}
+
+.loader-mascot {
+  position: absolute;
+  top: -52px; left: 50%;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 6px 16px rgba(10,12,16,0.15));
+}
+.loader-mascot .boosti { width: 72px; height: 78px; }
+
+@media (max-width: 560px) {
+  .mascot-wrap.touring { max-width: calc(100vw - 20px); }
+  .boosti { width: 72px; height: 78px; }
+  .mascot-bubble { font-size: 13px; padding: 12px 14px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-wrap.gliding { transition: none !important; }
+  .boosti, .mascot-wrap.touring .mascot-body { animation: none !important; }
+  .mascot-body.fly-left, .mascot-body.fly-right { animation: none !important; }
+  .boosti-target { animation: none !important; }
+}

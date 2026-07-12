@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1800" height="2680" viewBox="0 0 1800 2680" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title description">
+  <title id="title">Lebenslauf Boost AI - Datenbank Schritt f&#252;r Schritt</title>
+  <desc id="description">Vollst&#228;ndige Anf&#228;nger-Infografik mit Prozess, Beziehungen, Tabellenfeldern und Roadmap.</desc>
+  <defs>
+    <style>
+      .h1{font:700 34px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
+      .h2{font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
+      .h3{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
+      .body{font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#344054}
+      .strong{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
+      .small{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#667085}
+      .tiny{font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#667085}
+      .mono{font:600 11px "SFMono-Regular",Consolas,monospace;fill:#172033}
+      .white{fill:#fff}.panel{fill:#fff;stroke:#d9dee8}.soft{fill:#f5f7fa;stroke:#e4e7ec}
+      .line{stroke:#e4e7ec}.link{fill:none;stroke:#98a2b3;stroke-width:2}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#98a2b3"/>
+    </marker>
+  </defs>
+
+  <rect width="1800" height="2680" fill="#f8fafc"/>
+
+  <!-- Header -->
+  <rect width="1800" height="140" fill="#fff"/>
+  <rect y="136" width="1800" height="4" fill="#2563eb"/>
+  <text x="70" y="58" class="h1">Lebenslauf Boost AI - Datenbank Schritt f&#252;r Schritt</text>
+  <text x="70" y="92" class="body">Vom ersten App-Aufruf bis zum Export: vollst&#228;ndig, visuell und ohne vorausgesetztes Datenbankwissen.</text>
+  <rect x="1420" y="40" width="140" height="30" rx="15" fill="#e8f5ee"/>
+  <text x="1490" y="60" text-anchor="middle" class="strong">MVP: 4 Tabellen</text>
+  <rect x="1570" y="40" width="160" height="30" rx="15" fill="#eef4ff"/>
+  <text x="1650" y="60" text-anchor="middle" class="strong">Roadmap: +5</text>
+
+  <!-- Mental model -->
+  <text x="70" y="190" class="h2">1. Die wichtigste Idee</text>
+  <text x="70" y="216" class="small">Die Datenbank ist ein digitaler Bewerbungsordner. sessions ist der Ordner; die anderen Tabellen sind seine Inhalte.</text>
+  <g transform="translate(70 240)">
+    <rect width="1660" height="122" rx="12" class="panel"/>
+    <g transform="translate(30 20)">
+      <rect width="360" height="82" rx="9" fill="#e8f5ee" stroke="#4b9a73"/>
+      <text x="18" y="30" class="h3">sessions</text><text x="18" y="54" class="body">Eine Bewerbung / zentraler Hub</text>
+      <text x="18" y="72" class="tiny">Die UUID verbindet alle Daten.</text>
+      <path d="M370 41H420" class="link" marker-end="url(#arrow)"/>
+      <rect x="430" width="350" height="82" rx="9" fill="#eef4ff" stroke="#5b8fd1"/>
+      <text x="448" y="30" class="h3">cv_documents</text><text x="448" y="54" class="body">Originaltext, RAG-Index, Foto</text>
+      <text x="448" y="72" class="tiny">Maximal ein CV pro Sitzung.</text>
+      <path d="M790 41H840" class="link" marker-end="url(#arrow)"/>
+      <rect x="850" width="350" height="82" rx="9" fill="#f3eff8" stroke="#8065a3"/>
+      <text x="868" y="30" class="h3">generations</text><text x="868" y="54" class="body">Alle KI-Versionen + ATS</text>
+      <text x="868" y="72" class="tiny">Keine Version wird &#252;berschrieben.</text>
+      <path d="M1210 41H1260" class="link" marker-end="url(#arrow)"/>
+      <rect x="1270" width="330" height="82" rx="9" fill="#fff3e8" stroke="#c6813b"/>
+      <text x="1288" y="30" class="h3">messages</text><text x="1288" y="54" class="body">Anweisungen + Antworten</text>
+      <text x="1288" y="72" class="tiny">Kontext f&#252;r weitere Verbesserungen.</text>
+    </g>
+  </g>
+
+  <!-- Workflow -->
+  <text x="70" y="426" class="h2">2. Der komplette Ablauf in 8 Schritten</text>
+  <text x="70" y="452" class="small">Jeder Schritt zeigt: Person - Aufruf - Datenbank - Ergebnis.</text>
+  <line x1="900" y1="494" x2="900" y2="1134" stroke="#3b82f6" stroke-width="3"/>
+
+  <!-- Reusable step cards, left -->
+  <g transform="translate(70 478)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#2f855a"/><text x="38" y="42" text-anchor="middle" class="strong white">1</text>
+    <text x="75" y="32" class="h3">App &#246;ffnen</text><text x="75" y="54" class="body">Die Person startet die Web-App.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/session</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">INSERT sessions</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Neue anonyme Sitzung mit UUID.</text>
+    <path d="M730 69H810" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(1000 478)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#3b73b9"/><text x="38" y="42" text-anchor="middle" class="strong white">2</text>
+    <text x="75" y="32" class="h3">Lebenslauf hochladen</text><text x="75" y="54" class="body">PDF, DOCX oder TXT wird ausgew&#228;hlt.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/upload-cv</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">DELETE alt + INSERT cv_documents</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Text, Index und optionales Foto.</text>
+    <path d="M-100 69H-20" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(70 638)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#2f855a"/><text x="38" y="42" text-anchor="middle" class="strong white">3</text>
+    <text x="75" y="32" class="h3">Stellenanzeige eingeben</text><text x="75" y="54" class="body">Jobtext, Sprache und W&#252;nsche.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/generate</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">UPDATE sessions</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Bewerbungsziel ist gespeichert.</text>
+    <path d="M730 69H810" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(1000 638)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#3b73b9"/><text x="38" y="42" text-anchor="middle" class="strong white">4</text>
+    <text x="75" y="32" class="h3">Passende CV-Abschnitte finden</text><text x="75" y="54" class="body">RAG w&#228;hlt relevante Textbl&#246;cke.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">interner Retrieval-Ablauf</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">READ cv_documents.index_json</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Top-5 Chunks f&#252;r den KI-Prompt.</text>
+    <path d="M-100 69H-20" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(70 798)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#7355a0"/><text x="38" y="42" text-anchor="middle" class="strong white">5</text>
+    <text x="75" y="32" class="h3">KI-Version erzeugen</text><text x="75" y="54" class="body">Claude, OpenAI oder beide.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/generate</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">INSERT 1-2 generations</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Neue unver&#228;nderliche Version(en).</text>
+    <path d="M730 69H810" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(1000 798)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#7355a0"/><text x="38" y="42" text-anchor="middle" class="strong white">6</text>
+    <text x="75" y="32" class="h3">ATS-Qualit&#228;t bewerten</text><text x="75" y="54" class="body">Job-Keywords werden verglichen.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">interne analyze()-Funktion</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">Score + Keyword-JSON in generations</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">0-100 %, Treffer und fehlende Begriffe.</text>
+    <path d="M-100 69H-20" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(70 958)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#b5651d"/><text x="38" y="42" text-anchor="middle" class="strong white">7</text>
+    <text x="75" y="32" class="h3">Entwurf verbessern</text><text x="75" y="54" class="body">Zum Beispiel: "k&#252;rzer und konkreter".</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/refine</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">READ messages + INSERT generation + 2 messages</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Neue Version; alte bleibt erhalten.</text>
+    <path d="M730 69H810" class="link" marker-end="url(#arrow)"/>
+  </g>
+  <g transform="translate(1000 958)">
+    <rect width="730" height="138" rx="11" class="panel"/>
+    <circle cx="38" cy="36" r="21" fill="#667085"/><text x="38" y="42" text-anchor="middle" class="strong white">8</text>
+    <text x="75" y="32" class="h3">PDF oder DOCX exportieren</text><text x="75" y="54" class="body">Format und Design werden gew&#228;hlt.</text>
+    <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/export</text>
+    <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">kein Schreibzugriff (stateless)</text>
+    <text x="20" y="126" class="strong">Ergebnis</text><text x="105" y="126" class="body">Datei wird direkt heruntergeladen.</text>
+    <path d="M-100 69H-20" class="link" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Relationships -->
+  <text x="70" y="1178" class="h2">3. Beziehungen: session_id verbindet alles</text>
+  <text x="70" y="1204" class="small">sessions.id ist der Prim&#228;rschl&#252;ssel. Die Kindtabellen verweisen mit session_id darauf.</text>
+  <g transform="translate(70 1230)">
+    <rect width="1660" height="230" rx="12" class="panel"/>
+    <rect x="35" y="66" width="350" height="96" rx="10" fill="#e8f5ee" stroke="#4b9a73" stroke-width="2"/>
+    <text x="58" y="98" class="h3">sessions</text><text x="58" y="123" class="body">id = S-100</text><text x="58" y="145" class="small">1 Bewerbungsprozess</text>
+    <path d="M385 90C490 90 490 46 590 46" class="link" marker-end="url(#arrow)"/>
+    <path d="M385 114H590" class="link" marker-end="url(#arrow)"/>
+    <path d="M385 138C490 138 490 182 590 182" class="link" marker-end="url(#arrow)"/>
+    <text x="450" y="72" class="tiny">1 : 0..1</text><text x="470" y="107" class="tiny">1 : n</text><text x="470" y="166" class="tiny">1 : n</text>
+    <rect x="590" y="16" width="390" height="60" rx="9" fill="#eef4ff" stroke="#5b8fd1"/>
+    <text x="610" y="41" class="h3">cv_documents</text><text x="610" y="62" class="small">session_id=S-100; UNIQUE</text>
+    <rect x="590" y="84" width="390" height="60" rx="9" fill="#f3eff8" stroke="#8065a3"/>
+    <text x="610" y="109" class="h3">generations</text><text x="610" y="130" class="small">Viele Zeilen mit session_id=S-100</text>
+    <rect x="590" y="152" width="390" height="60" rx="9" fill="#fff3e8" stroke="#c6813b"/>
+    <text x="610" y="177" class="h3">messages</text><text x="610" y="198" class="small">Viele Zeilen mit session_id=S-100</text>
+    <rect x="1040" y="30" width="570" height="170" rx="10" class="soft"/>
+    <text x="1065" y="60" class="h3">Schutzregeln</text>
+    <text x="1065" y="90" class="strong">FK</text><text x="1160" y="90" class="body">Kein Verweis auf eine nicht vorhandene Session.</text>
+    <text x="1065" y="118" class="strong">INDEX</text><text x="1160" y="118" class="body">Schnelles Laden aller Daten der Session.</text>
+    <text x="1065" y="146" class="strong">CASCADE</text><text x="1160" y="146" class="body">Session l&#246;schen = abh&#228;ngige Daten l&#246;schen.</text>
+    <text x="1065" y="174" class="strong">UNIQUE</text><text x="1160" y="174" class="body">Nur ein cv_documents-Datensatz pro Session.</text>
+  </g>
+
+  <!-- Full schemas -->
+  <text x="70" y="1520" class="h2">4. Alle MVP-Felder - nichts ausgelassen</text>
+  <text x="70" y="1546" class="small">Technischer Name, Datenbankregel und einfache Bedeutung.</text>
+
+  <!-- sessions -->
+  <g transform="translate(70 1570)">
+    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#2f855a"/>
+    <text x="20" y="28" class="h3 white">sessions - 5 Felder</text>
+    <text x="20" y="70" class="mono">id</text><text x="190" y="70" class="tiny">VARCHAR(36) PK UUID</text><text x="445" y="70" class="small">Eindeutige Sitzungsnummer</text>
+    <text x="20" y="104" class="mono">language</text><text x="190" y="104" class="tiny">VARCHAR(2) CHECK de/en</text><text x="445" y="104" class="small">Sprache von App und KI</text>
+    <text x="20" y="138" class="mono">job_description</text><text x="190" y="138" class="tiny">TEXT NOT NULL</text><text x="445" y="138" class="small">Stellenanzeige</text>
+    <text x="20" y="172" class="mono">wishes</text><text x="190" y="172" class="tiny">TEXT NOT NULL</text><text x="445" y="172" class="small">Optionale W&#252;nsche</text>
+    <text x="20" y="206" class="mono">created_at</text><text x="190" y="206" class="tiny">DATETIME UTC</text><text x="445" y="206" class="small">Erstellzeitpunkt</text>
+    <rect x="20" y="222" width="760" height="20" rx="5" fill="#e8f5ee"/><text x="30" y="236" class="tiny">INSERT bei /api/session; UPDATE bei /api/generate</text>
+  </g>
+
+  <!-- cv_documents -->
+  <g transform="translate(930 1570)">
+    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#3b73b9"/>
+    <text x="20" y="28" class="h3 white">cv_documents - 7 Felder</text>
+    <text x="20" y="68" class="mono">id</text><text x="190" y="68" class="tiny">PK UUID</text><text x="445" y="68" class="small">Dokumentnummer</text>
+    <text x="20" y="95" class="mono">session_id</text><text x="190" y="95" class="tiny">FK UNIQUE INDEX CASCADE</text><text x="445" y="95" class="small">Verbindung; nur ein CV</text>
+    <text x="20" y="122" class="mono">filename</text><text x="190" y="122" class="tiny">VARCHAR(255)</text><text x="445" y="122" class="small">Original-Dateiname</text>
+    <text x="20" y="149" class="mono">content</text><text x="190" y="149" class="tiny">TEXT</text><text x="445" y="149" class="small">Extrahierter Volltext</text>
+    <text x="20" y="176" class="mono">index_json</text><text x="190" y="176" class="tiny">TEXT JSON</text><text x="445" y="176" class="small">Chunks + Embeddings</text>
+    <text x="20" y="203" class="mono">photo_data_url</text><text x="190" y="203" class="tiny">TEXT NULL erlaubt</text><text x="445" y="203" class="small">Optionales Base64-Foto</text>
+    <text x="20" y="230" class="mono">created_at</text><text x="190" y="230" class="tiny">DATETIME UTC</text><text x="445" y="230" class="small">Upload-Zeitpunkt</text>
+  </g>
+
+  <!-- generations -->
+  <g transform="translate(70 1850)">
+    <rect width="1050" height="388" rx="12" class="panel"/><rect width="1050" height="44" rx="12" fill="#7355a0"/>
+    <text x="20" y="28" class="h3 white">generations - 11 Felder</text>
+    <text x="20" y="69" class="mono">id</text><text x="240" y="69" class="tiny">PK UUID</text><text x="570" y="69" class="small">Versionsnummer</text>
+    <text x="20" y="99" class="mono">session_id</text><text x="240" y="99" class="tiny">FK INDEX CASCADE</text><text x="570" y="99" class="small">Zugeh&#246;rige Bewerbung</text>
+    <text x="20" y="129" class="mono">provider</text><text x="240" y="129" class="tiny">CHECK claude/openai</text><text x="570" y="129" class="small">KI-Anbieter</text>
+    <text x="20" y="159" class="mono">model</text><text x="240" y="159" class="tiny">VARCHAR(64)</text><text x="570" y="159" class="small">KI-Modell oder demo</text>
+    <text x="20" y="189" class="mono">technique</text><text x="240" y="189" class="tiny">auto/few_shot/CoT/refine</text><text x="570" y="189" class="small">Prompt-Methode</text>
+    <text x="20" y="219" class="mono">content</text><text x="240" y="219" class="tiny">TEXT Markdown</text><text x="570" y="219" class="small">Optimierter Lebenslauf</text>
+    <text x="20" y="249" class="mono">ats_score</text><text x="240" y="249" class="tiny">FLOAT CHECK 0-100</text><text x="570" y="249" class="small">Keyword-Abdeckung</text>
+    <text x="20" y="279" class="mono">matched_keywords</text><text x="240" y="279" class="tiny">TEXT JSON-Array</text><text x="570" y="279" class="small">Gefundene Begriffe</text>
+    <text x="20" y="309" class="mono">missing_keywords</text><text x="240" y="309" class="tiny">TEXT JSON-Array</text><text x="570" y="309" class="small">Fehlende Begriffe</text>
+    <text x="20" y="339" class="mono">is_selected</text><text x="240" y="339" class="tiny">BOOLEAN false</text><text x="570" y="339" class="small">Reservierter Favorit</text>
+    <text x="20" y="369" class="mono">created_at</text><text x="240" y="369" class="tiny">DATETIME UTC</text><text x="570" y="369" class="small">Versionszeitpunkt</text>
+  </g>
+
+  <!-- messages and JSON -->
+  <g transform="translate(1180 1850)">
+    <rect width="550" height="230" rx="12" class="panel"/><rect width="550" height="44" rx="12" fill="#b5651d"/>
+    <text x="20" y="28" class="h3 white">messages - 5 Felder</text>
+    <text x="20" y="72" class="mono">id</text><text x="180" y="72" class="tiny">PK UUID</text><text x="330" y="72" class="small">Nachrichten-ID</text>
+    <text x="20" y="105" class="mono">session_id</text><text x="180" y="105" class="tiny">FK INDEX CASCADE</text><text x="330" y="105" class="small">Zugeh&#246;rige Sitzung</text>
+    <text x="20" y="138" class="mono">role</text><text x="180" y="138" class="tiny">user/assistant</text><text x="330" y="138" class="small">Wer schreibt</text>
+    <text x="20" y="171" class="mono">content</text><text x="180" y="171" class="tiny">TEXT</text><text x="330" y="171" class="small">Anweisung/Antwort</text>
+    <text x="20" y="204" class="mono">created_at</text><text x="180" y="204" class="tiny">DATETIME UTC</text><text x="330" y="204" class="small">Reihenfolge</text>
+  </g>
+  <g transform="translate(1180 2098)">
+    <rect width="550" height="140" rx="12" class="soft"/>
+    <text x="20" y="28" class="h3">JSON kurz erkl&#228;rt</text>
+    <text x="20" y="58" class="mono">index_json</text><text x="170" y="58" class="small">chunks + embeddings; null = TF-IDF</text>
+    <text x="20" y="88" class="mono">matched</text><text x="170" y="88" class="small">z. B. ["python","sql"]</text>
+    <text x="20" y="118" class="mono">missing</text><text x="170" y="118" class="small">z. B. ["docker"]</text>
+  </g>
+
+  <!-- Glossary and roadmap -->
+  <text x="70" y="2298" class="h2">5. Begriffe und professioneller Ausbau</text>
+  <g transform="translate(70 2324)">
+    <rect width="800" height="286" rx="12" class="panel"/>
+    <text x="20" y="32" class="h3">Mini-Lexikon</text><line x1="20" y1="46" x2="780" y2="46" class="line"/>
+    <text x="20" y="72" class="strong">PK</text><text x="120" y="72" class="body">Eindeutige ID einer Zeile.</text>
+    <text x="20" y="102" class="strong">FK</text><text x="120" y="102" class="body">Verweis auf die ID einer anderen Tabelle.</text>
+    <text x="20" y="132" class="strong">1:1</text><text x="120" y="132" class="body">Links geh&#246;rt h&#246;chstens ein Datensatz rechts dazu.</text>
+    <text x="20" y="162" class="strong">1:n</text><text x="120" y="162" class="body">Links kann viele Datens&#228;tze rechts besitzen.</text>
+    <text x="20" y="192" class="strong">UNIQUE</text><text x="120" y="192" class="body">Ein Wert darf nur einmal vorkommen.</text>
+    <text x="20" y="222" class="strong">INDEX</text><text x="120" y="222" class="body">Beschleunigt die Suche.</text>
+    <text x="20" y="252" class="strong">CASCADE</text><text x="120" y="252" class="body">Kinddaten werden automatisch mitgel&#246;scht.</text>
+  </g>
+  <g transform="translate(930 2324)">
+    <rect width="800" height="286" rx="12" fill="#fff" stroke="#6b8fc5" stroke-dasharray="8 5"/>
+    <text x="20" y="32" class="h3">Roadmap - noch nicht in backend/models.py</text><line x1="20" y1="46" x2="780" y2="46" class="line"/>
+    <text x="20" y="76" class="mono">users</text><text x="210" y="76" class="body">Konten, E-Mail, Passwort-Hash, Tarif</text>
+    <text x="20" y="116" class="mono">api_keys</text><text x="210" y="116" class="body">Optional verschl&#252;sselte LLM-Schl&#252;ssel</text>
+    <text x="20" y="156" class="mono">subscriptions</text><text x="210" y="156" class="body">Stripe-Kunde, Tarif, Zahlungsstatus</text>
+    <text x="20" y="196" class="mono">cover_letters</text><text x="210" y="196" class="body">KI-generierte Anschreiben</text>
+    <text x="20" y="236" class="mono">export_templates</text><text x="210" y="236" class="body">Konfigurierbare PDF/DOCX-Designs</text>
+    <rect x="20" y="252" width="760" height="22" rx="5" fill="#eef4ff"/>
+    <text x="30" y="267" class="tiny">Ziel: PostgreSQL + Alembic + JSONB + pgvector + Objektspeicher + DSGVO-Retention</text>
+  </g>
+
+  <rect y="2640" width="1800" height="40" fill="#172033"/>
+  <text x="70" y="2665" class="small white">Quelle: backend/models.py | Aktuelles DDL: docs/schema.sql | Erweitert: docs/schema-extended.sql | Interaktiv: datenbank-schema.canvas.tsx</text>
+</svg>

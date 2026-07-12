@@ -1,0 +1,255 @@
+1
+00:00:00,250 --> 00:00:04,336
+Hallo und willkommen zur Vorstellung von Lebenslauf Boost AI.
+
+2
+00:00:04,336 --> 00:00:09,896
+Das Projekt optimiert einen vorhandenen Lebenslauf gezielt für eine Stellenanzeige.
+
+3
+00:00:09,896 --> 00:00:15,791
+Dabei verbindet es zwei Sprachmodelle, Retrieval Augmented Generation, einen ATS Keyword
+
+4
+00:00:15,791 --> 00:00:20,279
+Check und den Export als PDF oder Word in einer einzigen Anwendung.
+
+5
+00:00:20,879 --> 00:00:26,495
+Die Ausgangssituation ist einfach: Bewerberinnen und Bewerber müssen ihren Lebenslauf für
+
+6
+00:00:26,495 --> 00:00:28,073
+jede Stelle neu anpassen.
+
+7
+00:00:28,073 --> 00:00:31,986
+Das kostet Zeit, und generative KI kann dabei Fakten erfinden.
+
+8
+00:00:31,986 --> 00:00:34,510
+Lebenslauf Boost AI löst beide Probleme.
+
+9
+00:00:34,510 --> 00:00:40,000
+Die Anwendung verwendet nur Inhalte aus dem hochgeladenen Lebenslauf, wählt die für die
+
+10
+00:00:40,000 --> 00:00:45,365
+Stelle relevanten Abschnitte aus und erstellt daraus einen nachvollziehbaren Entwurf.
+
+11
+00:00:45,365 --> 00:00:51,297
+Die gesamte Oberfläche ist auf Deutsch und Englisch verfügbar und funktioniert ohne Anmeldung.
+
+12
+00:00:51,897 --> 00:00:56,233
+Im ersten Schritt wird die vollständige Stellenanzeige eingefügt.
+
+13
+00:00:56,233 --> 00:01:00,969
+Zusätzlich lassen sich Wünsche zu Ton, Schwerpunkt und Länge festlegen.
+
+14
+00:01:00,969 --> 00:01:06,105
+Danach wird der Lebenslauf als PDF, Word Dokument oder Textdatei hochgeladen.
+
+15
+00:01:06,105 --> 00:01:10,841
+Die App extrahiert den Text und kann sogar ein Bewerbungsfoto erkennen.
+
+16
+00:01:10,841 --> 00:01:16,778
+Anschließend zerlegt das RAG Modul den Inhalt in Abschnitte und erstellt einen Suchindex.
+
+17
+00:01:16,778 --> 00:01:21,514
+Ohne OpenAI Key wird automatisch ein lokaler TF IDF Fallback verwendet.
+
+18
+00:01:21,514 --> 00:01:24,115
+So bleibt die Demo vollständig nutzbar.
+
+19
+00:01:24,715 --> 00:01:29,936
+Für die Generierung kann Claude, OpenAI oder der direkte Vergleich gewählt werden.
+
+20
+00:01:29,936 --> 00:01:36,240
+Die Prompt Pipeline kombiniert Rollen Prompting, Few Shot Beispiele und eine strukturierte Analyse.
+
+21
+00:01:36,240 --> 00:01:42,416
+Stellenanzeige, Nutzerwünsche und passende RAG Auszüge werden dynamisch in den Prompt eingesetzt.
+
+22
+00:01:42,416 --> 00:01:45,982
+Im Vergleichsmodus entstehen zwei unabhängige Versionen.
+
+23
+00:01:45,982 --> 00:01:49,229
+Danach berechnet die App für beide einen ATS Score.
+
+24
+00:01:49,229 --> 00:01:54,323
+Hier zeigt die Demo eine vollständige Abdeckung der erkannten Schlüsselbegriffe.
+
+25
+00:01:54,323 --> 00:02:00,117
+Gleichzeitig bleiben Anbieter, Modell, Prompt Technik und Demo Status transparent sichtbar.
+
+26
+00:02:00,717 --> 00:02:03,910
+Der generierte Inhalt kann direkt bearbeitet werden.
+
+27
+00:02:03,910 --> 00:02:06,735
+Noch wichtiger ist die iterative Verbesserung.
+
+28
+00:02:06,735 --> 00:02:12,016
+Eine Anweisung wie kürzer, technischer oder formeller wird zusammen mit dem bisherigen
+
+29
+00:02:12,016 --> 00:02:14,472
+Gesprächsverlauf an das Modell gesendet.
+
+30
+00:02:14,472 --> 00:02:17,788
+Jede neue Antwort wird als eigene Version gespeichert.
+
+31
+00:02:17,788 --> 00:02:23,376
+Dadurch geht der vorherige Stand nicht verloren und das Modell behält den Kontext, ohne den
+
+32
+00:02:23,376 --> 00:02:25,341
+gesamten Prozess neu zu starten.
+
+33
+00:02:25,941 --> 00:02:29,636
+Im letzten Anwendungsschritt wird ein Design ausgewählt.
+
+34
+00:02:29,636 --> 00:02:32,870
+Zur Verfügung stehen Modern, Classic und Minimal.
+
+35
+00:02:32,870 --> 00:02:37,224
+Die Vorschau zeigt sofort, wie der Lebenslauf aufgebaut sein wird.
+
+36
+00:02:37,224 --> 00:02:41,843
+Auch ein automatisch erkanntes Foto kann ersetzt oder entfernt werden.
+
+37
+00:02:41,843 --> 00:02:48,639
+Danach wählt die Person PDF oder Word, legt den Dateinamen fest und lädt das fertige Dokument herunter.
+
+38
+00:02:48,639 --> 00:02:54,050
+Der Export ist zustandslos und speichert keine zusätzliche Datei in der Datenbank.
+
+39
+00:02:54,650 --> 00:03:01,655
+Technisch besteht das Projekt aus einem schlanken Vanilla JavaScript Frontend und einem FastAPI Backend.
+
+40
+00:03:01,655 --> 00:03:03,878
+Pydantic validiert alle Requests.
+
+41
+00:03:03,878 --> 00:03:10,075
+Eine eigene Provider Schicht kapselt Anthropic Claude und OpenAI, sodass beide über dieselbe
+
+42
+00:03:10,075 --> 00:03:12,365
+Schnittstelle angesprochen werden.
+
+43
+00:03:12,365 --> 00:03:18,562
+Die Fachlogik ist getrennt in Datei Extraktion, RAG und Keyword Analyse, Prompt Aufbau sowie
+
+44
+00:03:18,562 --> 00:03:19,910
+PDF und DOCX Export.
+
+45
+00:03:19,910 --> 00:03:23,008
+SQLAlchemy verbindet die Anwendung mit SQLite.
+
+46
+00:03:23,008 --> 00:03:29,070
+API Keys folgen dem Bring Your Own Key Prinzip: Sie bleiben im Browser, werden nur für den
+
+47
+00:03:29,070 --> 00:03:32,843
+Request übertragen und niemals serverseitig gespeichert.
+
+48
+00:03:33,443 --> 00:03:37,000
+Die Datenbank ist um die Tabelle sessions aufgebaut.
+
+49
+00:03:37,000 --> 00:03:43,704
+Eine Sitzung besitzt höchstens ein CV Dokument und beliebig viele Generierungen sowie Nachrichten.
+
+50
+00:03:43,704 --> 00:03:48,766
+CV documents speichert extrahierten Text, RAG Index und optional das Foto.
+
+51
+00:03:48,766 --> 00:03:54,512
+Generations bildet die komplette Versionshistorie inklusive Anbieter, Modell, Prompt
+
+52
+00:03:54,512 --> 00:03:57,112
+Technik, ATS Score und Keyword Listen.
+
+53
+00:03:57,112 --> 00:04:01,148
+Messages enthält den Dialog für die iterative Verbesserung.
+
+54
+00:04:01,148 --> 00:04:07,715
+Foreign Keys, Indizes, Check Constraints und kaskadierendes Löschen sichern die Datenintegrität.
+
+55
+00:04:08,315 --> 00:04:14,335
+Damit erfüllt das Projekt die zentralen KI Engineering Anforderungen: zwei Text APIs,
+
+56
+00:04:14,335 --> 00:04:20,425
+mehrere Prompt Techniken, dynamische Kontextinjektion, RAG, Conversation History, eine
+
+57
+00:04:20,425 --> 00:04:25,312
+anwendungsspezifische Vergleichsanalyse und persistente Datenhaltung.
+
+58
+00:04:25,312 --> 00:04:30,765
+Der Demo Modus macht alle Schritte ohne kostenpflichtigen API Aufruf prüfbar.
+
+59
+00:04:30,765 --> 00:04:36,430
+Für einen produktiven Mehrbenutzerbetrieb wären PostgreSQL, Alembic Migrationen,
+
+60
+00:04:36,430 --> 00:04:41,671
+Authentifizierung und Objektspeicher die nächsten sinnvollen Ausbaustufen.
+
+61
+00:04:42,271 --> 00:04:47,963
+Lebenslauf Boost AI zeigt damit einen vollständigen End to End Workflow: echte Daten
+
+62
+00:04:47,963 --> 00:04:54,130
+hochladen, relevanten Kontext finden, zwei KI Entwürfe vergleichen, gezielt nachbessern und
+
+63
+00:04:54,130 --> 00:04:56,908
+ein professionelles Dokument exportieren.
+
+64
+00:04:56,908 --> 00:04:58,806
+Vielen Dank für das Ansehen.

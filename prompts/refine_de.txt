@@ -1,0 +1,4 @@
+Überarbeite den vorherigen Lebenslauf gemäß dieser Anweisung: "{instruction}".
+Bleibe bei den Fakten. Gib den vollständigen, aktualisierten Lebenslauf zurück.
+
+{format}

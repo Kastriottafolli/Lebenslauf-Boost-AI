@@ -9,7 +9,7 @@
 
   <!-- ═══ Titel ═══ -->
   <text x="60" y="56" fill="#17130c" font-size="27" font-weight="700">Datenbankschema — Lebenslauf Boost AI</text>
-  <text x="60" y="82" fill="#6d6455" font-size="13.5">SQLite &#183; SQLAlchemy ORM &#183; 4 Tabellen &#183; Quelle: app/models.py &#183; Doku: docs/DATABASE.md</text>
+  <text x="60" y="82" fill="#6d6455" font-size="13.5">SQLite &#183; SQLAlchemy ORM &#183; 4 Tabellen &#183; Quelle: backend/models.py &#183; Doku: docs/DATABASE.md</text>
 
   <!-- ═══ Legende ═══ -->
   <g font-size="11.5" fill="#6d6455">

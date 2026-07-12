@@ -1,0 +1,4 @@
+Here are examples of how to strengthen bullet points (weak -> strong):
+- 'Responsible for sales' -> 'Grew regional B2B sales 27% YoY by restructuring the outbound pipeline and coaching 4 reps.'
+- 'Helped with the website' -> 'Shipped a React redesign that cut page load time 40% and lifted sign-up conversion 12%.'
+- 'Did customer support' -> 'Resolved 60+ tickets/week at a 4.9/5 CSAT, and wrote a help-center FAQ that reduced repeat tickets 18%.'
