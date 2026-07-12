@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="static/logo.svg" width="72" alt="Lebenslauf Boost AI Logo" />
+<img src="static/boosti.svg" width="82" alt="Boosti — das Maskottchen von Lebenslauf Boost AI" />
 
 # Lebenslauf Boost AI
 
@@ -21,7 +21,8 @@ verglichen und bewertet, ohne dass eine einzige Angabe erfunden wird.*
 Stellenanzeige einfügen, eigenen Lebenslauf hochladen (PDF/Word) — **Lebenslauf Boost AI**
 liest deine echten Daten per RAG aus, lässt **Claude und OpenAI je einen Entwurf schreiben**,
 bewertet beide mit einem Keyword-Check (ATS) und exportiert das Ergebnis als **PDF oder Word**
-in drei Designs, inklusive automatisch erkanntem Bewerbungsfoto.
+in sechs Designs, inklusive automatisch erkanntem Bewerbungsfoto. Das Maskottchen **Boosti**
+führt dabei Schritt für Schritt durch die ganze App.
 
 > ⚠️ Die KI-Ausgabe ist ein **Entwurf** und wird vor Nutzung fachlich geprüft.
 
@@ -36,7 +37,8 @@ in drei Designs, inklusive automatisch erkanntem Bewerbungsfoto.
 | **2 LLM-Anbieter**       | Anthropic Claude & OpenAI GPT — einzeln oder im direkten Vergleich          |
 | **Vergleichsanalyse**    | Beide Entwürfe werden per ATS-Keyword-Score bewertet, Empfehlung inklusive  |
 | **Iteratives Verfeinern**| „Kürzer", „mehr Kennzahlen" — mit gespeicherter Conversation History        |
-| **Export**               | PDF (ReportLab) & Word (python-docx) in 3 Designs, Foto positioniert        |
+| **Export**               | PDF (ReportLab) & Word (python-docx) in **6 Designs**, Foto positioniert    |
+| **Boosti-Tour**          | Animiertes Maskottchen führt geführt durch alle Schritte (mit Erledigt-Buttons) |
 | **BYOK**                 | Jede:r Nutzer:in bringt den eigenen API-Key mit — bleibt nur im Browser     |
 | **Demo-Modus**           | Ohne Key voll durchspielbar (regelbasierte, klar markierte Vorschau)        |
 
@@ -96,7 +98,7 @@ CV-Upload und RAG über den KI-Vergleich bis zum PDF-/Word-Export:
 
 | Method     | Endpoint      | Beschreibung                                                        |
 |------------|---------------|----------------------------------------------------------------------|
-| **`POST`** | `/api/export` | Download als `pdf` \| `docx` — Design `modern \| classic \| minimal` |
+| **`POST`** | `/api/export` | Download als `pdf` \| `docx` — Design `modern \| classic \| minimal \| sapphire \| cobalt \| slate` |
 
 Interaktive API-Doku (Swagger): `http://127.0.0.1:8000/docs`
 
@@ -114,8 +116,23 @@ Interaktive API-Doku (Swagger): `http://127.0.0.1:8000/docs`
 | RAG-Fallback   | Eigenes TF-IDF (pure Python, offline)               |
 | Datei-Parsing  | pypdf · python-docx · Pillow (Foto-Erkennung)       |
 | Export         | ReportLab (PDF) · python-docx (Word)                |
-| Frontend       | Vanilla HTML/CSS/JS (ES-Module) · DE/EN · „Warm Editorial" |
+| Frontend       | Vanilla HTML/CSS/JS (ES-Module) · DE/EN · „Sapphire Nightfall" mit 3D-Effekten & Boosti-Maskottchen |
 | CI             | GitHub Actions (ruff + pytest)                      |
+
+---
+
+## Frontend-Erlebnis
+
+- **Sapphire-Nightfall-Design:** Blaue Farbpalette von hell-luftig bis tief-dunkel,
+  vollbreiter Hero, dezente 3D-Karten und Glas-Effekte.
+- **Boosti, der Bewerbungs-Coach:** Ein animiertes Maskottchen begleitet durch alle
+  drei Seiten — es fliegt zum jeweils aktuellen Schritt (immer am Seitenrand, nie im Weg),
+  erklärt in einer Sprechblase, was zu tun ist, und geht per **„Erledigt ✓"-Button**
+  zum nächsten Punkt. Die Tour deckt alle Stationen ab: Stellenanzeige → CV-Upload →
+  Wünsche → KI-Anbieter → API-Key → Generieren → Bearbeiten → Keyword-Check →
+  Design → Foto → Dateiname → Download (mit Konfetti-Finale).
+- **Ruhige Bewegung:** Sanftes Auto-Scrollen zur jeweiligen Station, Fluganimation beim
+  Seitenwechsel, `prefers-reduced-motion` wird durchgängig respektiert.
 
 ---
 
@@ -329,7 +346,7 @@ lebenslauf-boost-ai/
 │   │   ├── extraction_service.py    #   PDF/DOCX/TXT-Text + Foto-Erkennung (Pillow)
 │   │   ├── rag_service.py           #   Chunking · Embeddings/TF-IDF · Keyword-Check
 │   │   ├── generation_service.py    #   Generieren · Vergleichen · Verfeinern
-│   │   └── export_service.py        #   PDF (ReportLab) & DOCX (python-docx), 3 Designs
+│   │   └── export_service.py        #   PDF (ReportLab) & DOCX (python-docx), 6 Designs
 │   ├── llm/                         # KI-Anbieter-Schicht
 │   │   ├── base.py                  #   Abstrakte Provider-Schnittstelle
 │   │   ├── anthropic_provider.py    #   Claude
@@ -340,8 +357,8 @@ lebenslauf-boost-ai/
 │       └── test_api.py              # API-Tests (offline, Demo-Modus)
 ├── frontend/                        # ── Single-Page-App (Vanilla JS, ES-Module) ──
 │   ├── index.html
-│   ├── css/                         # tokens · base · layout · components
-│   └── js/                          # api · state · i18n · ui/ (upload, generate, …)
+│   ├── css/                         # tokens · base · layout · components · depth (3D) · mascot · animations
+│   └── js/                          # api · state · i18n · ui/ (upload, generate, mascot, motion, …)
 ├── prompts/                         # ── Prompt-Vorlagen als Textdateien (DE/EN) ──
 │   ├── system_*.txt                 # Role Prompting
 │   ├── few_shot_*.txt               # Few-shot-Beispiele
@@ -351,7 +368,7 @@ lebenslauf-boost-ai/
 ├── src/
 │   └── types/
 │       └── api.d.ts                 # Geteilte API-Typen (Frontend/Backend-Vertrag)
-├── static/                          # Statische Assets (Logo)
+├── static/                          # Statische Assets (Boosti-Maskottchen, Logo)
 ├── docs/                            # Schema, Screenshots, Präsentation, Video
 ├── requirements.txt
 ├── run.py / run.sh                  # Start-Skripte
@@ -373,9 +390,10 @@ lebenslauf-boost-ai/
 - [x] Vergleichsmodus mit ATS-Keyword-Score & Empfehlung
 - [x] Prompt Engineering: Few-shot + Chain-of-Thought + Rolle
 - [x] Iteratives Verfeinern mit Conversation History
-- [x] Export: PDF & Word in 3 Designs, Foto je Design positioniert
+- [x] Export: PDF & Word in **6 Designs** (Azure, Executive, Nordic, Sapphire, Cobalt, Slate), Foto je Design positioniert
 - [x] Bring-your-own-key (Keys nur im Browser) + Demo-Modus
-- [x] Zweisprachige UI (DE/EN), ruhiges „Warm Editorial"-Design
+- [x] Zweisprachige UI (DE/EN), „Sapphire Nightfall"-Design mit 3D-Effekten
+- [x] **Boosti-Maskottchen** mit geführter Tour (Erledigt-Buttons, Fluganimation, sanftes Scrollen)
 - [x] Gewichtete Keyword-Extraktion (Nomen/Fachbegriffe statt Füllwörter)
 - [x] Datenbankschema-Doku (PNG/SQL/DBML) & Architektur-Diagramm
 - [x] Code-Refactoring: Schichten-Architektur (routers/ · services/ · llm/ · prompts/)
