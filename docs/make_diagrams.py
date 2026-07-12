@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generiert Architektur- und Schema-PNGs (Sapphire Nightfall) für README & Präsentation."""
+"""Generiert super verständliche Anfänger-Diagramme (Architektur + Datenbank)."""
 
 from __future__ import annotations
 
@@ -11,7 +11,6 @@ from PIL import Image, ImageDraw, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 
-# Sapphire Nightfall
 BG = "#eef3fa"
 INK = "#262b40"
 MUTED = "#5379ae"
@@ -22,13 +21,16 @@ SLATE = "#2c444c"
 GOLD = "#a8c4ec"
 WHITE = "#ffffff"
 LINE = "#d5deee"
-PANEL = "#e2eaf6"
+SOFT = "#f7fafd"
+GREEN_BG = "#e2eaf6"
+BLUE_BG = "#e2eaf6"
+PURPLE_BG = "#f7fafd"
+ORANGE_BG = "#f7fafd"
 
 
-def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+def font(size: int, bold: bool = False):
     paths = [
         "/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/Library/Fonts/Arial.ttf",
     ]
     for p in paths:
         if Path(p).exists():
@@ -36,189 +38,374 @@ def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.Im
     return ImageFont.load_default()
 
 
-def rounded_rect(draw, box, radius, fill, outline=None, width=1):
-    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
+def rr(draw, box, r, fill, outline=LINE, w=2):
+    draw.rounded_rectangle(box, radius=r, fill=fill, outline=outline, width=w)
 
 
-def box(draw, x1, y1, x2, y2, title, lines, header_color, subtitle=""):
-    rounded_rect(draw, (x1, y1, x2, y2), 12, WHITE, LINE, 2)
-    draw.rectangle((x1, y1, x2, y1 + 44), fill=header_color)
-    draw.text(((x1 + x2) // 2, y1 + 22), title, anchor="mm", font=font(15, True), fill=WHITE)
-    y = y1 + 62
+def badge(draw, x, y, n, color=ACCENT):
+    draw.ellipse((x, y, x + 36, y + 36), fill=color)
+    draw.text((x + 18, y + 18), str(n), anchor="mm", font=font(16, True), fill=WHITE)
+
+
+def section_title(draw, y, num, title, subtitle=""):
+    badge(draw, 48, y - 6, num, ACCENT2)
+    draw.text((96, y + 2), title, font=font(22, True), fill=INK)
     if subtitle:
-        draw.text((x1 + 16, y), subtitle, font=font(11, True), fill=ACCENT2)
-        y += 22
-    for line in lines:
-        draw.ellipse((x1 + 16, y - 5, x1 + 24, y + 3), fill=ACCENT)
-        draw.text((x1 + 32, y), line, font=font(12), fill=INK)
-        y += 24
+        draw.text((96, y + 30), subtitle, font=font(13), fill=MUTED)
 
 
-def arrow(draw, start, end):
-    draw.line((*start, *end), fill=MUTED, width=3)
-    ex, ey = end
-    draw.polygon([(ex, ey), (ex - 14, ey - 7), (ex - 14, ey + 7)], fill=MUTED)
+def step_card(draw, x, y, w, h, num, title, person, api, db, result, color=ACCENT):
+    rr(draw, (x, y, x + w, y + h), 12, WHITE)
+    badge(draw, x + 14, y + 14, num, color)
+    draw.text((x + 60, y + 18), title, font=font(15, True), fill=INK)
+    draw.text((x + 60, y + 40), person, font=font(12), fill=MUTED)
+    labels = [("Was passiert?", person), ("API-Aufruf", api), ("In der DB", db), ("Ergebnis", result)]
+    ly = y + 68
+    for label, val in labels:
+        draw.text((x + 20, ly), label, font=font(11, True), fill=ACCENT2)
+        draw.text((x + 130, ly), val, font=font(11), fill=INK)
+        ly += 22
+
+
+def glossary_box(draw, x, y, w, h, items):
+    rr(draw, (x, y, x + w, y + h), 12, SOFT)
+    draw.text((x + 16, y + 16), "Mini-Lexikon — Begriffe sofort verstehen", font=font(14, True), fill=INK)
+    ly = y + 48
+    for term, expl in items:
+        draw.text((x + 16, ly), term, font=font(11, True), fill=ACCENT)
+        draw.text((x + 100, ly), expl, font=font(11), fill=INK)
+        ly += 26
 
 
 def make_architecture() -> Image.Image:
-    w, h = 1600, 920
+    w, h = 1800, 2480
     img = Image.new("RGB", (w, h), BG)
-    draw = ImageDraw.Draw(img)
-    draw.rectangle((0, 0, w, 88), fill=INK)
-    draw.text((48, 28), "Architektur — Lebenslauf Boost AI", font=font(26, True), fill=WHITE)
-    draw.text((48, 58), "Schichten-Architektur · Router → Service → LLM/DB · Sapphire Nightfall", font=font(14), fill=GOLD)
+    d = ImageDraw.Draw(img)
 
-    box(draw, 40, 120, 340, 460, "frontend/", [
-        "index.html · SPA (DE/EN)",
-        "css/ — tokens · depth · mascot",
-        "js/ui/ — upload · generate · mascot",
-        "js/ui/ — steps · exporter · motion",
-        "Boosti — geführte Tour",
-        "6 Export-Designs · BYOK",
-    ], ACCENT, "Vanilla HTML/CSS/JS")
+    # Header
+    d.rectangle((0, 0, w, 130), fill=INK)
+    d.text((48, 36), "Architektur — Lebenslauf Boost AI", font=font(30, True), fill=WHITE)
+    d.text((48, 76), "So funktioniert die App — Schritt für Schritt, auch ohne Programmierkenntnisse", font=font(15), fill=GOLD)
+    d.text((48, 102), "Lese von oben nach unten · Jede Box erklärt genau EINE Aufgabe", font=font(12), fill=FAINT)
 
-    draw.rounded_rectangle((380, 108, 1200, 668), radius=14, outline=GOLD, width=2)
-    draw.text((400, 118), "backend/ — FastAPI", font=font(13, True), fill=ACCENT2)
+    y = 160
+    section_title(d, y, 1, "Die wichtigste Idee in 10 Sekunden",
+                  "Du benutzt die Webseite → der Server macht die Arbeit → die KI schreibt → du lädst herunter.")
+    y += 70
+    rr(d, (48, y, w - 48, y + 100), 14, WHITE)
+    boxes = [
+        ("👤 Du", "Browser\nStellenanzeige + CV", ACCENT),
+        ("🖥️ Frontend", "Was du siehst\nBoosti führt dich", ACCENT2),
+        ("⚙️ Backend", "Logik + Speicher\nFastAPI Server", MUTED),
+        ("🤖 KI", "Claude / OpenAI\nschreibt Entwurf", SLATE),
+        ("📄 Datei", "PDF oder Word\n6 Designs", ACCENT),
+    ]
+    bx = 70
+    for title, sub, col in boxes:
+        d.rounded_rectangle((bx, y + 16, bx + 300, y + 84), radius=10, fill=col)
+        d.text((bx + 150, y + 38), title, anchor="mm", font=font(14, True), fill=WHITE)
+        for i, line in enumerate(sub.split("\n")):
+            d.text((bx + 150, y + 58 + i * 16), line, anchor="mm", font=font(11), fill=GOLD if i else WHITE)
+        if bx < w - 400:
+            d.polygon([(bx + 310, y + 50), (bx + 330, y + 42), (bx + 330, y + 58)], fill=FAINT)
+        bx += 340
+    y += 130
 
-    box(draw, 400, 148, 1180, 266, "routers/", [
-        "system · sessions · documents · generations · exports · frontend",
-    ], ACCENT2)
+    section_title(d, y, 2, "Dein Weg durch die App — 8 Schritte",
+                  "Links: Was DU tust · Rechts: Was der Server im Hintergrund macht")
+    y += 60
+    steps = [
+        ("App öffnen", "Seite laden", "POST /api/session", "Neue Sitzung (UUID) anlegen", "Du bekommst eine anonyme ID", ACCENT2),
+        ("CV hochladen", "PDF/Word wählen", "POST /api/upload-cv", "Text + Foto extrahieren, RAG-Index bauen", "Dein Lebenslauf ist durchsuchbar", ACCENT),
+        ("Stelle einfügen", "Jobtext + Wünsche", "POST /api/generate (Teil 1)", "sessions.job_description speichern", "Ziel-Stelle ist hinterlegt", ACCENT2),
+        ("KI generiert", "«Generieren» klicken", "POST /api/generate", "RAG → Prompt → Claude/OpenAI", "Neuer Lebenslauf-Entwurf", MUTED),
+        ("Vergleichen", "Zwei Modelle wählen", "provider=compare", "2× generations + ATS-Score", "Du siehst welcher besser passt", SLATE),
+        ("Verfeinern", "«Kürzer» eingeben", "POST /api/refine", "messages lesen + neue generation", "Verbesserte Version, alte bleibt", ACCENT),
+        ("Design wählen", "Azure bis Slate", "Frontend only", "Kein DB-Schreiben", "Live-Vorschau rechts", ACCENT2),
+        ("Herunterladen", "PDF/Word klicken", "POST /api/export", "ReportLab / python-docx", "Fertige Datei auf deinem PC", ACCENT),
+    ]
+    for i, (title, person, api, db, result, col) in enumerate(steps):
+        row, col_side = divmod(i, 2)
+        sx = 48 if col_side == 0 else 930
+        sy = y + row * 148
+        step_card(d, sx, sy, 820, 132, i + 1, title, person, api, db, result, col)
+    y += 4 * 148 + 20
 
-    box(draw, 400, 288, 1180, 436, "services/", [
-        "session · document · generation · export · rag · extraction",
-        "PDF/DOCX · Foto · RAG · ATS · 6 Export-Designs",
-    ], ACCENT)
+    section_title(d, y, 3, "Die 5 Schichten — wer macht was?",
+                  "Jede Schicht hat EINE klare Aufgabe. Oben = nah am Nutzer, unten = Technik.")
+    y += 58
+    layers = [
+        ("① Frontend  frontend/", "Das siehst DU im Browser",
+         ["HTML-Seite mit 3 Schritten (Eingabe → Bearbeiten → Design)", "Boosti erklärt jeden Klick mit «Erledigt»-Button",
+          "6 Design-Vorschauen · API-Key bleibt nur in deinem Browser (BYOK)", "Sprache DE/EN umschaltbar"], ACCENT),
+        ("② Router  backend/routers/", "Empfängt deine Klicks als HTTP-Anfragen",
+         ["system.py → Status prüfen", "sessions.py → Sitzung starten", "documents.py → CV hochladen",
+          "generations.py → Generieren & Verfeinern", "exports.py → PDF/Word Download"], ACCENT2),
+        ("③ Services  backend/services/", "Macht die eigentliche Arbeit",
+         ["document_service → PDF lesen, Foto finden", "rag_service → relevante CV-Teile finden",
+          "generation_service → KI anstoßen + ATS-Score", "export_service → 6 Designs als PDF/Word"], MUTED),
+        ("④ LLM  backend/llm/", "Spricht mit Claude & OpenAI",
+         ["Lädt Prompt-Vorlagen aus prompts/", "Few-shot + Chain-of-Thought Techniken",
+          "Demo-Modus ohne Key (regelbasiert, klar markiert)", "Vergleichsmodus: beide Anbieter parallel"], SLATE),
+        ("⑤ Datenbank  SQLite", "Speichert alles dauerhaft (lokal auf dem Server)",
+         ["sessions → deine Stellenanzeige + Wünsche", "cv_documents → Lebenslauf + RAG-Index + Foto",
+          "generations → jede KI-Version + Keyword-Score", "messages → Chat-Verlauf für Verfeinerung"], ACCENT2),
+    ]
+    for title, subtitle, bullets, col in layers:
+        rr(d, (48, y, w - 48, y + 118), 12, WHITE)
+        d.rectangle((48, y, w - 48, y + 36), fill=col)
+        d.text((64, y + 18), title, anchor="lm", font=font(14, True), fill=WHITE)
+        d.text((64, y + 52), subtitle, font=font(12, True), fill=ACCENT2)
+        ly = y + 74
+        for b in bullets:
+            d.ellipse((64, ly - 4, 72, ly + 4), fill=ACCENT)
+            d.text((82, ly), b, font=font(11), fill=INK)
+            ly += 20
+        y += 128
 
-    box(draw, 400, 458, 760, 648, "llm/", [
-        "llm_service — Vergleich · Demo",
-        "anthropic_provider · openai_provider",
-        "prompts.py → prompts/*.txt",
-        "Few-shot · CoT · Dynamic Context",
-    ], MUTED)
+    section_title(d, y, 4, "Ein Klick auf «Generieren» — was passiert genau?",
+                  "POST /api/generate · in dieser Reihenfolge:")
+    y += 58
+    flow = [
+        "① Pydantic prüft: Ist Stellenanzeige lang genug? Ist CV da?",
+        "② RAG holt die 5 relevantesten Absätze aus deinem Lebenslauf",
+        "③ Prompt wird gebaut: Rolle + Beispiele + Stellenanzeige + CV-Auszüge",
+        "④ Claude und/oder OpenAI schreiben den Lebenslauf (nur echte Fakten!)",
+        "⑤ ATS-Analyse: Welche Job-Keywords fehlen noch? Score 0–100 %",
+        "⑥ Alles wird gespeichert: generations + messages in SQLite",
+        "⑦ JSON-Antwort → Frontend zeigt den Entwurf zum Bearbeiten",
+    ]
+    rr(d, (48, y, w - 48, y + 200), 12, SOFT)
+    ly = y + 24
+    for line in flow:
+        d.text((64, ly), line, font=font(12), fill=INK)
+        ly += 26
+    y += 220
 
-    box(draw, 780, 458, 1180, 648, "models · schemas · database", [
-        "Pydantic-Validierung · SQLAlchemy ORM",
-        "SQLite — 4 Tabellen",
-        "sessions · cv_documents · generations · messages",
-    ], SLATE)
+    glossary_box(d, 48, y, w - 96, 200, [
+        ("Frontend", "Alles was du im Browser siehst und anklickst"),
+        ("Backend", "Der unsichtbare Server — rechnet, speichert, ruft KI auf"),
+        ("API", "Schnittstelle: Frontend fragt, Backend antwortet (JSON)"),
+        ("RAG", "Retrieval: KI liest nur relevante Teile deines CVs, erfindet nichts"),
+        ("BYOK", "Bring Your Own Key — dein API-Key bleibt nur im Browser"),
+        ("ATS", "Applicant Tracking System — prüft ob Job-Keywords im CV stehen"),
+        ("Router → Service", "Router nimmt Anfrage entgegen, Service macht die Arbeit"),
+    ])
+    y += 220
 
-    box(draw, 1220, 148, 1560, 278, "prompts/", [
-        "system_*.txt · few_shot_*.txt",
-        "chain_of_thought_*.txt · format_*.txt",
-        "DE/EN · externe Vorlagen",
-    ], GOLD)
-
-    box(draw, 1220, 320, 1560, 480, "Externe KI-APIs", [
-        "Anthropic Claude",
-        "OpenAI GPT + Embeddings",
-        "Keys nur pro Request (BYOK)",
-    ], INK)
-
-    for s, e in [((340, 290), (400, 290)), ((790, 266), (790, 288)), ((790, 436), (790, 458)),
-                 ((760, 553), (780, 553)), ((590, 553), (1220, 208)), ((990, 553), (1220, 400))]:
-        arrow(draw, s, e)
-
-    rounded_rect(draw, (40, 700, 1560, 788), 12, WHITE, LINE, 2)
-    draw.text((60, 722), "POST /api/generate", font=font(13, True), fill=ACCENT2)
-    draw.text((60, 748), "Validieren → RAG → Prompt → Provider (compare: beide) → ATS → Persistenz → JSON", font=font(12), fill=MUTED)
-
-    box(draw, 40, 820, 340, 900, "static/", ["boosti.svg · logo.svg"], SLATE)
-    box(draw, 360, 820, 660, 900, "CI", [".github/workflows — ruff + pytest"], ACCENT2)
-
+    d.text((48, y), "Ordner: frontend/ · backend/ · prompts/ · static/ · docs/  |  CI: GitHub Actions (Tests)",
+           font=font(11), fill=FAINT)
     return img
 
 
 def make_schema() -> Image.Image:
-    w, h = 1500, 1280
+    w, h = 1800, 2680
     img = Image.new("RGB", (w, h), BG)
-    draw = ImageDraw.Draw(img)
-    draw.text((60, 36), "Datenbankschema — Lebenslauf Boost AI", font=font(26, True), fill=INK)
-    draw.text((60, 68), "SQLite · SQLAlchemy ORM · 4 Tabellen · Quelle: backend/models.py", font=font(13), fill=MUTED)
+    d = ImageDraw.Draw(img)
 
-    def table(x, y, tw, th, name, header, rows):
-        rounded_rect(draw, (x, y, x + tw, y + th), 10, WHITE, LINE, 2)
-        draw.rectangle((x, y, x + tw, y + 40), fill=header)
-        draw.text((x + 14, y + 20), name, anchor="lm", font=font(14, True), fill=WHITE)
-        ry = y + 54
-        for col, typ in rows:
-            draw.line((x, ry - 8, x + tw, ry - 8), fill=LINE)
-            draw.text((x + 14, ry), col, font=font(12, True), fill=INK)
-            draw.text((x + tw - 14, ry), typ, anchor="rm", font=font(10), fill=FAINT)
-            ry += 26
+    d.rectangle((0, 0, w, 130), fill=INK)
+    d.text((48, 36), "Datenbank — Lebenslauf Boost AI", font=font(30, True), fill=WHITE)
+    d.text((48, 76), "Wo und wie deine Daten gespeichert werden — Schritt für Schritt erklärt", font=font(15), fill=GOLD)
+    d.text((48, 102), "SQLite = kleine Datei auf dem Server · 4 Tabellen · keine API-Keys gespeichert!", font=font(12), fill=FAINT)
 
-    table(60, 120, 400, 210, "sessions", ACCENT2, [
-        ("id", "TEXT(36) PK"),
-        ("language", "TEXT(2) de|en"),
-        ("job_description", "TEXT"),
-        ("wishes", "TEXT"),
-        ("created_at", "DATETIME"),
-    ])
-
-    table(950, 120, 490, 260, "cv_documents", ACCENT, [
-        ("id", "TEXT(36) PK"),
-        ("session_id", "FK → sessions UQ"),
-        ("filename", "TEXT(255)"),
-        ("content", "TEXT"),
-        ("index_json", "JSON RAG"),
-        ("photo_data_url", "TEXT nullable"),
-        ("created_at", "DATETIME"),
-    ])
-
-    table(950, 420, 490, 360, "generations", MUTED, [
-        ("id", "TEXT(36) PK"),
-        ("session_id", "FK → sessions"),
-        ("provider", "claude|openai"),
-        ("model", "TEXT(64)"),
-        ("technique", "auto|few_shot|…"),
-        ("content", "TEXT Markdown"),
-        ("ats_score", "FLOAT 0–100"),
-        ("matched_keywords", "JSON"),
-        ("missing_keywords", "JSON"),
-        ("is_selected", "BOOLEAN"),
-        ("created_at", "DATETIME"),
-    ])
-
-    table(950, 820, 490, 210, "messages", SLATE, [
-        ("id", "TEXT(36) PK"),
-        ("session_id", "FK → sessions"),
-        ("role", "user|assistant"),
-        ("content", "TEXT"),
-        ("created_at", "DATETIME"),
-    ])
-
-    # Beziehungen
-    draw.line((460, 225, 700, 225, 700, 250, 950, 250), fill=FAINT, width=2)
-    draw.line((460, 225, 700, 225, 700, 600, 950, 600), fill=FAINT, width=2)
-    draw.line((460, 225, 700, 225, 700, 925, 950, 925), fill=FAINT, width=2)
-    draw.text((680, 238), "1:1 UNIQUE", font=font(10, True), fill=ACCENT)
-    draw.text((680, 588), "1 : n", font=font(10, True), fill=MUTED)
-    draw.text((680, 912), "1 : n", font=font(10, True), fill=SLATE)
-
-    rounded_rect(draw, (60, 360, 460, 560), 10, "#f7fafd", LINE, 2)
-    draw.text((78, 388), "Datenfluss", font=font(13, True), fill=INK)
-    flows = [
-        "POST /api/session → INSERT sessions",
-        "POST /api/upload-cv → cv_documents + RAG",
-        "POST /api/generate → generations + messages",
-        "POST /api/refine → liest messages, schreibt neu",
-        "POST /api/export → zustandslos (6 Designs)",
+    y = 160
+    section_title(d, y, 1, "Stell dir einen Bewerbungsordner vor",
+                  "sessions = der Ordner mit deiner Bewerbung. Die anderen Tabellen = Inhalt darin.")
+    y += 58
+    rr(d, (48, y, w - 48, y + 110), 14, WHITE)
+    folders = [
+        ("📁 sessions", "Der Ordner\n(zentral)", ACCENT2),
+        ("📄 cv_documents", "Dein Original-\nLebenslauf", ACCENT),
+        ("✨ generations", "Alle KI-\nVersionen", MUTED),
+        ("💬 messages", "Chat für\nVerfeinerung", SLATE),
     ]
-    y = 418
-    for f in flows:
-        draw.text((78, y), f, font=font(11), fill=MUTED)
-        y += 28
+    fx = 70
+    for title, sub, col in folders:
+        d.rounded_rectangle((fx, y + 16, fx + 380, y + 90), radius=10, fill=col)
+        d.text((fx + 20, y + 34), title, font=font(13, True), fill=WHITE)
+        for i, line in enumerate(sub.split("\n")):
+            d.text((fx + 20, y + 56 + i * 16), line, font=font(11), fill=GOLD)
+        if fx < 1400:
+            d.text((fx + 395, y + 52), "→", font=font(20, True), fill=FAINT)
+        fx += 420
+    y += 140
 
-    draw.text((60, 1060), "PRAGMA foreign_keys = ON · ON DELETE CASCADE · UUIDv4 · CHECK-Constraints · API-Keys nie gespeichert (BYOK)", font=font(11), fill=FAINT)
+    section_title(d, y, 2, "Der komplette Ablauf — 8 Schritte in der Datenbank",
+                  "Jede Zeile: Was DU machst → Welcher API-Aufruf → Was in der DB passiert")
+    y += 58
+    db_steps = [
+        ("App öffnen", "POST /api/session", "INSERT in sessions", "Neue UUID — deine anonyme Sitzungs-ID"),
+        ("CV hochladen", "POST /api/upload-cv", "INSERT in cv_documents (+ RAG-Index)", "Text, Suchindex und optionales Foto"),
+        ("Stelle + Wünsche", "POST /api/generate", "UPDATE sessions", "job_description und wishes gespeichert"),
+        ("RAG sucht", "(intern)", "READ cv_documents.index_json", "Top-5 passende CV-Absätze für die KI"),
+        ("KI schreibt", "POST /api/generate", "INSERT generations + messages", "Neuer Entwurf + ATS-Score + Chat"),
+        ("Verfeinern", "POST /api/refine", "READ messages, INSERT neu", "Alte Version bleibt — neue kommt dazu"),
+        ("Design wählen", "(nur Browser)", "— nichts in DB —", "Nur Vorschau, kein Speichern nötig"),
+        ("Download", "POST /api/export", "— nichts in DB —", "PDF/Word wird direkt erzeugt & gesendet"),
+    ]
+    for i, (action, api, db, result) in enumerate(db_steps):
+        row, side = divmod(i, 2)
+        sx = 48 if side == 0 else 930
+        sy = y + row * 130
+        rr(d, (sx, sy, sx + 820, sy + 118), 12, WHITE)
+        badge(d, sx + 14, sy + 14, i + 1)
+        d.text((sx + 60, sy + 18), action, font=font(14, True), fill=INK)
+        for label, val, ly in [("API", api, sy + 44), ("DB", db, sy + 66), ("→", result, sy + 88)]:
+            d.text((sx + 20, ly), label, font=font(10, True), fill=ACCENT2)
+            d.text((sx + 60, ly), val, font=font(10), fill=INK)
+    y += 4 * 130 + 30
+
+    section_title(d, y, 3, "Wie die Tabellen zusammenhängen",
+                  "session_id = der Klebstoff. Alles gehört zu EINER Bewerbung.")
+    y += 58
+    rr(d, (48, y, w - 48, y + 180), 14, WHITE)
+    d.rounded_rectangle((70, y + 50, 400, y + 140), radius=10, fill=ACCENT2)
+    d.text((235, y + 78), "sessions", anchor="mm", font=font(16, True), fill=WHITE)
+    d.text((235, y + 102), "id = S-100", anchor="mm", font=font(12), fill=GOLD)
+    d.text((235, y + 122), "1 Bewerbung", anchor="mm", font=font(11), fill=GOLD)
+    rels = [
+        (480, y + 40, "cv_documents", "1 : 1  (max. 1 CV pro Sitzung)", ACCENT),
+        (480, y + 90, "generations", "1 : n  (viele KI-Versionen)", MUTED),
+        (480, y + 140, "messages", "1 : n  (viele Chat-Nachrichten)", SLATE),
+    ]
+    for rx, ry, name, rel, col in rels:
+        d.polygon([(420, ry + 20), (460, ry + 12), (460, ry + 28)], fill=FAINT)
+        d.rounded_rectangle((480, ry, 900, ry + 50), radius=8, fill=col)
+        d.text((500, ry + 16), name, font=font(13, True), fill=WHITE)
+        d.text((500, ry + 34), rel, font=font(10), fill=GOLD)
+    rules = [
+        "FK = Fremdschlüssel: Kind darf nur existieren wenn Eltern-Session existiert",
+        "CASCADE = Session löschen → alle Kind-Daten werden automatisch mitgelöscht",
+        "UNIQUE auf cv_documents.session_id = nie zwei CVs gleichzeitig",
+        "INDEX auf session_id = schnelles Laden aller Daten einer Bewerbung",
+    ]
+    ry = y + 30
+    for rule in rules:
+        d.text((950, ry), "✓ " + rule, font=font(11), fill=INK)
+        ry += 28
+    y += 200
+
+    section_title(d, y, 4, "Alle Felder — technischer Name + einfache Bedeutung",
+                  "Nichts ausgelassen. Quelle: backend/models.py")
+    y += 58
+
+    def field_table(x, ty, tw, th, name, header, fields, note=""):
+        rr(d, (x, ty, x + tw, ty + th), 12, WHITE)
+        d.rectangle((x, ty, x + tw, ty + 40), fill=header)
+        d.text((x + 16, ty + 20), name, anchor="lm", font=font(14, True), fill=WHITE)
+        ly = ty + 54
+        for fname, rule, meaning in fields:
+            d.line((x + 12, ly - 6, x + tw - 12, ly - 6), fill=LINE)
+            d.text((x + 16, ly), fname, font=font(11, True), fill=INK)
+            d.text((x + 200, ly), rule, font=font(9), fill=FAINT)
+            d.text((x + 420, ly), meaning, font=font(10), fill=MUTED)
+            ly += 24
+        if note:
+            d.rounded_rectangle((x + 12, ty + th - 28, x + tw - 12, ty + th - 8), radius=4, fill=GREEN_BG)
+            d.text((x + 20, ty + th - 16), note, font=font(9), fill=ACCENT2)
+
+    field_table(48, y, 820, 200, "sessions — 5 Felder (dein Bewerbungsordner)", ACCENT2, [
+        ("id", "TEXT PK · UUID", "Eindeutige Sitzungsnummer (nicht erratbar)"),
+        ("language", "de | en", "Sprache der App und KI-Ausgabe"),
+        ("job_description", "TEXT", "Die komplette Stellenanzeige"),
+        ("wishes", "TEXT", "Deine optionalen Wünsche (Ton, Länge…)"),
+        ("created_at", "DATETIME", "Wann die Sitzung gestartet wurde"),
+    ], "Wird bei /api/session angelegt, bei /api/generate aktualisiert")
+
+    field_table(930, y, 820, 260, "cv_documents — 7 Felder (dein Lebenslauf)", ACCENT, [
+        ("id", "TEXT PK", "Dokument-ID"),
+        ("session_id", "FK · UNIQUE", "Gehört zu genau EINER Sitzung"),
+        ("filename", "TEXT(255)", "Original-Dateiname z.B. Lebenslauf.pdf"),
+        ("content", "TEXT", "Extrahierter Volltext aus PDF/Word"),
+        ("index_json", "JSON", "RAG: Text-Chunks + Embeddings für Suche"),
+        ("photo_data_url", "TEXT · NULL", "Bewerbungsfoto als Base64 (optional)"),
+        ("created_at", "DATETIME", "Upload-Zeitpunkt"),
+    ], "Neuer Upload ersetzt den alten Datensatz")
+
+    y += 280
+    field_table(48, y, 1050, 320, "generations — 11 Felder (jede KI-Version)", MUTED, [
+        ("id", "TEXT PK", "Versions-ID"),
+        ("session_id", "FK · INDEX", "Zu welcher Bewerbung"),
+        ("provider", "claude | openai", "Welcher KI-Anbieter"),
+        ("model", "TEXT", "z.B. gpt-4o-mini oder demo"),
+        ("technique", "auto | few_shot | …", "Prompt-Methode"),
+        ("content", "TEXT Markdown", "Der optimierte Lebenslauf"),
+        ("ats_score", "FLOAT 0–100", "Keyword-Abdeckung in Prozent"),
+        ("matched_keywords", "JSON Array", "Gefundene Job-Begriffe"),
+        ("missing_keywords", "JSON Array", "Noch fehlende Begriffe"),
+        ("is_selected", "BOOLEAN", "Reserviert: Favorit markieren"),
+        ("created_at", "DATETIME", "Wann diese Version erstellt wurde"),
+    ], "Vergleichsmodus = 2 Zeilen (Claude + OpenAI). Nichts wird überschrieben!")
+
+    field_table(1180, y, 570, 200, "messages — 5 Felder (Chat)", SLATE, [
+        ("id", "TEXT PK", "Nachrichten-ID"),
+        ("session_id", "FK · INDEX", "Zugehörige Sitzung"),
+        ("role", "user | assistant", "Wer hat geschrieben"),
+        ("content", "TEXT", "Anweisung oder KI-Antwort"),
+        ("created_at", "DATETIME", "Reihenfolge im Chat"),
+    ])
+
+    field_table(1180, y + 220, 570, 100, "JSON kurz erklärt", ACCENT2, [
+        ("index_json", "chunks + embeddings", "null = offline TF-IDF Fallback"),
+        ("matched_keywords", '["python","sql"]', "Was die Stelle verlangt und im CV steht"),
+        ("missing_keywords", '["docker"]', "Was noch fehlt für besseren ATS-Score"),
+    ])
+    y += 540
+
+    glossary_box(d, 48, y, 820, 220, [
+        ("PK (Primärschlüssel)", "Eindeutige ID — jede Zeile hat genau eine"),
+        ("FK (Fremdschlüssel)", "Verweis auf id einer anderen Tabelle"),
+        ("1 : 1", "Links max. ein Datensatz rechts (z.B. ein CV pro Session)"),
+        ("1 : n", "Links viele Datensätze rechts (z.B. viele KI-Versionen)"),
+        ("UUID", "Zufällige 36-Zeichen-ID — sicher und nicht erratbar"),
+        ("BYOK", "API-Keys werden NIE in der DB gespeichert — nur im Browser"),
+    ])
+
+    rr(d, (930, y, w - 48, y + 220), 12, WHITE, GOLD, 2)
+    d.text((950, y + 20), "Sicherheit & Regeln", font=font(14, True), fill=INK)
+    safety = [
+        "PRAGMA foreign_keys = ON — ungültige Verweise werden abgelehnt",
+        "ON DELETE CASCADE — Session löschen = alles dazu weg",
+        "CHECK-Constraints — nur erlaubte Werte (de/en, claude/openai…)",
+        "Keine erfundenen Fakten — KI darf nur RAG-Daten aus deinem CV nutzen",
+        "Export ist zustandslos — 6 Designs (Azure…Slate), nichts wird gespeichert",
+    ]
+    sy = y + 52
+    for s in safety:
+        d.text((950, sy), "🔒 " + s, font=font(11), fill=INK)
+        sy += 32
+
+    d.text((48, h - 30), "Quelle: backend/models.py · DDL: docs/schema.sql · Ausführlich: docs/DATABASE.md",
+           font=font(11), fill=FAINT)
     return img
 
 
-def main() -> None:
-    # SVG-Farben synchron halten
+def sync_schema_svg_colors() -> None:
+    """schema.svg an Sapphire-Palette anpassen (falls vorhanden)."""
     svg = DOCS / "schema.svg"
+    if not svg.exists():
+        return
     text = svg.read_text(encoding="utf-8")
-    for old, new in {"#f7f5f0": BG, "#17130c": INK, "#6d6455": MUTED}.items():
+    repl = {
+        "#f7f5f0": BG, "#17130c": INK, "#6d6455": MUTED, "#9a8f7c": FAINT,
+        "#C98A00": ACCENT, "#A06A24": ACCENT2, "#106B52": ACCENT, "#5B4A8F": MUTED,
+        "#A85B14": SLATE, "#2563eb": ACCENT, "#172033": INK, "#f8fafc": BG,
+    }
+    for old, new in repl.items():
         text = text.replace(old, new)
     svg.write_text(text, encoding="utf-8")
+
+
+def main() -> None:
+    sync_schema_svg_colors()
+    # schema-extended als Referenz-SVG für GitHub (skalierbar)
+    ext = DOCS / "schema-extended.svg"
+    if ext.exists():
+        text = ext.read_text(encoding="utf-8")
+        for old, new in {"#2563eb": ACCENT, "#172033": INK, "#f8fafc": BG, "#2f855a": ACCENT2,
+                         "#3b73b9": ACCENT, "#7355a0": MUTED, "#b5651d": SLATE}.items():
+            text = text.replace(old, new)
+        (DOCS / "schema.svg").write_text(text, encoding="utf-8")
 
     arch = make_architecture()
     arch.save(DOCS / "architecture.png", optimize=True)
@@ -227,8 +414,9 @@ def main() -> None:
     schema = make_schema()
     schema.save(DOCS / "schema.png", optimize=True)
 
-    print("✓ docs/architecture.png + architecture.svg")
-    print("✓ docs/schema.png + schema.svg (Farben)")
+    print("✓ docs/architecture.png  (Anfänger-Infografik, 1800×2480)")
+    print("✓ docs/schema.png        (Anfänger-Infografik, 1800×2680)")
+    print("✓ docs/schema.svg        (Erweitertes SVG aktualisiert)")
 
 
 if __name__ == "__main__":

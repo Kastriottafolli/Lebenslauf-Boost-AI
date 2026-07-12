@@ -204,10 +204,13 @@ Ein Befehl committet & pusht alle Änderungen:
 
 ## Architektur
 
+> **Für Einsteiger:** Das Diagramm unten erklärt Schritt für Schritt — von deinem Klick im Browser
+> bis zur fertigen PDF — ohne Vorkenntnisse. Lies einfach von oben nach unten.
+
 Das Backend ist in klar getrennte Schichten aufgeteilt — jeder Request läuft von
 oben nach unten durch: **Router** (HTTP) → **Service** (Geschäftslogik) → **LLM/DB**.
 
-![Architektur-Diagramm](docs/architecture.png)
+![Architektur-Diagramm — Anfänger-Infografik mit 8 Schritten und Mini-Lexikon](docs/architecture.png)
 
 <details>
 <summary>Mermaid-Diagramm (interaktiv)</summary>
@@ -299,16 +302,22 @@ injizierter Kontext) → Provider-Aufruf (bei `compare` beide) → ATS-Analyse �
 
 ## Datenbankschema
 
+> **Für Einsteiger:** Stell dir die Datenbank als **Bewerbungsordner** vor.
+> `sessions` ist der Ordner, die anderen Tabellen sind der Inhalt darin.
+> Das Diagramm zeigt alle 8 Schritte, alle Felder und ein Mini-Lexikon (PK, FK, 1:n …).
+
 `sessions` ist die zentrale Tabelle — **1 : 0..1** zu `cv_documents` (per **UNIQUE**-FK
 erzwungen), **1 : n** zu `generations` und `messages`. Alle Fremdschlüssel sind
 `NOT NULL` + indiziert, Wertebereiche (`language`, `provider`, `technique`, `role`,
 `ats_score`) per **CHECK-Constraints** abgesichert, Löschen kaskadiert. IDs sind UUIDv4.
 
-![Datenbankschema](docs/schema.png)
+![Datenbankschema — Anfänger-Infografik mit Ablauf, Beziehungen und allen Feldern](docs/schema.png)
 
 | Dokument | Inhalt |
 |---|---|
-| 📘 [`docs/DATABASE.md`](docs/DATABASE.md) | **Ausführliche Doku**: Spalten-Wörterbücher, JSON-Strukturen, Datenfluss je Endpoint, Design-Entscheidungen, Beispiel-Queries |
+| 📘 [`docs/DATABASE.md`](docs/DATABASE.md) | **Ausführliche Doku**: Spalten-Wörterbücher, JSON-Strukturen, Datenfluss je Endpoint |
+| [`docs/schema.svg`](docs/schema.svg) | Erweiterte SVG-Infografik (skalierbar, gleicher Inhalt wie PNG) |
+| [`docs/schema-extended.svg`](docs/schema-extended.svg) | Vollversion inkl. Roadmap-Tabellen |
 | [`docs/schema.sql`](docs/schema.sql) | Validierte DDL (CREATE TABLE + CHECKs + Indizes) |
 | [`docs/schema.dbml`](docs/schema.dbml) | Für [dbdiagram.io](https://dbdiagram.io) (mit Enums & Notes) |
 

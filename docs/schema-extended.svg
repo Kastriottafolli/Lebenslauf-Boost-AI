@@ -4,32 +4,32 @@
   <desc id="description">Vollst&#228;ndige Anf&#228;nger-Infografik mit Prozess, Beziehungen, Tabellenfeldern und Roadmap.</desc>
   <defs>
     <style>
-      .h1{font:700 34px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
-      .h2{font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
-      .h3{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
-      .body{font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#344054}
-      .strong{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#172033}
-      .small{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#667085}
-      .tiny{font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#667085}
-      .mono{font:600 11px "SFMono-Regular",Consolas,monospace;fill:#172033}
+      .h1{font:700 34px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#262b40}
+      .h2{font:700 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#262b40}
+      .h3{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#262b40}
+      .body{font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#262b40}
+      .strong{font:600 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#262b40}
+      .small{font:400 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#8ba3c7}
+      .tiny{font:400 10px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#8ba3c7}
+      .mono{font:600 11px "SFMono-Regular",Consolas,monospace;fill:#262b40}
       .white{fill:#fff}.panel{fill:#fff;stroke:#d9dee8}.soft{fill:#f5f7fa;stroke:#e4e7ec}
-      .line{stroke:#e4e7ec}.link{fill:none;stroke:#98a2b3;stroke-width:2}
+      .line{stroke:#e4e7ec}.link{fill:none;stroke:#8ba3c7;stroke-width:2}
     </style>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#98a2b3"/>
+      <path d="M0 0L10 5L0 10Z" fill="#8ba3c7"/>
     </marker>
   </defs>
 
-  <rect width="1800" height="2680" fill="#f8fafc"/>
+  <rect width="1800" height="2680" fill="#eef3fa"/>
 
   <!-- Header -->
   <rect width="1800" height="140" fill="#fff"/>
-  <rect y="136" width="1800" height="4" fill="#2563eb"/>
+  <rect y="136" width="1800" height="4" fill="#0474c4"/>
   <text x="70" y="58" class="h1">Lebenslauf Boost AI - Datenbank Schritt f&#252;r Schritt</text>
   <text x="70" y="92" class="body">Vom ersten App-Aufruf bis zum Export: vollst&#228;ndig, visuell und ohne vorausgesetztes Datenbankwissen.</text>
-  <rect x="1420" y="40" width="140" height="30" rx="15" fill="#e8f5ee"/>
+  <rect x="1420" y="40" width="140" height="30" rx="15" fill="#e2eaf6"/>
   <text x="1490" y="60" text-anchor="middle" class="strong">MVP: 4 Tabellen</text>
-  <rect x="1570" y="40" width="160" height="30" rx="15" fill="#eef4ff"/>
+  <rect x="1570" y="40" width="160" height="30" rx="15" fill="#e2eaf6"/>
   <text x="1650" y="60" text-anchor="middle" class="strong">Roadmap: +5</text>
 
   <!-- Mental model -->
@@ -38,19 +38,19 @@
   <g transform="translate(70 240)">
     <rect width="1660" height="122" rx="12" class="panel"/>
     <g transform="translate(30 20)">
-      <rect width="360" height="82" rx="9" fill="#e8f5ee" stroke="#4b9a73"/>
+      <rect width="360" height="82" rx="9" fill="#e2eaf6" stroke="#0474c4"/>
       <text x="18" y="30" class="h3">sessions</text><text x="18" y="54" class="body">Eine Bewerbung / zentraler Hub</text>
       <text x="18" y="72" class="tiny">Die UUID verbindet alle Daten.</text>
       <path d="M370 41H420" class="link" marker-end="url(#arrow)"/>
-      <rect x="430" width="350" height="82" rx="9" fill="#eef4ff" stroke="#5b8fd1"/>
+      <rect x="430" width="350" height="82" rx="9" fill="#e2eaf6" stroke="#5379ae"/>
       <text x="448" y="30" class="h3">cv_documents</text><text x="448" y="54" class="body">Originaltext, RAG-Index, Foto</text>
       <text x="448" y="72" class="tiny">Maximal ein CV pro Sitzung.</text>
       <path d="M790 41H840" class="link" marker-end="url(#arrow)"/>
-      <rect x="850" width="350" height="82" rx="9" fill="#f3eff8" stroke="#8065a3"/>
+      <rect x="850" width="350" height="82" rx="9" fill="#f7fafd" stroke="#06457f"/>
       <text x="868" y="30" class="h3">generations</text><text x="868" y="54" class="body">Alle KI-Versionen + ATS</text>
       <text x="868" y="72" class="tiny">Keine Version wird &#252;berschrieben.</text>
       <path d="M1210 41H1260" class="link" marker-end="url(#arrow)"/>
-      <rect x="1270" width="330" height="82" rx="9" fill="#fff3e8" stroke="#c6813b"/>
+      <rect x="1270" width="330" height="82" rx="9" fill="#f7fafd" stroke="#5379ae"/>
       <text x="1288" y="30" class="h3">messages</text><text x="1288" y="54" class="body">Anweisungen + Antworten</text>
       <text x="1288" y="72" class="tiny">Kontext f&#252;r weitere Verbesserungen.</text>
     </g>
@@ -64,7 +64,7 @@
   <!-- Reusable step cards, left -->
   <g transform="translate(70 478)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#2f855a"/><text x="38" y="42" text-anchor="middle" class="strong white">1</text>
+    <circle cx="38" cy="36" r="21" fill="#06457f"/><text x="38" y="42" text-anchor="middle" class="strong white">1</text>
     <text x="75" y="32" class="h3">App &#246;ffnen</text><text x="75" y="54" class="body">Die Person startet die Web-App.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/session</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">INSERT sessions</text>
@@ -73,7 +73,7 @@
   </g>
   <g transform="translate(1000 478)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#3b73b9"/><text x="38" y="42" text-anchor="middle" class="strong white">2</text>
+    <circle cx="38" cy="36" r="21" fill="#0474c4"/><text x="38" y="42" text-anchor="middle" class="strong white">2</text>
     <text x="75" y="32" class="h3">Lebenslauf hochladen</text><text x="75" y="54" class="body">PDF, DOCX oder TXT wird ausgew&#228;hlt.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/upload-cv</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">DELETE alt + INSERT cv_documents</text>
@@ -82,7 +82,7 @@
   </g>
   <g transform="translate(70 638)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#2f855a"/><text x="38" y="42" text-anchor="middle" class="strong white">3</text>
+    <circle cx="38" cy="36" r="21" fill="#06457f"/><text x="38" y="42" text-anchor="middle" class="strong white">3</text>
     <text x="75" y="32" class="h3">Stellenanzeige eingeben</text><text x="75" y="54" class="body">Jobtext, Sprache und W&#252;nsche.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/generate</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">UPDATE sessions</text>
@@ -91,7 +91,7 @@
   </g>
   <g transform="translate(1000 638)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#3b73b9"/><text x="38" y="42" text-anchor="middle" class="strong white">4</text>
+    <circle cx="38" cy="36" r="21" fill="#0474c4"/><text x="38" y="42" text-anchor="middle" class="strong white">4</text>
     <text x="75" y="32" class="h3">Passende CV-Abschnitte finden</text><text x="75" y="54" class="body">RAG w&#228;hlt relevante Textbl&#246;cke.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">interner Retrieval-Ablauf</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">READ cv_documents.index_json</text>
@@ -100,7 +100,7 @@
   </g>
   <g transform="translate(70 798)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#7355a0"/><text x="38" y="42" text-anchor="middle" class="strong white">5</text>
+    <circle cx="38" cy="36" r="21" fill="#5379ae"/><text x="38" y="42" text-anchor="middle" class="strong white">5</text>
     <text x="75" y="32" class="h3">KI-Version erzeugen</text><text x="75" y="54" class="body">Claude, OpenAI oder beide.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/generate</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">INSERT 1-2 generations</text>
@@ -109,7 +109,7 @@
   </g>
   <g transform="translate(1000 798)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#7355a0"/><text x="38" y="42" text-anchor="middle" class="strong white">6</text>
+    <circle cx="38" cy="36" r="21" fill="#5379ae"/><text x="38" y="42" text-anchor="middle" class="strong white">6</text>
     <text x="75" y="32" class="h3">ATS-Qualit&#228;t bewerten</text><text x="75" y="54" class="body">Job-Keywords werden verglichen.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">interne analyze()-Funktion</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">Score + Keyword-JSON in generations</text>
@@ -118,7 +118,7 @@
   </g>
   <g transform="translate(70 958)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#b5651d"/><text x="38" y="42" text-anchor="middle" class="strong white">7</text>
+    <circle cx="38" cy="36" r="21" fill="#2c444c"/><text x="38" y="42" text-anchor="middle" class="strong white">7</text>
     <text x="75" y="32" class="h3">Entwurf verbessern</text><text x="75" y="54" class="body">Zum Beispiel: "k&#252;rzer und konkreter".</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/refine</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">READ messages + INSERT generation + 2 messages</text>
@@ -127,7 +127,7 @@
   </g>
   <g transform="translate(1000 958)">
     <rect width="730" height="138" rx="11" class="panel"/>
-    <circle cx="38" cy="36" r="21" fill="#667085"/><text x="38" y="42" text-anchor="middle" class="strong white">8</text>
+    <circle cx="38" cy="36" r="21" fill="#8ba3c7"/><text x="38" y="42" text-anchor="middle" class="strong white">8</text>
     <text x="75" y="32" class="h3">PDF oder DOCX exportieren</text><text x="75" y="54" class="body">Format und Design werden gew&#228;hlt.</text>
     <text x="20" y="82" class="strong">Aufruf</text><text x="105" y="82" class="mono">POST /api/export</text>
     <text x="20" y="104" class="strong">DB</text><text x="105" y="104" class="body">kein Schreibzugriff (stateless)</text>
@@ -140,17 +140,17 @@
   <text x="70" y="1204" class="small">sessions.id ist der Prim&#228;rschl&#252;ssel. Die Kindtabellen verweisen mit session_id darauf.</text>
   <g transform="translate(70 1230)">
     <rect width="1660" height="230" rx="12" class="panel"/>
-    <rect x="35" y="66" width="350" height="96" rx="10" fill="#e8f5ee" stroke="#4b9a73" stroke-width="2"/>
+    <rect x="35" y="66" width="350" height="96" rx="10" fill="#e2eaf6" stroke="#0474c4" stroke-width="2"/>
     <text x="58" y="98" class="h3">sessions</text><text x="58" y="123" class="body">id = S-100</text><text x="58" y="145" class="small">1 Bewerbungsprozess</text>
     <path d="M385 90C490 90 490 46 590 46" class="link" marker-end="url(#arrow)"/>
     <path d="M385 114H590" class="link" marker-end="url(#arrow)"/>
     <path d="M385 138C490 138 490 182 590 182" class="link" marker-end="url(#arrow)"/>
     <text x="450" y="72" class="tiny">1 : 0..1</text><text x="470" y="107" class="tiny">1 : n</text><text x="470" y="166" class="tiny">1 : n</text>
-    <rect x="590" y="16" width="390" height="60" rx="9" fill="#eef4ff" stroke="#5b8fd1"/>
+    <rect x="590" y="16" width="390" height="60" rx="9" fill="#e2eaf6" stroke="#5379ae"/>
     <text x="610" y="41" class="h3">cv_documents</text><text x="610" y="62" class="small">session_id=S-100; UNIQUE</text>
-    <rect x="590" y="84" width="390" height="60" rx="9" fill="#f3eff8" stroke="#8065a3"/>
+    <rect x="590" y="84" width="390" height="60" rx="9" fill="#f7fafd" stroke="#06457f"/>
     <text x="610" y="109" class="h3">generations</text><text x="610" y="130" class="small">Viele Zeilen mit session_id=S-100</text>
-    <rect x="590" y="152" width="390" height="60" rx="9" fill="#fff3e8" stroke="#c6813b"/>
+    <rect x="590" y="152" width="390" height="60" rx="9" fill="#f7fafd" stroke="#5379ae"/>
     <text x="610" y="177" class="h3">messages</text><text x="610" y="198" class="small">Viele Zeilen mit session_id=S-100</text>
     <rect x="1040" y="30" width="570" height="170" rx="10" class="soft"/>
     <text x="1065" y="60" class="h3">Schutzregeln</text>
@@ -166,19 +166,19 @@
 
   <!-- sessions -->
   <g transform="translate(70 1570)">
-    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#2f855a"/>
+    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#06457f"/>
     <text x="20" y="28" class="h3 white">sessions - 5 Felder</text>
     <text x="20" y="70" class="mono">id</text><text x="190" y="70" class="tiny">VARCHAR(36) PK UUID</text><text x="445" y="70" class="small">Eindeutige Sitzungsnummer</text>
     <text x="20" y="104" class="mono">language</text><text x="190" y="104" class="tiny">VARCHAR(2) CHECK de/en</text><text x="445" y="104" class="small">Sprache von App und KI</text>
     <text x="20" y="138" class="mono">job_description</text><text x="190" y="138" class="tiny">TEXT NOT NULL</text><text x="445" y="138" class="small">Stellenanzeige</text>
     <text x="20" y="172" class="mono">wishes</text><text x="190" y="172" class="tiny">TEXT NOT NULL</text><text x="445" y="172" class="small">Optionale W&#252;nsche</text>
     <text x="20" y="206" class="mono">created_at</text><text x="190" y="206" class="tiny">DATETIME UTC</text><text x="445" y="206" class="small">Erstellzeitpunkt</text>
-    <rect x="20" y="222" width="760" height="20" rx="5" fill="#e8f5ee"/><text x="30" y="236" class="tiny">INSERT bei /api/session; UPDATE bei /api/generate</text>
+    <rect x="20" y="222" width="760" height="20" rx="5" fill="#e2eaf6"/><text x="30" y="236" class="tiny">INSERT bei /api/session; UPDATE bei /api/generate</text>
   </g>
 
   <!-- cv_documents -->
   <g transform="translate(930 1570)">
-    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#3b73b9"/>
+    <rect width="800" height="254" rx="12" class="panel"/><rect width="800" height="44" rx="12" fill="#0474c4"/>
     <text x="20" y="28" class="h3 white">cv_documents - 7 Felder</text>
     <text x="20" y="68" class="mono">id</text><text x="190" y="68" class="tiny">PK UUID</text><text x="445" y="68" class="small">Dokumentnummer</text>
     <text x="20" y="95" class="mono">session_id</text><text x="190" y="95" class="tiny">FK UNIQUE INDEX CASCADE</text><text x="445" y="95" class="small">Verbindung; nur ein CV</text>
@@ -191,7 +191,7 @@
 
   <!-- generations -->
   <g transform="translate(70 1850)">
-    <rect width="1050" height="388" rx="12" class="panel"/><rect width="1050" height="44" rx="12" fill="#7355a0"/>
+    <rect width="1050" height="388" rx="12" class="panel"/><rect width="1050" height="44" rx="12" fill="#5379ae"/>
     <text x="20" y="28" class="h3 white">generations - 11 Felder</text>
     <text x="20" y="69" class="mono">id</text><text x="240" y="69" class="tiny">PK UUID</text><text x="570" y="69" class="small">Versionsnummer</text>
     <text x="20" y="99" class="mono">session_id</text><text x="240" y="99" class="tiny">FK INDEX CASCADE</text><text x="570" y="99" class="small">Zugeh&#246;rige Bewerbung</text>
@@ -208,7 +208,7 @@
 
   <!-- messages and JSON -->
   <g transform="translate(1180 1850)">
-    <rect width="550" height="230" rx="12" class="panel"/><rect width="550" height="44" rx="12" fill="#b5651d"/>
+    <rect width="550" height="230" rx="12" class="panel"/><rect width="550" height="44" rx="12" fill="#2c444c"/>
     <text x="20" y="28" class="h3 white">messages - 5 Felder</text>
     <text x="20" y="72" class="mono">id</text><text x="180" y="72" class="tiny">PK UUID</text><text x="330" y="72" class="small">Nachrichten-ID</text>
     <text x="20" y="105" class="mono">session_id</text><text x="180" y="105" class="tiny">FK INDEX CASCADE</text><text x="330" y="105" class="small">Zugeh&#246;rige Sitzung</text>
@@ -245,10 +245,10 @@
     <text x="20" y="156" class="mono">subscriptions</text><text x="210" y="156" class="body">Stripe-Kunde, Tarif, Zahlungsstatus</text>
     <text x="20" y="196" class="mono">cover_letters</text><text x="210" y="196" class="body">KI-generierte Anschreiben</text>
     <text x="20" y="236" class="mono">export_templates</text><text x="210" y="236" class="body">Konfigurierbare PDF/DOCX-Designs</text>
-    <rect x="20" y="252" width="760" height="22" rx="5" fill="#eef4ff"/>
+    <rect x="20" y="252" width="760" height="22" rx="5" fill="#e2eaf6"/>
     <text x="30" y="267" class="tiny">Ziel: PostgreSQL + Alembic + JSONB + pgvector + Objektspeicher + DSGVO-Retention</text>
   </g>
 
-  <rect y="2640" width="1800" height="40" fill="#172033"/>
+  <rect y="2640" width="1800" height="40" fill="#262b40"/>
   <text x="70" y="2665" class="small white">Quelle: backend/models.py | Aktuelles DDL: docs/schema.sql | Erweitert: docs/schema-extended.sql | Interaktiv: datenbank-schema.canvas.tsx</text>
 </svg>
