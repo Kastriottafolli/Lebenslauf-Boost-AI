@@ -1,0 +1,143 @@
+<svg width="1600" height="920" viewBox="0 0 1600 920" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <defs>
+    <filter id="sh" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#262b40" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#5379ae"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="920" fill="#eef3fa"/>
+  <rect x="0" y="0" width="1600" height="88" fill="#262b40"/>
+  <text x="48" y="38" fill="#ffffff" font-size="26" font-weight="700">Architektur  Lebenslauf Boost AI</text>
+  <text x="48" y="66" fill="#a8c4ec" font-size="14">Schichten-Architektur · Router ’ Service ’ LLM/DB · Sapphire Nightfall</text>
+
+  <!-- Client -->
+  <g filter="url(#sh)">
+    <rect x="40" y="120" width="300" height="340" rx="14" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="40" y="120" width="300" height="52" rx="14" fill="#0474c4"/>
+    <rect x="40" y="158" width="300" height="14" fill="#0474c4"/>
+    <text x="190" y="152" fill="#fff" font-size="16" font-weight="700" text-anchor="middle">frontend/</text>
+    <text x="60" y="200" fill="#262b40" font-size="13" font-weight="600">index.html · SPA (DE/EN)</text>
+    <text x="60" y="228" fill="#5379ae" font-size="12">css/  tokens · depth · mascot</text>
+    <text x="60" y="252" fill="#5379ae" font-size="12">js/ui/  upload · generate · mascot</text>
+    <text x="60" y="276" fill="#5379ae" font-size="12">js/ui/  steps · exporter · motion</text>
+    <text x="60" y="312" fill="#06457f" font-size="12" font-weight="600">Boosti  geführte Tour</text>
+    <text x="60" y="336" fill="#5379ae" font-size="12">6 Export-Designs · BYOK im Browser</text>
+    <text x="60" y="372" fill="#8ba3c7" font-size="11">fetch(JSON) ’ FastAPI</text>
+  </g>
+
+  <!-- Backend shell -->
+  <rect x="380" y="108" width="820" height="560" rx="16" fill="none" stroke="#a8c4ec" stroke-width="2" stroke-dasharray="8 6"/>
+  <text x="400" y="132" fill="#06457f" font-size="13" font-weight="700">backend/  FastAPI</text>
+
+  <!-- Routers -->
+  <g filter="url(#sh)">
+    <rect x="400" y="148" width="780" height="118" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="400" y="148" width="780" height="40" rx="12" fill="#06457f"/>
+    <rect x="400" y="176" width="780" height="12" fill="#06457f"/>
+    <text x="790" y="174" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">routers/  HTTP-Endpunkte</text>
+    <g font-size="12" fill="#262b40">
+      <rect x="420" y="200" width="130" height="28" rx="6" fill="#e2eaf6"/><text x="485" y="219" text-anchor="middle">system.py</text>
+      <rect x="562" y="200" width="130" height="28" rx="6" fill="#e2eaf6"/><text x="627" y="219" text-anchor="middle">sessions.py</text>
+      <rect x="704" y="200" width="130" height="28" rx="6" fill="#e2eaf6"/><text x="769" y="219" text-anchor="middle">documents.py</text>
+      <rect x="846" y="200" width="130" height="28" rx="6" fill="#e2eaf6"/><text x="911" y="219" text-anchor="middle">generations.py</text>
+      <rect x="988" y="200" width="130" height="28" rx="6" fill="#e2eaf6"/><text x="1053" y="219" text-anchor="middle">exports.py</text>
+      <rect x="1130" y="200" width="40" height="28" rx="6" fill="#e2eaf6"/><text x="1150" y="219" text-anchor="middle">&</text>
+    </g>
+  </g>
+
+  <!-- Services -->
+  <g filter="url(#sh)">
+    <rect x="400" y="288" width="780" height="148" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="400" y="288" width="780" height="40" rx="12" fill="#0474c4"/>
+    <rect x="400" y="316" width="780" height="12" fill="#0474c4"/>
+    <text x="790" y="314" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">services/  Geschäftslogik</text>
+    <g font-size="11.5" fill="#262b40">
+      <rect x="420" y="342" width="148" height="26" rx="6" fill="#e2eaf6"/><text x="494" y="360" text-anchor="middle">session_service</text>
+      <rect x="578" y="342" width="148" height="26" rx="6" fill="#e2eaf6"/><text x="652" y="360" text-anchor="middle">document_service</text>
+      <rect x="736" y="342" width="148" height="26" rx="6" fill="#e2eaf6"/><text x="810" y="360" text-anchor="middle">generation_service</text>
+      <rect x="894" y="342" width="148" height="26" rx="6" fill="#e2eaf6"/><text x="968" y="360" text-anchor="middle">export_service</text>
+      <rect x="1052" y="342" width="108" height="26" rx="6" fill="#e2eaf6"/><text x="1106" y="360" text-anchor="middle">rag_service</text>
+      <rect x="420" y="378" width="168" height="26" rx="6" fill="#e2eaf6"/><text x="504" y="396" text-anchor="middle">extraction_service</text>
+      <text x="610" y="396" fill="#5379ae">PDF/DOCX · Foto · RAG · ATS · 6 Designs</text>
+    </g>
+  </g>
+
+  <!-- LLM + Schemas -->
+  <g filter="url(#sh)">
+    <rect x="400" y="458" width="380" height="190" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="400" y="458" width="380" height="40" rx="12" fill="#5379ae"/>
+    <rect x="400" y="486" width="380" height="12" fill="#5379ae"/>
+    <text x="590" y="484" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">llm/  KI-Schicht</text>
+    <text x="420" y="518" fill="#262b40" font-size="12">llm_service.py  Vergleich · Demo</text>
+    <text x="420" y="542" fill="#262b40" font-size="12">anthropic_provider · openai_provider</text>
+    <text x="420" y="566" fill="#262b40" font-size="12">prompts.py ’ lädt prompts/*.txt</text>
+    <text x="420" y="600" fill="#5379ae" font-size="11">Few-shot · CoT · Role · Dynamic Context</text>
+    <text x="420" y="624" fill="#8ba3c7" font-size="11">HTTPS + API-Key (BYOK)</text>
+  </g>
+
+  <g filter="url(#sh)">
+    <rect x="800" y="458" width="380" height="190" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="800" y="458" width="380" height="40" rx="12" fill="#2c444c"/>
+    <rect x="800" y="486" width="380" height="12" fill="#2c444c"/>
+    <text x="990" y="484" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">models · schemas · database</text>
+    <text x="820" y="518" fill="#262b40" font-size="12">Pydantic-Validierung (schemas.py)</text>
+    <text x="820" y="542" fill="#262b40" font-size="12">SQLAlchemy ORM (models.py)</text>
+    <text x="820" y="576" fill="#06457f" font-size="12" font-weight="600">SQLite  4 Tabellen</text>
+    <text x="820" y="600" fill="#5379ae" font-size="11">sessions · cv_documents</text>
+    <text x="820" y="624" fill="#5379ae" font-size="11">generations · messages</text>
+  </g>
+
+  <!-- Prompts -->
+  <g filter="url(#sh)">
+    <rect x="1220" y="148" width="340" height="130" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="1220" y="148" width="340" height="40" rx="12" fill="#a8c4ec"/>
+    <rect x="1220" y="176" width="340" height="12" fill="#a8c4ec"/>
+    <text x="1390" y="174" fill="#06457f" font-size="14" font-weight="700" text-anchor="middle">prompts/</text>
+    <text x="1240" y="208" fill="#262b40" font-size="12">system_*.txt · few_shot_*.txt</text>
+    <text x="1240" y="232" fill="#262b40" font-size="12">chain_of_thought_*.txt · format_*.txt</text>
+    <text x="1240" y="256" fill="#5379ae" font-size="11">DE/EN · externe Vorlagen</text>
+  </g>
+
+  <!-- External APIs -->
+  <g filter="url(#sh)">
+    <rect x="1220" y="320" width="340" height="160" rx="12" fill="#ffffff" stroke="#d5deee"/>
+    <rect x="1220" y="320" width="340" height="40" rx="12" fill="#262b40"/>
+    <rect x="1220" y="348" width="340" height="12" fill="#262b40"/>
+    <text x="1390" y="346" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">Externe KI-APIs</text>
+    <text x="1240" y="382" fill="#262b40" font-size="12">Anthropic Claude</text>
+    <text x="1240" y="406" fill="#262b40" font-size="12">OpenAI GPT + Embeddings</text>
+    <text x="1240" y="440" fill="#5379ae" font-size="11">Keys nur pro Request (BYOK)</text>
+    <text x="1240" y="464" fill="#8ba3c7" font-size="11">nie serverseitig gespeichert</text>
+  </g>
+
+  <!-- Arrows -->
+  <g stroke="#5379ae" stroke-width="2.5" fill="none" marker-end="url(#arr)">
+    <path d="M340 290 H380"/>
+    <path d="M790 266 V288"/>
+    <path d="M790 436 V458"/>
+    <path d="M780 548 H800"/>
+    <path d="M780 520 H1180 V208 H1220"/>
+    <path d="M780 580 H990 V320 H1220"/>
+    <path d="M1180 548 H1220 V400"/>
+  </g>
+
+  <!-- Flow bar -->
+  <rect x="40" y="700" width="1520" height="88" rx="12" fill="#ffffff" stroke="#d5deee" filter="url(#sh)"/>
+  <text x="60" y="732" fill="#06457f" font-size="13" font-weight="700">POST /api/generate</text>
+  <text x="60" y="758" fill="#5379ae" font-size="12">Validieren ’ RAG-Kontext (Top-5 Chunks) ’ Prompt (Rolle + Few-shot + CoT + Kontext) ’ Provider (compare: beide) ’ ATS-Analyse ’ Persistenz (generations + messages) ’ JSON</text>
+
+  <!-- Static assets -->
+  <g filter="url(#sh)">
+    <rect x="40" y="820" width="300" height="72" rx="10" fill="#ffffff" stroke="#d5deee"/>
+    <text x="60" y="848" fill="#262b40" font-size="12" font-weight="600">static/</text>
+    <text x="60" y="870" fill="#5379ae" font-size="11">boosti.svg · logo.svg</text>
+  </g>
+  <g filter="url(#sh)">
+    <rect x="360" y="820" width="300" height="72" rx="10" fill="#ffffff" stroke="#d5deee"/>
+    <text x="380" y="848" fill="#262b40" font-size="12" font-weight="600">.github/workflows/ci.yml</text>
+    <text x="380" y="870" fill="#5379ae" font-size="11">ruff + pytest</text>
+  </g>
+</svg>

@@ -207,6 +207,11 @@ Ein Befehl committet & pusht alle Änderungen:
 Das Backend ist in klar getrennte Schichten aufgeteilt — jeder Request läuft von
 oben nach unten durch: **Router** (HTTP) → **Service** (Geschäftslogik) → **LLM/DB**.
 
+![Architektur-Diagramm](docs/architecture.png)
+
+<details>
+<summary>Mermaid-Diagramm (interaktiv)</summary>
+
 ```mermaid
 graph TB
     subgraph Client["Client-Schicht"]
@@ -282,6 +287,8 @@ graph TB
     LSVC -->|HTTPS / API-Key| OA
     Database <-->|SQLAlchemy| SQLITE
 ```
+
+</details>
 
 **Request-Ablauf `POST /api/generate`:**
 Pydantic-Validierung → RAG holt relevante CV-Chunks → Prompt-Bau (Rolle + Few-shot + CoT +
@@ -369,7 +376,10 @@ lebenslauf-boost-ai/
 │   └── types/
 │       └── api.d.ts                 # Geteilte API-Typen (Frontend/Backend-Vertrag)
 ├── static/                          # Statische Assets (Boosti-Maskottchen, Logo)
-├── docs/                            # Schema, Screenshots, Präsentation, Video
+├── docs/                            # Schema, Screenshots, Architektur, Präsentation, Video
+│   ├── architecture.svg / .png      # Architektur-Diagramm (Sapphire Nightfall)
+│   ├── schema.svg / .png            # ER-Diagramm (4 Tabellen)
+│   └── make_diagrams.py             # PNG-Generierung für README
 ├── requirements.txt
 ├── run.py / run.sh                  # Start-Skripte
 ├── update.sh                        # Ein-Befehl-Update zu GitHub
