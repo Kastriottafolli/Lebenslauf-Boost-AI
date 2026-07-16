@@ -83,11 +83,13 @@ export async function download() {
     a.download = filename || `${body.filename}.${state.format}`;
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
+    await hideOverlay();
     burstConfetti(56);
     toast(t("downloadOk"), "ok");
     tourNotify("downloaded");
   } catch (e) {
     toast("⚠️ " + e.message, "err");
     mascotProblem("error");
-  } finally { hideOverlay(); }
+    await hideOverlay({ immediate: true });
+  }
 }

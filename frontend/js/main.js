@@ -1,9 +1,9 @@
 /* Einstiegspunkt: Initialisierung + globale Event-Verkabelung. */
 import * as api from "./api.js";
 import { $, $$ } from "./dom.js";
-import { applyI18n, setLang } from "./i18n.js";
+import { applyI18n, setLang, t } from "./i18n.js";
 import { state } from "./state.js";
-import { toast } from "./ui/feedback.js";
+import { hideOverlay, showOverlay, toast } from "./ui/feedback.js";
 import { download, renderPreview, updatePhotoThumb } from "./ui/exporter.js";
 import { generate, refine, renderRefineChips } from "./ui/generate.js";
 import { loadKeys, saveKeys, toggleEye, updateBadges, updateKeyFields } from "./ui/keys.js";
@@ -85,10 +85,18 @@ function wireEvents() {
     generate();
   });
   $("#backTo1").addEventListener("click", () => goStep(1));
-  $("#toStep3").addEventListener("click", () => {
-    goStep(3);
-    updatePhotoThumb();
-    renderPreview();
+  $("#toStep3").addEventListener("click", async () => {
+    const btn = $("#toStep3");
+    if (btn) btn.disabled = true;
+    showOverlay(t("preparingDesign"), t("designSteps"), "design");
+    try {
+      await hideOverlay();
+      goStep(3);
+      updatePhotoThumb();
+      renderPreview();
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   });
   $("#backTo2").addEventListener("click", () => goStep(2));
 

@@ -14,10 +14,14 @@ export async function generate() {
   if (job.length < 10) { toast(t("needJob"), "err"); mascotProblem("job"); return; }
   if (!state.hasCv) { toast(t("needCv"), ""); mascotProblem("cv"); }
 
+  const btn = $("#generateBtn");
+  if (btn) btn.disabled = true;
+
+  const mode = state.provider === "compare" ? "compare" : "generate";
   showOverlay(
-    state.provider === "compare" ? t("comparing") : t("generating"),
+    mode === "compare" ? t("comparing") : t("generating"),
     t("loadSteps"),
-    "generate"
+    mode
   );
   try {
     const data = await api.generateCv({
@@ -31,12 +35,17 @@ export async function generate() {
     });
     state.results = data.results;
     renderResult(data);
+    // Overlay bleibt ~5–10 s sichtbar, dann weiter zu Seite 2
+    await hideOverlay();
     goStep(2);
     if (data.mode === "compare") sayKey("mascotCompare", "happy", { kind: "ok", force: true, persist: true });
   } catch (e) {
     toast("⚠️ " + errMsg(e), "err");
     mascotProblem("error");
-  } finally { hideOverlay(); }
+    await hideOverlay({ immediate: true });
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 function renderResult(data) {
@@ -137,8 +146,10 @@ export async function refine(instruction) {
     chooseResult(res);
     $("#refineInput").value = "";
     $("#compareBar").classList.add("hidden");
+    await hideOverlay();
   } catch (e) {
     toast("⚠️ " + errMsg(e), "err");
     mascotProblem("error");
-  } finally { hideOverlay(); }
+    await hideOverlay({ immediate: true });
+  }
 }

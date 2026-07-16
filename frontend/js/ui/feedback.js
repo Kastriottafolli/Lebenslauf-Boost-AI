@@ -16,6 +16,22 @@ let stepTimer = null;
 let progressTimer = null;
 let progressVal = 0;
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+/** Feste Dauer: 5 s bei Seitenwechsel; kürzer für Refine/Export. */
+const STEP_LOAD_MS = 5000;
+
+function minDurationFor(mode) {
+  if (mode === "generate" || mode === "compare" || mode === "design") {
+    return STEP_LOAD_MS;
+  }
+  if (mode === "refine") return 2200;
+  if (mode === "export") return 1800;
+  return 1500;
+}
+
 function setProgress(pct) {
   const fill = $("#loaderProgressFill");
   const ring = $("#loaderRingProgress");
@@ -26,14 +42,16 @@ function setProgress(pct) {
   if (pctEl) pctEl.textContent = `${Math.round(clamped)}%`;
 }
 
-function tickProgress(target = 92, speed = 0.35) {
+/** Fortschritt linear über die gesamte Ladezeit (bis ~96 %). */
+function tickProgress(durationMs, target = 96) {
   clearInterval(progressTimer);
+  const started = Date.now();
   progressTimer = setInterval(() => {
-    if (progressVal < target) {
-      progressVal += (target - progressVal) * speed * 0.08 + 0.4;
-      setProgress(progressVal);
-    }
-  }, 80);
+    const t = Math.min(1, (Date.now() - started) / durationMs);
+    progressVal = target * t;
+    setProgress(progressVal);
+    if (t >= 1) clearInterval(progressTimer);
+  }, 50);
 }
 
 function finishProgress() {
@@ -48,17 +66,34 @@ function resetProgress() {
   setProgress(0);
 }
 
+function markStepsDone() {
+  const ul = $("#loaderSteps");
+  if (!ul) return;
+  [...ul.children].forEach((li) => { li.className = "done"; });
+}
+
+/**
+ * @param {string} msg
+ * @param {string[]|null} steps
+ * @param {"generate"|"compare"|"refine"|"export"|"design"} mode
+ */
 export function showOverlay(msg, steps, mode = "generate") {
   const overlay = $("#overlay");
-  overlay.classList.remove("hidden", "mode-export", "mode-refine");
+  overlay.classList.remove("hidden", "mode-export", "mode-refine", "mode-design", "mode-compare");
   if (mode === "export") overlay.classList.add("mode-export");
   if (mode === "refine") overlay.classList.add("mode-refine");
+  if (mode === "design") overlay.classList.add("mode-design");
+  if (mode === "compare") overlay.classList.add("mode-compare");
 
-  mascotLoading(true, mode);
+  const minMs = minDurationFor(mode);
+  overlay.dataset.shownAt = String(Date.now());
+  overlay.dataset.minMs = String(minMs);
+
+  mascotLoading(true, mode === "design" ? "export" : mode === "compare" ? "generate" : mode);
 
   $("#loaderMsg").textContent = msg;
   resetProgress();
-  tickProgress(mode === "export" ? 88 : 92);
+  tickProgress(minMs, mode === "export" ? 88 : 96);
 
   const ul = $("#loaderSteps");
   clearInterval(stepTimer);
@@ -71,6 +106,8 @@ export function showOverlay(msg, steps, mode = "generate") {
         if (i === 0) li.className = "act";
         ul.appendChild(li);
       });
+      // 4 Schritte gleichmäßig über die 5 s verteilen
+      const stepGap = Math.floor(minMs / Math.max(1, steps.length));
       let i = 0;
       stepTimer = setInterval(() => {
         const items = ul.children;
@@ -78,23 +115,39 @@ export function showOverlay(msg, steps, mode = "generate") {
           items[i].className = "done";
           i += 1;
           items[i].className = "act";
-          progressVal = Math.min(progressVal + 18, 90);
-          setProgress(progressVal);
+        } else {
+          items[i].className = "done";
+          clearInterval(stepTimer);
         }
-      }, 1600);
+      }, stepGap);
     }
   }
 }
 
-export function hideOverlay() {
+/**
+ * Overlay schließen — wartet die Mindestdauer ab (außer immediate).
+ * @param {{ immediate?: boolean }} [opts]
+ */
+export async function hideOverlay({ immediate = false } = {}) {
+  const overlay = $("#overlay");
+  if (!immediate) {
+    const minMs = Number(overlay.dataset.minMs || 0);
+    const shownAt = Number(overlay.dataset.shownAt || Date.now());
+    const remaining = Math.max(0, minMs - (Date.now() - shownAt));
+    if (remaining > 0) await sleep(remaining);
+  }
+
+  markStepsDone();
   finishProgress();
-  setTimeout(() => {
-    clearInterval(stepTimer);
-    clearInterval(progressTimer);
-    $("#overlay").classList.add("hidden");
-    resetProgress();
-    mascotLoading(false);
-  }, 280);
+  await sleep(320);
+
+  clearInterval(stepTimer);
+  clearInterval(progressTimer);
+  overlay.classList.add("hidden");
+  resetProgress();
+  mascotLoading(false);
+  delete overlay.dataset.shownAt;
+  delete overlay.dataset.minMs;
 }
 
 /** Netzwerkfehler in verständliche Meldungen übersetzen. */

@@ -197,7 +197,6 @@
 .loader-card {
   animation: loader-pop 0.45s var(--ease);
   margin-top: 40px;
-}
   min-width: 360px; max-width: 420px; padding: 36px 40px 32px;
   position: relative; overflow: visible;
 }
@@ -337,6 +336,15 @@
 .overlay.mode-export .write-paper { animation: paper-bob 1.8s ease-in-out infinite, export-pulse 1.2s ease-in-out infinite; }
 @keyframes export-pulse { 0%,100% { border-top-color: var(--accent); } 50% { border-top-color: var(--good); } }
 .overlay.mode-refine .write-pen { animation-duration: 2.4s; }
+.overlay.mode-design .loader-ring-progress { stroke: var(--accent-2); }
+.overlay.mode-compare .loader-ring-progress {
+  stroke: var(--accent);
+  animation: compare-ring 1.6s ease-in-out infinite;
+}
+@keyframes compare-ring {
+  0%,100% { filter: drop-shadow(0 0 4px rgba(6, 69, 127, 0.25)); }
+  50% { filter: drop-shadow(0 0 10px rgba(4, 116, 196, 0.45)); }
+}
 
 /* ════════ Konfetti ════════ */
 .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 90; overflow: hidden; }

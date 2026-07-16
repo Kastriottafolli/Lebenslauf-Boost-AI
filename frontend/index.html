@@ -155,7 +155,10 @@
                 <input type="password" id="keyAnthropic" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" />
                 <button type="button" class="key-eye" data-target="keyAnthropic" title="anzeigen" aria-label="Key anzeigen"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
-              <a class="key-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener" data-i18n="keyGetAnthropic">Key holen →</a>
+              <p class="key-get">
+                <span data-i18n="keyNoKeyHint">Noch keinen Key?</span>
+                <a class="key-link" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer" data-i18n="keyGetAnthropic">Bei Anthropic holen →</a>
+              </p>
             </div>
             <div class="key-field" data-key="openai" hidden>
               <label><span data-i18n="keyOpenai">OpenAI API Key</span></label>
@@ -163,7 +166,10 @@
                 <input type="password" id="keyOpenai" placeholder="sk-..." autocomplete="off" spellcheck="false" />
                 <button type="button" class="key-eye" data-target="keyOpenai" title="anzeigen" aria-label="Key anzeigen"><svg class="ic" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
-              <a class="key-link" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" data-i18n="keyGetOpenai">Key holen →</a>
+              <p class="key-get">
+                <span data-i18n="keyNoKeyHint">Noch keinen Key?</span>
+                <a class="key-link" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" data-i18n="keyGetOpenai">Bei OpenAI holen →</a>
+              </p>
             </div>
             <p class="key-note" data-i18n="keyNote">Dein Key bleibt nur in deinem Browser und wird ausschließlich an deinen lokalen Server gesendet — nie dauerhaft gespeichert. Leer lassen = Demo-Modus.</p>
           </div>
