@@ -1,4 +1,9 @@
-Überarbeite den vorherigen Lebenslauf gemäß dieser Anweisung: "{instruction}".
-Bleibe bei den Fakten. Gib den vollständigen, aktualisierten Lebenslauf zurück.
+Überarbeite den vorherigen Lebenslauf gezielt gemäß dieser Anweisung: „{instruction}“.
+
+Rahmenbedingungen:
+- Bleibe strikt bei den bekannten Fakten; erfinde nichts Neues.
+- Verbessere Formulierung, Fokus, Länge oder Ton nur soweit die Anweisung es verlangt.
+- Erhalte die professionelle, ATS-taugliche Qualität (wirkungsstarke Bullets, klare Struktur).
+- Gib den vollständigen, aktualisierten Lebenslauf zurück — nicht nur den geänderten Abschnitt.
 
 {format}

@@ -1,28 +1,36 @@
-Return the CV in EXACTLY this Markdown format (no code fences):
+Return the CV in EXACTLY this Markdown format (no code fences, no text before/after):
 
 # First and Last Name
-Job title / target role
-Email | Phone | Location | LinkedIn (only what is available)
+Job title / target role (aligned to the posting, but truthful)
+Email | Phone | Location | LinkedIn (only available fields; omit missing ones)
 
 ## Summary
-2–4 sentences tailored to the role.
+2–4 concise sentences: target role, 2–3 strongest matching strengths, clear value to the employer. Weave keywords in naturally.
 
 ## Experience
-### Title — Company (dates)
-- Impact-oriented bullet with a result/metric
-- Another bullet
+### Title — Company (MM/YYYY – MM/YYYY or “Present”)
+- Impact bullet: verb + context + result/value
+- 2–5 more bullets for relevant roles; older roles max 2–3 bullets
+(most recent role first)
 
 ## Education
 ### Degree — Institution (dates)
+- Optional: focus, honors, relevant coursework — only if present
 
 ## Skills
-- Skill, Skill, Skill
+- Professional skills, tools, methods relevant to the role (comma-separated)
+- Optional second line for tools/technologies if useful
 
 ## Languages
-- Language (level)
+- Language (level, e.g. C1 / fluent / native)
 
-Rules:
-- Do NOT invent facts, employers, degrees or numbers that are not in the CV.
-- Strengthen and re-frame existing content toward the role.
-- Weave in relevant keywords from the job posting where they fit the experience.
+## Certifications (only if present)
+- Certificate — Issuer (year)
+
+Quality rules:
+- Do NOT invent facts, employers, titles, degrees, tools, or numbers.
+- Prove impact; without metrics: state scope/ownership/outcome qualitatively but specifically.
+- Include job-posting keywords only where they fit real experience.
+- No first-person “I”, no unsupported clichés, no emojis, no tables.
+- Prefer recent, role-relevant experience; trim the rest.
 - Respond with the CV only, in the format above.

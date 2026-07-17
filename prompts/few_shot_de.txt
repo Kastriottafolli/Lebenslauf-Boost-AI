@@ -1,4 +1,23 @@
-Hier sind Beispiele, wie Bulletpoints gestärkt werden (schwach -> stark):
-- 'Zuständig für den Vertrieb' -> 'Steigerte den regionalen B2B-Umsatz um 27% p.a. durch Neuaufbau der Outbound-Pipeline und Coaching von 4 Mitarbeitenden.'
-- 'Bei der Website geholfen' -> 'Lieferte ein React-Redesign aus, das die Ladezeit um 40% senkte und die Registrierungs-Conversion um 12% erhöhte.'
-- 'Kundensupport gemacht' -> 'Löste 60+ Tickets/Woche bei 4,9/5 CSAT und erstellte eine Hilfe-FAQ, die Wiederholungsanfragen um 18% reduzierte.'
+Orientierung: So werden schwache Formulierungen zu professionellen, wirkungsstarken Bulletpoints. Übernimm das Muster — nicht die Beispielzahlen, wenn sie im Lebenslauf fehlen.
+
+VORHER → NACHHER
+
+1. Schwach: „Zuständig für den Vertrieb“
+   Stark: „Steigerte den regionalen B2B-Umsatz um 27 % p. a. durch Neuaufbau der Outbound-Pipeline und Coaching von 4 Mitarbeitenden.“
+
+2. Schwach: „Bei der Website geholfen“
+   Stark: „Lieferte ein React-Redesign aus, das die Ladezeit um 40 % senkte und die Registrierungs-Conversion um 12 % erhöhte.“
+
+3. Schwach: „Kundensupport gemacht“
+   Stark: „Löste 60+ Tickets/Woche bei 4,9/5 CSAT und etablierte eine Hilfe-FAQ, die Wiederholungsanfragen um 18 % reduzierte.“
+
+4. Schwach: „Projekte geleitet“
+   Stark: „Führte ein cross-funktionales 6-Personen-Team und lieferte die CRM-Migration termingerecht; After-Sales-Prozesse standardisiert und Übergabezeiten verkürzt.“
+
+5. Schwach: „Mit Excel gearbeitet“
+   Stark: „Automatisierte monatliche Forecasting-Reports in Excel/Power Query und verkürzte die Berichterstellung von 2 Tagen auf unter 3 Stunden.“
+
+6. Schwach (ohne Kennzahl im Original): „Verantwortlich für Onboarding neuer Mitarbeitender“
+   Stark (qualitativ, ohne Fake-Metrik): „Gestaltete und steuerte das Onboarding neuer Mitarbeitender inkl. Trainingsplan und Buddy-System; verkürzte die Einarbeitungszeit spürbar und sicherte einheitliche Qualitätsstandards.“
+
+Schreibregel: Handlungsverb zuerst · konkrete Handlung · greifbares Ergebnis. Keine erfundenen Kennzahlen.

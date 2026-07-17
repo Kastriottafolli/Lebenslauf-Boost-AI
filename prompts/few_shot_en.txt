@@ -1,4 +1,23 @@
-Here are examples of how to strengthen bullet points (weak -> strong):
-- 'Responsible for sales' -> 'Grew regional B2B sales 27% YoY by restructuring the outbound pipeline and coaching 4 reps.'
-- 'Helped with the website' -> 'Shipped a React redesign that cut page load time 40% and lifted sign-up conversion 12%.'
-- 'Did customer support' -> 'Resolved 60+ tickets/week at a 4.9/5 CSAT, and wrote a help-center FAQ that reduced repeat tickets 18%.'
+Guidance: turn weak duty statements into professional, impact-driven bullets. Follow the pattern — do not copy example metrics unless they exist in the candidate’s CV.
+
+BEFORE → AFTER
+
+1. Weak: “Responsible for sales”
+   Strong: “Grew regional B2B sales 27% YoY by restructuring the outbound pipeline and coaching 4 reps.”
+
+2. Weak: “Helped with the website”
+   Strong: “Shipped a React redesign that cut page load time 40% and lifted sign-up conversion 12%.”
+
+3. Weak: “Did customer support”
+   Strong: “Resolved 60+ tickets/week at a 4.9/5 CSAT and built a help-center FAQ that reduced repeat tickets 18%.”
+
+4. Weak: “Managed projects”
+   Strong: “Led a cross-functional team of 6 to deliver a CRM migration on schedule; standardized after-sales workflows and shortened handoff times.”
+
+5. Weak: “Used Excel”
+   Strong: “Automated monthly forecasting reports with Excel/Power Query, cutting report production from 2 days to under 3 hours.”
+
+6. Weak (no metric in source): “Responsible for onboarding new hires”
+   Strong (qualitative, no fake metric): “Designed and ran new-hire onboarding including training plans and a buddy system; shortened time-to-productivity and aligned quality standards across teams.”
+
+Writing rule: lead with an action verb · state the concrete action · close with a tangible outcome. Never invent metrics.

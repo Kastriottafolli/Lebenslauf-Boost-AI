@@ -1,12 +1,14 @@
-Create an optimized, ATS-friendly CV tailored to the job below.
+Create a professional, ATS-optimized CV precisely tailored to the job below.
+
+Quality bar: the draft should read as if written by an experienced career consultant — clearly positioned, impact-driven, keyword-aware, and strictly factual.
 
 ### JOB POSTING
 {job_description}
 
-### CANDIDATE WISHES (optional)
+### CANDIDATE WISHES (optional — follow closely where compatible with the facts)
 {wishes}
 
-### RELEVANT CV EXCERPTS (RAG)
+### RELEVANT CV EXCERPTS (RAG — sole allowed source of facts)
 {cv_context}
 
 {technique_block}

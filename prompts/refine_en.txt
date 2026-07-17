@@ -1,4 +1,9 @@
-Revise the previous CV according to this instruction: "{instruction}".
-Keep everything truthful. Return the full updated CV.
+Revise the previous CV specifically according to this instruction: “{instruction}”.
+
+Constraints:
+- Stay strictly within known facts; invent nothing new.
+- Improve wording, focus, length, or tone only as the instruction requires.
+- Preserve professional, ATS-ready quality (impact bullets, clear structure).
+- Return the full updated CV — not only the changed section.
 
 {format}

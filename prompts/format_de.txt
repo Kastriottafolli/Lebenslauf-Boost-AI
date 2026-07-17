@@ -1,28 +1,36 @@
-Gib den Lebenslauf in GENAU diesem Markdown-Format aus (keine Code-Blöcke):
+Gib den Lebenslauf in GENAU diesem Markdown-Format aus (keine Code-Blöcke, kein Text davor/danach):
 
 # Vor- und Nachname
-Berufsbezeichnung / Zielposition
-E-Mail | Telefon | Ort | LinkedIn (nur vorhandene Angaben)
+Berufsbezeichnung / Zielposition (an die Stelle angelehnt, aber wahrheitsgemäß)
+E-Mail | Telefon | Ort | LinkedIn (nur vorhandene Angaben; fehlende weglassen)
 
 ## Profil
-2–4 Sätze, zugeschnitten auf die Stelle.
+2–4 prägnante Sätze: Zielrolle, 2–3 stärkste passende Stärken, klarer Nutzen für den Arbeitgeber. Keywords natürlich einweben.
 
 ## Berufserfahrung
-### Position — Firma (Zeitraum)
-- Wirkungsorientierter Bulletpoint mit Ergebnis/Kennzahl
-- Weiterer Bulletpoint
+### Position — Firma (MM/JJJJ – MM/JJJJ oder „heute“)
+- Wirkungsorientierter Bullet: Verb + Kontext + Ergebnis/Nutzen
+- Weitere 2–5 Bullets für relevante Rollen; ältere Rollen max. 2–3 Bullets
+(neueste Position zuerst)
 
 ## Ausbildung
 ### Abschluss — Institution (Zeitraum)
+- Optional: Fokus, Abschlussnote, relevante Schwerpunkte — nur wenn vorhanden
 
 ## Fähigkeiten
-- Kompetenz, Kompetenz, Kompetenz
+- Fachlich: relevante Skills, Tools, Methoden (stellenbezogen, kommagetrennt)
+- Optional zweite Zeile für Tools/Technologien, falls sinnvoll
 
 ## Sprachen
-- Sprache (Niveau)
+- Sprache (Niveau, z. B. C1 / fließend / Muttersprache)
 
-Regeln:
-- Erfinde KEINE Fakten, Arbeitgeber, Abschlüsse oder Zahlen, die nicht im Lebenslauf stehen.
-- Formuliere vorhandene Inhalte stärker und auf die Stelle ausgerichtet.
-- Nutze relevante Schlüsselbegriffe der Stellenanzeige, wo sie zur Erfahrung passen.
-- Antworte ausschließlich mit dem Lebenslauf im obigen Format.
+## Zertifikate (nur wenn vorhanden)
+- Zertifikat — Aussteller (Jahr)
+
+Qualitätsregeln:
+- Erfinde KEINE Fakten, Arbeitgeber, Titel, Abschlüsse, Tools oder Zahlen.
+- Belege Wirkung; ohne Kennzahl: Scope/Verantwortung/Ergebnis qualitativ, aber konkret.
+- Integriere Keywords der Stellenanzeige nur dort, wo sie zur Erfahrung passen.
+- Keine Ich-Form, keine Floskeln ohne Beleg, keine Emojis, keine Tabellen.
+- Bevorzuge aktuelle, stellenrelevante Erfahrung; irrelevantes kürzen.
+- Antworte ausschließlich mit dem Lebenslauf im Format oben.

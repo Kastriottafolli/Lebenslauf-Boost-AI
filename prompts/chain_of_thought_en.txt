@@ -1,5 +1,9 @@
-Think step by step internally before writing (do NOT output these steps):
-1. Extract the key requirements, must-have skills and keywords from the job.
-2. Map the candidate's real experience to each requirement.
-3. Identify which true strengths to foreground and how to phrase them.
-Then output only the final CV.
+Work through these steps internally before writing (do NOT output the steps):
+
+1. Job analysis — Extract: target role, must-haves, nice-to-haves, soft skills, tools/technologies, domain terms, and recurring keywords/synonyms.
+2. Evidence mapping — Map each must-have to proven experience in the CV. Note gaps honestly (do not invent).
+3. Positioning — Choose 3–5 core messages that position the candidate for this exact role (summary + bullet order).
+4. Keyword plan — Select 8–15 natural keywords from the posting that fit real experience; plan where they appear in summary, bullets, and skills.
+5. Drafting — Write impact bullets (verb + context + result). Use metrics only when evidenced; otherwise state precise qualitative impact.
+6. Polish — Cut redundancy, normalize tense/date style, check ATS readability, and verify no facts were invented.
+7. Output — Return only the finished CV in the required format.

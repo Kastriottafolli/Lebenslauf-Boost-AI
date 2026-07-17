@@ -1,5 +1,9 @@
-Gehe vor dem Schreiben gedanklich Schritt für Schritt vor (diese Schritte NICHT ausgeben):
-1. Extrahiere die Kernanforderungen, Must-have-Skills und Keywords der Stelle.
-2. Ordne die echte Erfahrung der Bewerber:in jeder Anforderung zu.
-3. Entscheide, welche echten Stärken du in den Vordergrund stellst und wie.
-Gib anschließend nur den fertigen Lebenslauf aus.
+Arbeite intern strikt Schritt für Schritt (diese Schritte NICHT ausgeben):
+
+1. Stellenanalyse — Extrahiere: Zielrolle, Must-haves, Nice-to-haves, Soft Skills, Tools/Technologien, Branchenbegriffe und wiederkehrende Keywords/Synonyme.
+2. Abgleich — Ordne jeder Must-have-Anforderung belegte Erfahrung aus dem Lebenslauf zu. Markiere Gaps ehrlich (nicht erfinden).
+3. Priorisierung — Wähle 3–5 Kernbotschaften, die die Bewerber:in für genau diese Stelle positionieren (Profil + Reihenfolge der Bullets).
+4. Keyword-Plan — Liste 8–15 natürliche Keywords aus der Anzeige, die zur realen Erfahrung passen; plane, wo sie im Profil, in Bullets und Skills vorkommen.
+5. Formulierung — Schreibe wirkungsstarke Bullets (Verb + Kontext + Ergebnis). Kennzahlen nur, wenn belegt; sonst präzise qualitative Wirkung.
+6. Feinschliff — Kürze Redundanzen, vereinheitliche Zeitformen/Datumsformat, prüfe ATS-Lesbarkeit und dass keine Fakten erfunden wurden.
+7. Ausgabe — Gib ausschließlich den fertigen Lebenslauf im geforderten Format aus.

@@ -1,12 +1,14 @@
-Erstelle einen optimierten, ATS-freundlichen Lebenslauf, zugeschnitten auf die folgende Stelle.
+Erstelle einen professionellen, ATS-optimierten Lebenslauf, der exakt auf die folgende Stelle zugeschnitten ist.
+
+Zielqualität: Der Entwurf soll so wirken, als hätte ihn eine erfahrene Bewerbungsberatung geschrieben — klar positioniert, wirkungsstark formuliert, keyword-bewusst und strikt faktentreu.
 
 ### STELLENANZEIGE
 {job_description}
 
-### WÜNSCHE DER BEWERBER:IN (optional)
+### WÜNSCHE DER BEWERBER:IN (optional — strikt berücksichtigen, soweit mit den Fakten vereinbar)
 {wishes}
 
-### RELEVANTE LEBENSLAUF-AUSZÜGE (RAG)
+### RELEVANTE LEBENSLAUF-AUSZÜGE (RAG — einzige erlaubte Faktenbasis)
 {cv_context}
 
 {technique_block}
