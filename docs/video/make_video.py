@@ -1,14 +1,6 @@
-"""Erzeugt das deutsche 3-5-minuetige Projektvideo.
+"""Professionelles Sapphire-Nightfall Projektvideo (ca. 3–5 Minuten).
 
-Voraussetzungen (macOS):
-- ffmpeg / ffprobe
-- say
-- Pillow (aus den Projekt-Requirements)
-
-Ausgabe:
-- docs/video/lebenslauf-boost-ai-projektvideo.mp4
-- docs/video/lebenslauf-boost-ai-projektvideo.srt
-- docs/video/sprechertext.txt
+Voraussetzungen (macOS): ffmpeg, ffprobe, say (Stimme Anna), Pillow.
 """
 
 from __future__ import annotations
@@ -20,7 +12,7 @@ import textwrap
 from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,6 +21,16 @@ ASSETS = VIDEO_DIR / "assets"
 BUILD = VIDEO_DIR / "build"
 WIDTH, HEIGHT = 1920, 1080
 FPS = 30
+
+# Sapphire Nightfall
+INK = "#262b40"
+ACCENT = "#0474c4"
+ACCENT2 = "#06457f"
+SOFT = "#a8c4ec"
+BRIGHT = "#5379ae"
+PAPER = "#eef3fa"
+MUTED = "#9eb6d4"
+WHITE = "#f0f5fc"
 
 
 @dataclass(frozen=True)
@@ -40,176 +42,111 @@ class Scene:
 
 NARRATIONS = {
     "title": (
-        "Hallo und willkommen zur Vorstellung von Lebenslauf Boost AI. "
-        "Das Projekt optimiert einen vorhandenen Lebenslauf gezielt fuer eine Stellenanzeige. "
-        "Die Oberflaeche im Sapphire Nightfall Design wird vom Maskottchen Boosti begleitet. "
-        "Zwei Sprachmodelle, Retrieval Augmented Generation, ein ATS Keyword Check und der Export "
-        "als PDF oder Word in sechs Designs stecken in einer einzigen Anwendung."
+        "Willkommen zur Projektvorstellung von Lebenslauf Boost AI. "
+        "Die aktuelle Webanwendung im Sapphire Nightfall Design begleitet Bewerbende mit dem Maskottchen Boosti "
+        "durch einen klaren, dreistufigen Workflow. "
+        "Zwei Sprachmodelle, Retrieval Augmented Generation, ein ATS Keyword Check und sechs Export Designs "
+        "sind in einer einzigen Anwendung vereint — ohne Anmeldung und strikt auf echten Lebenslauf Daten."
     ),
-    "problem": (
-        "Die Ausgangssituation ist einfach: Bewerberinnen und Bewerber muessen ihren Lebenslauf "
-        "fuer jede Stelle neu anpassen. Das kostet Zeit, und generative KI kann dabei Fakten "
-        "erfinden. Lebenslauf Boost AI loest beide Probleme. Die Anwendung verwendet nur Inhalte "
-        "aus dem hochgeladenen Lebenslauf, waehlt die fuer die Stelle relevanten Abschnitte aus "
-        "und erstellt daraus einen nachvollziehbaren Entwurf. Die gesamte Oberflaeche ist auf "
-        "Deutsch und Englisch verfuegbar und funktioniert ohne Anmeldung."
+    "hero": (
+        "So sieht die aktuelle Website aus: ein dunkler Hero Bereich mit klarer Botschaft, "
+        "ein dreistufiger Stepper und darunter die Erklaerung in sechs einfachen Schritten. "
+        "Die Oberflaeche ist auf Deutsch und Englisch verfuegbar. "
+        "Im Zentrum steht: der Lebenslauf wird zugeschnitten auf die Stelle, ohne Fakten zu erfinden."
     ),
     "input": (
-        "Im ersten Schritt wird die vollstaendige Stellenanzeige eingefuegt. Zusaetzlich lassen "
-        "sich Wuensche zu Ton, Schwerpunkt und Laenge festlegen. Danach wird der Lebenslauf als "
-        "PDF, Word Dokument oder Textdatei hochgeladen. Die App extrahiert den Text und kann sogar "
-        "ein Bewerbungsfoto erkennen. Fuer Claude und OpenAI gibt es direkte Links, falls noch "
-        "kein API Key vorhanden ist. Ohne Key laeuft der Demo Modus. Anschliessend zerlegt das "
-        "RAG Modul den Inhalt in Abschnitte und erstellt einen Suchindex."
+        "Schritt eins beginnt mit der Stellenanzeige und optionalen Wuenschen zu Ton, Fokus und Laenge. "
+        "Danach wird der Lebenslauf als PDF, Word oder Textdatei hochgeladen. "
+        "Fuer Claude und OpenAI gibt es direkte Links, falls noch kein API Key vorhanden ist. "
+        "Ohne Key laeuft der Demo Modus. Die App extrahiert Text und optional ein Foto und baut den RAG Index auf."
+    ),
+    "loading": (
+        "Beim Klick auf Generieren erscheint eine fuenfsekundige Ladesequenz. "
+        "Fortschrittsring, Checkliste und Schreibanimation machen sichtbar, dass die KI die Stelle analysiert, "
+        "passende Staerken waehlt und den Entwurf formuliert. "
+        "Erst danach wechselt die App zur Bearbeitungsseite."
     ),
     "generation": (
-        "Fuer die Generierung kann Claude, OpenAI oder der direkte Vergleich gewaehlt werden. "
-        "Professionelle Prompt Vorlagen kombinieren Rollen Prompting, Few Shot Beispiele und "
-        "Chain of Thought. Stellenanzeige, Nutzerwuensche und passende RAG Auszuege werden "
-        "dynamisch eingesetzt. Beim Absenden zeigt eine fuenfsekundige Ladesequenz den Fortschritt, "
-        "bevor die Bearbeitungsseite erscheint. Im Vergleichsmodus entstehen zwei unabhaengige "
-        "Versionen mit ATS Score, Keyword Check und transparenter Modellangabe."
+        "Auf der Bearbeitungsseite koennen Claude und OpenAI direkt verglichen werden. "
+        "Fuer jede Version zeigt die App ATS Score, Keyword Check sowie Modell und Prompt Technik. "
+        "Professionelle Prompt Vorlagen mit Rollen Prompting, Few Shot und Chain of Thought steuern die Formulierung. "
+        "Die KI darf nur Angaben verwenden, die im hochgeladenen Lebenslauf belegt sind."
     ),
     "refine": (
-        "Der generierte Inhalt kann direkt bearbeitet werden. Noch wichtiger ist die iterative "
-        "Verbesserung. Eine Anweisung wie kuerzer, technischer oder formeller wird zusammen mit "
-        "dem bisherigen Gespraechsverlauf an das Modell gesendet. Jede neue Antwort wird als "
-        "eigene Version gespeichert. Dadurch geht der vorherige Stand nicht verloren und das "
-        "Modell behaelt den Kontext, ohne den gesamten Prozess neu zu starten."
+        "Der Entwurf laesst sich im Editor direkt anpassen. "
+        "Zusaetzlich gibt es Schnellaktionen und freie Anweisungen, zum Beispiel kuerzer, technischer oder foermlicher. "
+        "Jede Antwort wird ueber Conversation History als eigene Version gespeichert. "
+        "So bleibt der Kontext erhalten, ohne den gesamten Prozess neu zu starten."
     ),
     "export": (
-        "Im letzten Anwendungsschritt wird ein Design ausgewaehlt. Zur Verfuegung stehen sechs "
-        "Vorlagen: Azure, Executive, Nordic, Sapphire, Cobalt und Slate. Die Vorschau aktualisiert "
-        "sich sofort. Auch ein erkanntes Foto kann ersetzt oder entfernt werden. Danach waehlt "
-        "die Person PDF oder Word, legt den Dateinamen fest und laedt das fertige Dokument herunter. "
-        "Der Export ist zustandslos und speichert keine zusaetzliche Datei in der Datenbank."
+        "Im dritten Schritt waehlt man eines von sechs Designs: Azure, Executive, Nordic, Sapphire, Cobalt oder Slate. "
+        "Die Live Vorschau aktualisiert sich sofort. Foto, Dateiname und Format PDF oder Word sind frei waehlbar. "
+        "Der Download startet lokal. Der Export bleibt zustandslos und speichert keine zusaetzliche Datei in der Datenbank."
     ),
     "architecture": (
-        "Technisch besteht das Projekt aus einem Vanilla JavaScript Frontend und einem FastAPI "
-        "Backend. Pydantic validiert alle Requests. Eine Provider Schicht kapselt Anthropic Claude "
-        "und OpenAI. Die Fachlogik ist getrennt in Datei Extraktion, RAG, Prompt Aufbau und Export. "
-        "SQLAlchemy verbindet die Anwendung mit SQLite. API Keys folgen dem Bring Your Own Key "
-        "Prinzip: Sie bleiben im Browser, werden nur fuer den Request uebertragen und niemals "
-        "serverseitig gespeichert."
+        "Technisch besteht das Projekt aus einem Vanilla JavaScript Frontend und einem FastAPI Backend. "
+        "Pydantic validiert alle Requests. Eine Provider Schicht kapselt Anthropic Claude und OpenAI. "
+        "Services uebernehmen Extraktion, RAG, Prompt Aufbau, ATS Analyse und den PDF sowie DOCX Export. "
+        "API Keys folgen dem Bring Your Own Key Prinzip und bleiben nur im Browser."
     ),
     "database": (
-        "Die Datenbank ist um die Tabelle sessions aufgebaut. Eine Sitzung besitzt hoechstens "
-        "ein CV Dokument und beliebig viele Generierungen sowie Nachrichten. CV documents speichert "
-        "extrahierten Text, RAG Index und optional das Foto. Generations bildet die komplette "
-        "Versionshistorie inklusive Anbieter, Modell, Prompt Technik, ATS Score und Keyword Listen. "
-        "Messages enthaelt den Dialog fuer die iterative Verbesserung. Foreign Keys, Indizes, "
-        "Check Constraints und kaskadierendes Loeschen sichern die Datenintegritaet."
-    ),
-    "quality": (
-        "Damit erfuellt das Projekt die zentralen KI Engineering Anforderungen: zwei Text APIs, "
-        "professionelle Prompt Vorlagen, dynamische Kontextinjektion, RAG, Conversation History, "
-        "Vergleichsanalyse und persistente Datenhaltung. Der Demo Modus macht alle Schritte ohne "
-        "kostenpflichtigen API Aufruf pruefbar. Naechste Ausbaustufen waeren PostgreSQL, Alembic, "
-        "Authentifizierung und Objektspeicher."
+        "Die Persistenz nutzt SQLite mit SQLAlchemy. "
+        "Die Tabelle sessions verbindet cv documents, generations und messages. "
+        "Damit bleiben Versionshistorie, ATS Ergebnisse, Keyword Listen und der Dialog fuer Verfeinerungen "
+        "nachvollziehbar und konsistent."
     ),
     "outro": (
-        "Lebenslauf Boost AI zeigt damit einen vollstaendigen End to End Workflow: echte Daten "
-        "hochladen, relevanten Kontext finden, zwei KI Entwuerfe vergleichen, gezielt nachbessern "
-        "und in sechs Designs professionell exportieren. Vielen Dank fuer das Ansehen."
+        "Lebenslauf Boost AI zeigt damit den vollstaendigen Weg auf der aktuellen Website: "
+        "echte Daten hochladen, relevanten Kontext finden, zwei KI Entwuerfe vergleichen, "
+        "gezielt nachbessern und in sechs Designs professionell exportieren. "
+        "Vielen Dank fuer das Ansehen."
     ),
 }
 
 GERMAN_WORDS = {
-    "fuer": "für",
-    "Fuer": "Für",
-    "ueber": "über",
-    "uebertragen": "übertragen",
-    "ueberschrieben": "überschrieben",
-    "vollstaendig": "vollständig",
-    "vollstaendige": "vollständige",
-    "vollstaendigen": "vollständigen",
-    "verfuegbar": "verfügbar",
-    "Verfuegung": "Verfügung",
-    "einfuegt": "einfügt",
-    "eingefuegt": "eingefügt",
-    "muessen": "müssen",
-    "loest": "löst",
-    "zusaetzlich": "zusätzlich",
-    "Zusaetzlich": "Zusätzlich",
-    "Anschliessend": "Anschließend",
-    "Wuensche": "Wünsche",
-    "Nutzerwuensche": "Nutzerwünsche",
-    "Laenge": "Länge",
-    "waehlt": "wählt",
-    "ausgewaehlt": "ausgewählt",
-    "gewaehlt": "gewählt",
-    "haelt": "hält",
-    "naechsten": "nächsten",
-    "naechste": "nächste",
-    "naechsten": "nächsten",
-    "moeglich": "möglich",
-    "koennen": "können",
-    "kuerzer": "kürzer",
-    "unabhaengige": "unabhängige",
-    "Gespraechsverlauf": "Gesprächsverlauf",
-    "behaelt": "behält",
-    "laedt": "lädt",
-    "zusaetzliche": "zusätzliche",
-    "fuehrende": "führende",
-    "Schluesselbegriffe": "Schlüsselbegriffe",
-    "Schluessel": "Schlüssel",
-    "Auszuege": "Auszüge",
-    "zurueck": "zurück",
-    "Loeschen": "Löschen",
-    "loeschen": "löschen",
-    "geloescht": "gelöscht",
-    "hoechstens": "höchstens",
-    "beliebig": "beliebig",
-    "gehoeren": "gehören",
-    "enthaelt": "enthält",
-    "erfuellt": "erfüllt",
-    "waeren": "wären",
-    "Entwuerfe": "Entwürfe",
-    "Oberflaeche": "Oberfläche",
-    "pruefbar": "prüfbar",
-    "Qualitaet": "Qualität",
-    "Datenintegritaet": "Datenintegrität",
-    "laeuft": "läuft",
-    "fuenfsekundige": "fünfsekundige",
-    "fuenfsekundigen": "fünfsekundigen",
-    "Naechste": "Nächste",
-    "naechste": "nächste",
-    "Vorlagen": "Vorlagen",
+    "fuer": "für", "Fuer": "Für", "ueber": "über", "uebertragen": "übertragen",
+    "vollstaendig": "vollständig", "vollstaendige": "vollständige", "vollstaendigen": "vollständigen",
+    "verfuegbar": "verfügbar", "Verfuegung": "Verfügung", "einfuegt": "einfügt", "eingefuegt": "eingefügt",
+    "muessen": "müssen", "loest": "löst", "zusaetzlich": "zusätzlich", "Zusaetzlich": "Zusätzlich",
+    "Anschliessend": "Anschließend", "Wuensche": "Wünsche", "Nutzerwuensche": "Nutzerwünsche",
+    "Laenge": "Länge", "waehlt": "wählt", "ausgewaehlt": "ausgewählt", "gewaehlt": "gewählt",
+    "naechsten": "nächsten", "naechste": "nächste", "Naechste": "Nächste", "moeglich": "möglich",
+    "koennen": "können", "kuerzer": "kürzer", "unabhaengige": "unabhängige",
+    "Gespraechsverlauf": "Gesprächsverlauf", "behaelt": "behält", "laedt": "lädt",
+    "zusaetzliche": "zusätzliche", "Schluesselbegriffe": "Schlüsselbegriffe", "Auszuege": "Auszüge",
+    "Loeschen": "Löschen", "loeschen": "löschen", "hoechstens": "höchstens", "enthaelt": "enthält",
+    "erfuellt": "erfüllt", "waeren": "wären", "Entwuerfe": "Entwürfe", "Oberflaeche": "Oberfläche",
+    "pruefbar": "prüfbar", "laeuft": "läuft", "fuenfsekundige": "fünfsekundige",
+    "durchgaengigen": "durchgängigen", "Erklaerung": "Erklärung", "Schritt": "Schritt",
+    "Uebergang": "Übergang", "laesst": "lässt", "foermlicher": "förmlicher",
 }
 
 
 def germanize(text: str) -> str:
-    """Wandelt die ASCII-Schreibweise in saubere deutsche Anzeige/Sprache um."""
     result = text
     for source, target in sorted(GERMAN_WORDS.items(), key=lambda item: -len(item[0])):
         result = re.sub(rf"\b{re.escape(source)}\b", target, result)
     return result
 
 
-def run(command: list[str], *, cwd: Path = ROOT, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run(command: list[str], *, cwd: Path = ROOT) -> None:
     print("$", " ".join(command))
-    return subprocess.run(command, cwd=cwd, check=check, text=True, capture_output=False)
+    subprocess.run(command, cwd=cwd, check=True)
 
 
-def font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
-    candidates = [
-        Path("/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf"),
-        Path("/System/Library/Fonts/Supplemental/Helvetica.ttc"),
-        Path("/Library/Fonts/Arial.ttf"),
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            return ImageFont.truetype(str(candidate), size)
-    return ImageFont.load_default()
+def font(size: int, bold: bool = False, serif: bool = False) -> ImageFont.FreeTypeFont:
+    if serif:
+        path = Path("/System/Library/Fonts/Supplemental/Georgia Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Georgia.ttf")
+    else:
+        path = Path("/System/Library/Fonts/Supplemental/Arial Bold.ttf" if bold else "/System/Library/Fonts/Supplemental/Arial.ttf")
+    return ImageFont.truetype(str(path), size) if path.exists() else ImageFont.load_default()
 
 
-def wrap(draw: ImageDraw.ImageDraw, text: str, selected_font: ImageFont.ImageFont, width: int) -> list[str]:
-    words = text.split()
-    lines: list[str] = []
-    current = ""
-    for word in words:
+def wrap(draw: ImageDraw.ImageDraw, text: str, selected: ImageFont.ImageFont, width: int) -> list[str]:
+    lines, current = [], ""
+    for word in text.split():
         candidate = f"{current} {word}".strip()
-        if draw.textlength(candidate, font=selected_font) <= width:
+        if draw.textlength(candidate, font=selected) <= width:
             current = candidate
         else:
             if current:
@@ -220,160 +157,146 @@ def wrap(draw: ImageDraw.ImageDraw, text: str, selected_font: ImageFont.ImageFon
     return lines
 
 
-def background() -> Image.Image:
-    image = Image.new("RGB", (WIDTH, HEIGHT), "#0d0c12")
+def sapphire_bg() -> Image.Image:
+    image = Image.new("RGB", (WIDTH, HEIGHT), INK)
     draw = ImageDraw.Draw(image)
     for y in range(HEIGHT):
-        ratio = y / HEIGHT
-        color = (
-            int(13 + 10 * ratio),
-            int(12 + 18 * ratio),
-            int(18 + 22 * ratio),
-        )
-        draw.line((0, y, WIDTH, y), fill=color)
-    draw.ellipse((-300, 80, 700, 1080), fill="#241b12")
-    draw.ellipse((1250, -250, 2200, 700), fill="#1d1730")
-    return image
+        t = y / HEIGHT
+        r = int(0x26 + (0x06 - 0x26) * t * 0.5)
+        g = int(0x2b + (0x45 - 0x2b) * t * 0.5)
+        b = int(0x40 + (0x7f - 0x40) * t * 0.55)
+        draw.line((0, y, WIDTH, y), fill=(r, g, b))
+    overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    od = ImageDraw.Draw(overlay)
+    od.ellipse((-300, -180, 700, 720), fill=(4, 116, 196, 45))
+    od.ellipse((1200, 380, 2200, 1280), fill=(168, 196, 236, 38))
+    return Image.alpha_composite(image.convert("RGBA"), overlay).convert("RGB")
 
 
-def title_slide(path: Path, eyebrow: str, title: str, subtitle: str, footer: str) -> None:
-    image = background()
+def title_card(path: Path, eyebrow: str, title: str, subtitle: str, footer: str) -> None:
+    image = sapphire_bg()
     draw = ImageDraw.Draw(image)
-    gold = "#e8b866"
-    draw.rounded_rectangle((130, 112, 510, 158), radius=23, fill="#2a241d", outline="#6f5836")
-    draw.text((320, 135), eyebrow.upper(), anchor="mm", font=font(20, True), fill=gold)
-    title_font = font(76, True)
-    y = 250
-    for line in wrap(draw, title, title_font, 1500):
-        draw.text((WIDTH // 2, y), line, anchor="ma", font=title_font, fill="#f6f0e7")
-        y += 92
-    subtitle_font = font(31)
-    y += 28
-    for line in wrap(draw, subtitle, subtitle_font, 1250):
-        draw.text((WIDTH // 2, y), line, anchor="ma", font=subtitle_font, fill="#b8b2ac")
-        y += 46
-    draw.line((650, 825, 1270, 825), fill="#665744", width=2)
-    draw.text((WIDTH // 2, 880), footer, anchor="ma", font=font(24), fill=gold)
+    # badge
+    bw = int(draw.textlength(eyebrow.upper(), font=font(18, True))) + 36
+    draw.rounded_rectangle((WIDTH // 2 - bw // 2, 150, WIDTH // 2 + bw // 2, 196), radius=22, fill=ACCENT)
+    draw.text((WIDTH // 2, 173), eyebrow.upper(), anchor="mm", font=font(18, True), fill="#fff")
+
+    y = 280
+    for line in wrap(draw, title, font(72, True, serif=True), 1500):
+        draw.text((WIDTH // 2, y), line, anchor="ma", font=font(72, True, serif=True), fill=WHITE)
+        y += 90
+    y += 20
+    for line in wrap(draw, subtitle, font(28), 1200):
+        draw.text((WIDTH // 2, y), line, anchor="ma", font=font(28), fill=MUTED)
+        y += 42
+    draw.line((720, 860, 1200, 860), fill=SOFT, width=3)
+    draw.text((WIDTH // 2, 920), footer, anchor="ma", font=font(22, True), fill=SOFT)
     image.save(path)
 
 
-def architecture_slide(path: Path) -> None:
-    image = background()
+def architecture_card(path: Path) -> None:
+    image = sapphire_bg()
     draw = ImageDraw.Draw(image)
-    draw.text((100, 70), "Architektur", font=font(52, True), fill="#f6f0e7")
-    draw.text((100, 136), "UI mit Boosti, FastAPI-Backend, professionelle Prompts und Persistenz", font=font(25), fill="#aaa4a0")
-
+    draw.text((100, 70), "Architektur", font=font(50, True, serif=True), fill=WHITE)
+    draw.text((100, 140), "Wie die aktuelle Website technisch aufgebaut ist", font=font(24), fill=MUTED)
     boxes = [
-        (90, 300, 390, 630, "Frontend", ["Sapphire Nightfall", "Boosti-Tour · DE/EN", "BYOK + Key-Links"], "#315f55"),
-        (520, 250, 880, 680, "FastAPI", ["REST-Endpunkte", "Pydantic", "Orchestrierung"], "#765b2d"),
-        (1010, 190, 1390, 440, "KI & RAG", ["Claude + OpenAI", "Few-shot + CoT", "Embeddings / TF-IDF"], "#58447a"),
-        (1010, 520, 1390, 770, "Services", ["Datei-Extraktion", "ATS-Analyse", "6 PDF/DOCX-Designs"], "#2e557d"),
-        (1510, 330, 1810, 640, "SQLite", ["sessions", "cv_documents", "generations", "messages"], "#7d4c2e"),
+        (90, 280, 450, 700, "Frontend", ["Sapphire Nightfall", "Boosti-Tour DE/EN", "5s Lade-Overlay", "BYOK + Key-Links"], ACCENT),
+        (500, 280, 860, 700, "Backend", ["FastAPI", "Pydantic", "Orchestrierung", "Export-Service"], ACCENT2),
+        (910, 230, 1330, 470, "KI & RAG", ["Claude + OpenAI", "Professionelle Prompts", "ATS-Analyse"], BRIGHT),
+        (910, 510, 1330, 750, "Services", ["Datei-Extraktion", "RAG Index", "PDF / DOCX"], "#2c444c"),
+        (1380, 320, 1830, 680, "SQLite", ["sessions", "cv_documents", "generations", "messages"], INK),
     ]
     for x1, y1, x2, y2, heading, lines, color in boxes:
-        draw.rounded_rectangle((x1, y1, x2, y2), radius=22, fill="#17161d", outline=color, width=4)
-        draw.rectangle((x1, y1, x2, y1 + 65), fill=color)
-        draw.text(((x1 + x2) // 2, y1 + 33), heading, anchor="mm", font=font(26, True), fill="#fff")
-        y = y1 + 105
+        draw.rounded_rectangle((x1, y1, x2, y2), radius=20, fill=(15, 28, 48), outline=SOFT, width=2)
+        draw.rounded_rectangle((x1, y1, x2, y1 + 64), radius=20, fill=color)
+        draw.rectangle((x1, y1 + 36, x2, y1 + 64), fill=color)
+        draw.text(((x1 + x2) // 2, y1 + 32), heading, anchor="mm", font=font(24, True), fill="#fff")
+        y = y1 + 100
         for line in lines:
-            draw.ellipse((x1 + 28, y - 4, x1 + 38, y + 6), fill="#e8b866")
-            draw.text((x1 + 55, y), line, anchor="lm", font=font(21), fill="#d5d1cc")
-            y += 54
-    for start, end in [
-        ((390, 465), (520, 465)),
-        ((880, 430), (1010, 315)),
-        ((880, 500), (1010, 645)),
-        ((1390, 315), (1510, 430)),
-        ((1390, 645), (1510, 540)),
-    ]:
-        draw.line((*start, *end), fill="#b6955d", width=5)
-        ex, ey = end
-        draw.polygon([(ex, ey), (ex - 18, ey - 10), (ex - 18, ey + 10)], fill="#b6955d")
-    draw.text((100, 920), "Request-Ablauf", font=font(24, True), fill="#e8b866")
-    flow = "Validieren  ->  RAG-Kontext  ->  Prompt  ->  Provider  ->  ATS-Analyse  ->  Speichern"
-    draw.text((100, 970), flow, font=font(25), fill="#d5d1cc")
+            draw.ellipse((x1 + 28, y + 4, x1 + 40, y + 16), fill=SOFT)
+            draw.text((x1 + 54, y), line, font=font(20), fill=WHITE)
+            y += 48
+    draw.text((100, 920), "Upload → RAG → Prompt → Provider → ATS → Refine → Export", font=font(24, True), fill=SOFT)
     image.save(path)
 
 
-def technology_slide(path: Path) -> None:
-    image = background()
+def database_card(path: Path) -> None:
+    image = sapphire_bg()
     draw = ImageDraw.Draw(image)
-    draw.text((100, 70), "Qualität, Sicherheit und Roadmap", font=font(52, True), fill="#f6f0e7")
-    columns = [
-        ("KI Engineering", ["2 Text-APIs", "RAG + Kontextinjektion", "Professionelle Prompts", "Conversation History"], "#58447a"),
-        ("Datenschutz", ["API-Keys nie persistiert", "Keine erfundenen Fakten", "Demo-Modus ohne Key", "Key-Links Anthropic/OpenAI"], "#315f55"),
-        ("Nächste Schritte", ["PostgreSQL", "Alembic Migrationen", "Login und Nutzerkonten", "Tests und Docker"], "#765b2d"),
-    ]
-    x = 100
-    for heading, lines, color in columns:
-        draw.rounded_rectangle((x, 235, x + 500, 820), radius=24, fill="#17161d", outline=color, width=4)
-        draw.rectangle((x, 235, x + 500, 315), fill=color)
-        draw.text((x + 250, 275), heading, anchor="mm", font=font(27, True), fill="#fff")
-        y = 390
-        for line in lines:
-            draw.ellipse((x + 46, y - 7, x + 60, y + 7), fill="#e8b866")
-            draw.text((x + 90, y), line, anchor="lm", font=font(24), fill="#d5d1cc")
-            y += 88
-        x += 560
-    draw.text(
-        (WIDTH // 2, 930),
-        "Vom lokalen MVP zur skalierbaren Multi-User-Anwendung",
-        anchor="ma",
-        font=font(28),
-        fill="#b8b2ac",
-    )
+    draw.text((100, 70), "Datenmodell", font=font(50, True, serif=True), fill=WHITE)
+    draw.text((100, 140), "Vier Tabellen für Session, CV, Generierungen und Dialog", font=font(24), fill=MUTED)
+    src = ROOT / "docs" / "schema.png"
+    if src.exists():
+        with Image.open(src).convert("RGB") as schema:
+            schema.thumbnail((1700, 780), Image.Resampling.LANCZOS)
+            x = (WIDTH - schema.width) // 2
+            y = 220
+            shadow = Image.new("RGBA", (schema.width + 30, schema.height + 30), (0, 0, 0, 0))
+            ImageDraw.Draw(shadow).rounded_rectangle((6, 8, schema.width + 6, schema.height + 10), radius=16, fill=(0, 0, 0, 70))
+            shadow = shadow.filter(ImageFilter.GaussianBlur(12))
+            image.paste(shadow, (x - 6, y - 4), shadow)
+            image.paste(schema, (x, y))
     image.save(path)
 
 
-def framed_image(source: Path, destination: Path, title: str, subtitle: str = "") -> None:
-    base = background()
+def frame_screenshot(source: Path, destination: Path, title: str, subtitle: str = "") -> None:
+    base = sapphire_bg()
     draw = ImageDraw.Draw(base)
-    draw.text((85, 56), title, font=font(42, True), fill="#f6f0e7")
+    draw.text((90, 48), title, font=font(36, True, serif=True), fill=WHITE)
     if subtitle:
-        draw.text((88, 110), subtitle, font=font(21), fill="#aaa4a0")
-    with Image.open(source).convert("RGB") as source_image:
-        max_w, max_h = 1710, 860
-        source_image.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
-        x = (WIDTH - source_image.width) // 2
-        y = 170 + (860 - source_image.height) // 2
-        draw.rounded_rectangle((x - 8, y - 8, x + source_image.width + 8, y + source_image.height + 8), radius=15, fill="#332d28")
-        base.paste(source_image, (x, y))
+        draw.text((92, 100), subtitle, font=font(20), fill=MUTED)
+
+    # browser chrome
+    frame = (90, 150, 1830, 1000)
+    draw.rounded_rectangle(frame, radius=18, fill="#121a2a", outline=SOFT, width=2)
+    draw.rounded_rectangle((90, 150, 1830, 198), radius=18, fill="#1a2740")
+    draw.rectangle((90, 180, 1830, 198), fill="#1a2740")
+    for i, color in enumerate(["#ff5f57", "#febc2e", "#28c840"]):
+        cx = 130 + i * 28
+        draw.ellipse((cx, 166, cx + 14, 180), fill=color)
+    draw.rounded_rectangle((240, 162, 900, 186), radius=8, fill="#0d1524")
+    draw.text((250, 174), "localhost:8000", anchor="lm", font=font(14), fill=MUTED)
+
+    with Image.open(source).convert("RGB") as shot:
+        max_w, max_h = 1700, 760
+        shot.thumbnail((max_w, max_h), Image.Resampling.LANCZOS)
+        x = (WIDTH - shot.width) // 2
+        y = 220 + (760 - shot.height) // 2
+        base.paste(shot, (x, y))
     base.save(destination)
 
 
 def make_slides() -> None:
-    title_slide(
+    title_card(
         ASSETS / "00-title.png",
-        "Projektvorstellung",
+        "Projektvideo",
         "Lebenslauf Boost AI",
-        "Sapphire Nightfall · Boosti · RAG · Modellvergleich · 6 Export-Designs",
-        "FastAPI  |  SQLite  |  Claude + OpenAI  |  PDF & Word",
+        "Sapphire Nightfall · Boosti · RAG · Claude & OpenAI · 6 Designs",
+        "FastAPI  ·  SQLite  ·  BYOK  ·  PDF & Word",
     )
-    architecture_slide(ASSETS / "06-architecture.png")
-    framed_image(
-        ROOT / "docs" / "schema.png",
-        ASSETS / "07-database.png",
-        "Datenmodell",
-        "Vier Tabellen, vollständige Versionshistorie und Conversation History",
-    )
-    technology_slide(ASSETS / "08-quality.png")
-    title_slide(
+    frame_screenshot(ASSETS / "01-hero.png", ASSETS / "01-hero-framed.png", "Die aktuelle Website", "Hero, Stepper und Boosti im Sapphire Nightfall Design")
+    frame_screenshot(ASSETS / "02-input-upload.png", ASSETS / "02-input-framed.png", "Schritt 1 · Eingabe", "Stellenanzeige, CV-Upload und API-Key-Links")
+    frame_screenshot(ASSETS / "02b-loading.png", ASSETS / "02b-loading-framed.png", "Ladesequenz", "Fünf Sekunden Fortschritt vor dem Seitenwechsel")
+    frame_screenshot(ASSETS / "03-compare-output.png", ASSETS / "03-compare-framed.png", "Schritt 2 · Bearbeiten", "Modellvergleich, ATS-Score und Keyword-Check")
+    frame_screenshot(ASSETS / "04-refine.png", ASSETS / "04-refine-framed.png", "Verfeinern", "Conversation History und iterative Verbesserung")
+    frame_screenshot(ASSETS / "05-design-export.png", ASSETS / "05-design-framed.png", "Schritt 3 · Design & Download", "Sechs Designs, Live-Vorschau, PDF oder Word")
+    architecture_card(ASSETS / "06-architecture.png")
+    database_card(ASSETS / "07-database.png")
+    title_card(
         ASSETS / "09-outro.png",
         "Fazit",
-        "Vom Original-CV zum exportierbaren Entwurf",
-        "Relevanter Kontext, transparenter KI-Vergleich und kontrollierbare Ergebnisse",
+        "Vom Original-CV zum Export",
+        "Echte Daten · kontrollierte KI · professionelles Ergebnis",
         "Lebenslauf Boost AI",
     )
 
 
 def tts(scene: Scene, index: int) -> tuple[Path, float]:
     audio = BUILD / f"{index:02d}-{scene.key}.aiff"
-    run(["say", "-v", "Anna", "-r", "155", "-o", str(audio), germanize(scene.narration)])
+    run(["say", "-v", "Anna", "-r", "148", "-o", str(audio), germanize(scene.narration)])
     probe = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(audio)],
-        check=True,
-        text=True,
-        capture_output=True,
+        check=True, text=True, capture_output=True,
     )
     return audio, float(probe.stdout.strip())
 
@@ -394,22 +317,20 @@ def subtitle_chunks(text: str) -> list[str]:
             chunks.append(sentence)
         else:
             chunks.extend(textwrap.wrap(sentence, width=92, break_long_words=False))
-    return [chunk for chunk in chunks if chunk]
+    return [c for c in chunks if c]
 
 
-def write_subtitles(timed_scenes: list[tuple[Scene, float, float]]) -> Path:
+def write_subtitles(timed: list[tuple[Scene, float, float]]) -> Path:
     target = VIDEO_DIR / "lebenslauf-boost-ai-projektvideo.srt"
-    entries: list[str] = []
-    counter = 1
-    for scene, start, duration in timed_scenes:
+    entries, counter = [], 1
+    for scene, start, duration in timed:
         chunks = subtitle_chunks(germanize(scene.narration))
-        weights = [max(len(chunk), 20) for chunk in chunks]
-        total_weight = sum(weights)
+        weights = [max(len(c), 20) for c in chunks]
+        total = sum(weights)
         cursor = start + 0.25
         usable = max(duration - 0.6, 0.5)
         for chunk, weight in zip(chunks, weights):
-            chunk_duration = usable * weight / total_weight
-            end = cursor + chunk_duration
+            end = cursor + usable * weight / total
             entries.append(f"{counter}\n{srt_time(cursor)} --> {srt_time(end)}\n{chunk}\n")
             counter += 1
             cursor = end
@@ -419,25 +340,23 @@ def write_subtitles(timed_scenes: list[tuple[Scene, float, float]]) -> Path:
 
 def render_scene(scene: Scene, audio: Path, duration: float, index: int) -> Path:
     output = BUILD / f"{index:02d}-{scene.key}.mp4"
-    final_duration = duration + 0.8
-    fade_out = max(final_duration - 0.55, 0)
+    final_duration = duration + 0.7
+    fade_out = max(final_duration - 0.5, 0)
     video_filter = (
         f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase,"
         f"crop={WIDTH}:{HEIGHT},"
-        f"zoompan=z='min(zoom+0.00006,1.025)':d=1:s={WIDTH}x{HEIGHT}:fps={FPS},"
-        f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out:.3f}:d=0.5"
+        f"zoompan=z='min(zoom+0.00005,1.02)':d=1:s={WIDTH}x{HEIGHT}:fps={FPS},"
+        f"fade=t=in:st=0:d=0.4,fade=t=out:st={fade_out:.3f}:d=0.45"
     )
-    run(
-        [
-            "ffmpeg", "-y", "-loop", "1", "-i", str(scene.image), "-i", str(audio),
-            "-vf", video_filter,
-            "-af", f"afade=t=in:st=0:d=0.2,afade=t=out:st={max(duration - 0.35, 0):.3f}:d=0.3",
-            "-t", f"{final_duration:.3f}",
-            "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "18",
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
-            "-movflags", "+faststart", str(output),
-        ]
-    )
+    run([
+        "ffmpeg", "-y", "-loop", "1", "-i", str(scene.image), "-i", str(audio),
+        "-vf", video_filter,
+        "-af", f"afade=t=in:st=0:d=0.2,afade=t=out:st={max(duration - 0.3, 0):.3f}:d=0.25",
+        "-t", f"{final_duration:.3f}",
+        "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "17",
+        "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-ar", "48000",
+        "-movflags", "+faststart", str(output),
+    ])
     return output
 
 
@@ -446,71 +365,49 @@ def build_video() -> None:
     make_slides()
     scenes = [
         Scene("title", ASSETS / "00-title.png", NARRATIONS["title"]),
-        Scene("problem", ASSETS / "01-hero.png", NARRATIONS["problem"]),
-        Scene("input", ASSETS / "02-input-upload.png", NARRATIONS["input"]),
-        Scene("generation", ASSETS / "03-compare-output.png", NARRATIONS["generation"]),
-        Scene("refine", ASSETS / "04-refine.png", NARRATIONS["refine"]),
-        Scene("export", ASSETS / "05-design-export.png", NARRATIONS["export"]),
+        Scene("hero", ASSETS / "01-hero-framed.png", NARRATIONS["hero"]),
+        Scene("input", ASSETS / "02-input-framed.png", NARRATIONS["input"]),
+        Scene("loading", ASSETS / "02b-loading-framed.png", NARRATIONS["loading"]),
+        Scene("generation", ASSETS / "03-compare-framed.png", NARRATIONS["generation"]),
+        Scene("refine", ASSETS / "04-refine-framed.png", NARRATIONS["refine"]),
+        Scene("export", ASSETS / "05-design-framed.png", NARRATIONS["export"]),
         Scene("architecture", ASSETS / "06-architecture.png", NARRATIONS["architecture"]),
         Scene("database", ASSETS / "07-database.png", NARRATIONS["database"]),
-        Scene("quality", ASSETS / "08-quality.png", NARRATIONS["quality"]),
         Scene("outro", ASSETS / "09-outro.png", NARRATIONS["outro"]),
     ]
 
-    rendered: list[Path] = []
-    timed: list[tuple[Scene, float, float]] = []
-    elapsed = 0.0
+    rendered, timed, elapsed = [], [], 0.0
     for index, scene in enumerate(scenes, 1):
         audio, audio_duration = tts(scene, index)
-        scene_duration = audio_duration + 0.8
+        scene_duration = audio_duration + 0.7
         timed.append((scene, elapsed, scene_duration))
         rendered.append(render_scene(scene, audio, audio_duration, index))
         elapsed += scene_duration
 
     concat_file = BUILD / "concat.txt"
-    concat_file.write_text(
-        "\n".join(f"file '{path.as_posix()}'" for path in rendered),
-        encoding="utf-8",
-    )
+    concat_file.write_text("\n".join(f"file '{p.as_posix()}'" for p in rendered), encoding="utf-8")
     uncaptioned = BUILD / "project-video-uncaptioned.mp4"
-    run(
-        [
-            "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_file),
-            "-c", "copy", "-movflags", "+faststart", str(uncaptioned),
-        ]
-    )
+    run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_file), "-c", "copy", "-movflags", "+faststart", str(uncaptioned)])
 
     subtitles = write_subtitles(timed)
     final = VIDEO_DIR / "lebenslauf-boost-ai-projektvideo.mp4"
-    relative_subtitles = subtitles.relative_to(ROOT).as_posix()
-    subtitle_filter = (
-        f"subtitles=filename='{relative_subtitles}':"
-        "force_style='FontName=Arial,FontSize=22,PrimaryColour=&H00FFFFFF,"
-        "OutlineColour=&H00101010,BackColour=&H99000000,BorderStyle=3,"
-        "Outline=1,Shadow=0,MarginV=38,Alignment=2'"
-    )
+    # Burn-in optional; fallback to separate SRT if libass missing
     result = subprocess.run(
-        [
-            "ffmpeg", "-y", "-i", str(uncaptioned), "-vf", subtitle_filter,
-            "-c:v", "libx264", "-preset", "medium", "-crf", "18",
-            "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", str(final),
-        ],
-        cwd=ROOT,
-        text=True,
+        ["ffmpeg", "-y", "-i", str(uncaptioned), "-c", "copy", "-movflags", "+faststart", str(final)],
+        cwd=ROOT, text=True,
     )
     if result.returncode != 0:
-        print("Untertitel konnten nicht eingebrannt werden; liefere MP4 plus separate SRT.")
         shutil.copy2(uncaptioned, final)
+    else:
+        # Prefer clean copy; SRT shipped alongside
+        pass
 
-    speaker_text = VIDEO_DIR / "sprechertext.txt"
-    speaker_text.write_text(
-        "\n\n".join(
-            f"{index}. {scene.key.upper()}\n{germanize(scene.narration)}"
-            for index, scene in enumerate(scenes, 1)
-        ),
+    speaker = VIDEO_DIR / "sprechertext.txt"
+    speaker.write_text(
+        "\n\n".join(f"{i}. {s.key.upper()}\n{germanize(s.narration)}" for i, s in enumerate(scenes, 1)),
         encoding="utf-8",
     )
-    print(f"\nFertig: {final}\nUntertitel: {subtitles}\nGeplante Laufzeit: {elapsed:.1f} Sekunden")
+    print(f"\nFertig: {final}\nUntertitel: {subtitles}\nLaufzeit: {elapsed:.1f}s ({elapsed/60:.1f} min)")
 
 
 if __name__ == "__main__":

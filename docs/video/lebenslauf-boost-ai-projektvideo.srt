@@ -1,247 +1,191 @@
 1
-00:00:00,250 --> 00:00:04,198
-Hallo und willkommen zur Vorstellung von Lebenslauf Boost AI.
+00:00:00,250 --> 00:00:04,283
+Willkommen zur Projektvorstellung von Lebenslauf Boost AI.
 
 2
-00:00:04,198 --> 00:00:09,569
-Das Projekt optimiert einen vorhandenen Lebenslauf gezielt für eine Stellenanzeige.
+00:00:04,283 --> 00:00:10,054
+Die aktuelle Webanwendung im Sapphire Nightfall Design begleitet Bewerbende mit dem
 
 3
-00:00:09,569 --> 00:00:14,876
-Die Oberfläche im Sapphire Nightfall Design wird vom Maskottchen Boosti begleitet.
+00:00:10,054 --> 00:00:14,295
+Maskottchen Boosti durch einen klaren, dreistufigen Workflow.
 
 4
-00:00:14,876 --> 00:00:20,831
-Zwei Sprachmodelle, Retrieval Augmented Generation, ein ATS Keyword Check und der Export als
+00:00:14,295 --> 00:00:20,553
+Zwei Sprachmodelle, Retrieval Augmented Generation, ein ATS Keyword Check und sechs Export
 
 5
-00:00:20,831 --> 00:00:25,167
-PDF oder Word in sechs Designs stecken in einer einzigen Anwendung.
+00:00:20,553 --> 00:00:26,602
+Designs sind in einer einzigen Anwendung vereint — ohne Anmeldung und strikt auf echten
 
 6
-00:00:25,767 --> 00:00:31,383
-Die Ausgangssituation ist einfach: Bewerberinnen und Bewerber müssen ihren Lebenslauf für
+00:00:26,602 --> 00:00:27,993
+Lebenslauf Daten.
 
 7
-00:00:31,383 --> 00:00:32,961
-jede Stelle neu anpassen.
+00:00:28,593 --> 00:00:34,208
+So sieht die aktuelle Website aus: ein dunkler Hero Bereich mit klarer Botschaft, ein
 
 8
-00:00:32,961 --> 00:00:36,874
-Das kostet Zeit, und generative KI kann dabei Fakten erfinden.
+00:00:34,208 --> 00:00:39,295
+dreistufiger Stepper und darunter die Erklärung in sechs einfachen Schritten.
 
 9
-00:00:36,874 --> 00:00:39,398
-Lebenslauf Boost AI löst beide Probleme.
+00:00:39,295 --> 00:00:42,863
+Die Oberfläche ist auf Deutsch und Englisch verfügbar.
 
 10
-00:00:39,398 --> 00:00:44,888
-Die Anwendung verwendet nur Inhalte aus dem hochgeladenen Lebenslauf, wählt die für die
+00:00:42,863 --> 00:00:48,941
+Im Zentrum steht: der Lebenslauf wird zugeschnitten auf die Stelle, ohne Fakten zu erfinden.
 
 11
-00:00:44,888 --> 00:00:50,252
-Stelle relevanten Abschnitte aus und erstellt daraus einen nachvollziehbaren Entwurf.
+00:00:49,541 --> 00:00:56,513
+Schritt eins beginnt mit der Stellenanzeige und optionalen Wuenschen zu Ton, Fokus und Länge.
 
 12
-00:00:50,252 --> 00:00:56,185
-Die gesamte Oberfläche ist auf Deutsch und Englisch verfügbar und funktioniert ohne Anmeldung.
+00:00:56,513 --> 00:01:01,611
+Danach wird der Lebenslauf als PDF, Word oder Textdatei hochgeladen.
 
 13
-00:00:56,785 --> 00:01:01,078
-Im ersten Schritt wird die vollständige Stellenanzeige eingefügt.
-
-14
-00:01:01,078 --> 00:01:05,768
-Zusätzlich lassen sich Wünsche zu Ton, Schwerpunkt und Länge festlegen.
-
-15
-00:01:05,768 --> 00:01:10,854
-Danach wird der Lebenslauf als PDF, Word Dokument oder Textdatei hochgeladen.
-
-16
-00:01:10,854 --> 00:01:15,544
-Die App extrahiert den Text und kann sogar ein Bewerbungsfoto erkennen.
-
-17
-00:01:15,544 --> 00:01:21,026
+00:01:01,611 --> 00:01:07,833
 Für Claude und OpenAI gibt es direkte Links, falls noch kein API Key vorhanden ist.
 
-18
-00:01:21,026 --> 00:01:23,008
+14
+00:01:07,833 --> 00:01:10,082
 Ohne Key läuft der Demo Modus.
 
+15
+00:01:10,082 --> 00:01:15,554
+Die App extrahiert Text und optional ein Foto und baut den RAG Index auf.
+
+16
+00:01:16,154 --> 00:01:20,802
+Beim Klick auf Generieren erscheint eine fünfsekundige Ladesequenz.
+
+17
+00:01:20,802 --> 00:01:26,976
+Fortschrittsring, Checkliste und Schreibanimation machen sichtbar, dass die KI die Stelle
+
+18
+00:01:26,976 --> 00:01:31,347
+analysiert, passende Staerken wählt und den Entwurf formuliert.
+
 19
-00:01:23,008 --> 00:01:28,887
-Anschließend zerlegt das RAG Modul den Inhalt in Abschnitte und erstellt einen Suchindex.
+00:01:31,347 --> 00:01:34,885
+Erst danach wechselt die App zur Bearbeitungsseite.
 
 20
-00:01:29,487 --> 00:01:34,825
-Für die Generierung kann Claude, OpenAI oder der direkte Vergleich gewählt werden.
+00:01:35,485 --> 00:01:40,653
+Auf der Bearbeitungsseite können Claude und OpenAI direkt verglichen werden.
 
 21
-00:01:34,825 --> 00:01:41,401
-Professionelle Prompt Vorlagen kombinieren Rollen Prompting, Few Shot Beispiele und Chain of Thought.
+00:01:40,653 --> 00:01:46,637
+Für jede Version zeigt die App ATS Score, Keyword Check sowie Modell und Prompt Technik.
 
 22
-00:01:41,401 --> 00:01:46,804
-Stellenanzeige, Nutzerwünsche und passende RAG Auszüge werden dynamisch eingesetzt.
+00:01:46,637 --> 00:01:52,757
+Professionelle Prompt Vorlagen mit Rollen Prompting, Few Shot und Chain of Thought steuern
 
 23
-00:01:46,804 --> 00:01:51,817
-Beim Absenden zeigt eine fünfsekundige Ladesequenz den Fortschritt, bevor die
+00:01:52,757 --> 00:01:54,117
+die Formulierung.
 
 24
-00:01:51,817 --> 00:01:53,640
-Bearbeitungsseite erscheint.
+00:01:54,117 --> 00:01:59,489
+Die KI darf nur Angaben verwenden, die im hochgeladenen Lebenslauf belegt sind.
 
 25
-00:01:53,640 --> 00:01:59,369
-Im Vergleichsmodus entstehen zwei unabhängige Versionen mit ATS Score, Keyword Check und
+00:02:00,089 --> 00:02:03,608
+Der Entwurf lässt sich im Editor direkt anpassen.
 
 26
-00:01:59,369 --> 00:02:01,127
-transparenter Modellangabe.
+00:02:03,608 --> 00:02:10,073
+Zusätzlich gibt es Schnellaktionen und freie Anweisungen, zum Beispiel kürzer, technischer
 
 27
-00:02:01,727 --> 00:02:04,920
-Der generierte Inhalt kann direkt bearbeitet werden.
+00:02:10,073 --> 00:02:11,509
+oder förmlicher.
 
 28
-00:02:04,920 --> 00:02:07,745
-Noch wichtiger ist die iterative Verbesserung.
+00:02:11,509 --> 00:02:16,896
+Jede Antwort wird über Conversation History als eigene Version gespeichert.
 
 29
-00:02:07,745 --> 00:02:13,026
-Eine Anweisung wie kürzer, technischer oder formeller wird zusammen mit dem bisherigen
+00:02:16,896 --> 00:02:22,139
+So bleibt der Kontext erhalten, ohne den gesamten Prozess neu zu starten.
 
 30
-00:02:13,026 --> 00:02:15,482
-Gesprächsverlauf an das Modell gesendet.
+00:02:22,739 --> 00:02:29,486
+Im dritten Schritt wählt man eines von sechs Designs: Azure, Executive, Nordic, Sapphire,
 
 31
-00:02:15,482 --> 00:02:18,798
-Jede neue Antwort wird als eigene Version gespeichert.
+00:02:29,486 --> 00:02:31,002
+Cobalt oder Slate.
 
 32
-00:02:18,798 --> 00:02:24,386
-Dadurch geht der vorherige Stand nicht verloren und das Modell behält den Kontext, ohne den
+00:02:31,002 --> 00:02:34,262
+Die Live Vorschau aktualisiert sich sofort.
 
 33
-00:02:24,386 --> 00:02:26,352
-gesamten Prozess neu zu starten.
+00:02:34,262 --> 00:02:38,810
+Foto, Dateiname und Format PDF oder Word sind frei waehlbar.
 
 34
-00:02:26,952 --> 00:02:30,757
-Im letzten Anwendungsschritt wird ein Design ausgewählt.
+00:02:38,810 --> 00:02:40,857
+Der Download startet lokal.
 
 35
-00:02:30,757 --> 00:02:36,872
-Zur Verfügung stehen sechs Vorlagen: Azure, Executive, Nordic, Sapphire, Cobalt und Slate.
+00:02:40,857 --> 00:02:47,300
+Der Export bleibt zustandslos und speichert keine zusätzliche Datei in der Datenbank.
 
 36
-00:02:36,872 --> 00:02:39,454
-Die Vorschau aktualisiert sich sofort.
-
-37
-00:02:39,454 --> 00:02:43,395
-Auch ein erkanntes Foto kann ersetzt oder entfernt werden.
-
-38
-00:02:43,395 --> 00:02:50,394
-Danach wählt die Person PDF oder Word, legt den Dateinamen fest und lädt das fertige Dokument herunter.
-
-39
-00:02:50,394 --> 00:02:55,966
-Der Export ist zustandslos und speichert keine zusätzliche Datei in der Datenbank.
-
-40
-00:02:56,566 --> 00:03:02,904
+00:02:47,900 --> 00:02:55,171
 Technisch besteht das Projekt aus einem Vanilla JavaScript Frontend und einem FastAPI Backend.
 
-41
-00:03:02,904 --> 00:03:05,129
+37
+00:02:55,171 --> 00:02:57,724
 Pydantic validiert alle Requests.
 
-42
-00:03:05,129 --> 00:03:09,040
+38
+00:02:57,724 --> 00:03:02,210
 Eine Provider Schicht kapselt Anthropic Claude und OpenAI.
 
+39
+00:03:02,210 --> 00:03:09,558
+Services uebernehmen Extraktion, RAG, Prompt Aufbau, ATS Analyse und den PDF sowie DOCX Export.
+
+40
+00:03:09,558 --> 00:03:15,282
+API Keys folgen dem Bring Your Own Key Prinzip und bleiben nur im Browser.
+
+41
+00:03:15,882 --> 00:03:19,277
+Die Persistenz nutzt SQLite mit SQLAlchemy.
+
+42
+00:03:19,277 --> 00:03:24,804
+Die Tabelle sessions verbindet cv documents, generations und messages.
+
 43
-00:03:09,040 --> 00:03:14,300
-Die Fachlogik ist getrennt in Datei Extraktion, RAG, Prompt Aufbau und Export.
+00:03:24,804 --> 00:03:31,200
+Damit bleiben Versionshistorie, ATS Ergebnisse, Keyword Listen und der Dialog für
 
 44
-00:03:14,300 --> 00:03:17,402
-SQLAlchemy verbindet die Anwendung mit SQLite.
+00:03:31,200 --> 00:03:34,832
+Verfeinerungen nachvollziehbar und konsistent.
 
 45
-00:03:17,402 --> 00:03:23,470
-API Keys folgen dem Bring Your Own Key Prinzip: Sie bleiben im Browser, werden nur für den
+00:03:35,432 --> 00:03:42,205
+Lebenslauf Boost AI zeigt damit den vollständigen Weg auf der aktuellen Website: echte Daten
 
 46
-00:03:23,470 --> 00:03:27,247
-Request übertragen und niemals serverseitig gespeichert.
-
-47
-00:03:27,847 --> 00:03:31,404
-Die Datenbank ist um die Tabelle sessions aufgebaut.
-
-48
-00:03:31,404 --> 00:03:38,108
-Eine Sitzung besitzt höchstens ein CV Dokument und beliebig viele Generierungen sowie Nachrichten.
-
-49
-00:03:38,108 --> 00:03:43,170
-CV documents speichert extrahierten Text, RAG Index und optional das Foto.
-
-50
-00:03:43,170 --> 00:03:48,916
-Generations bildet die komplette Versionshistorie inklusive Anbieter, Modell, Prompt
-
-51
-00:03:48,916 --> 00:03:51,516
-Technik, ATS Score und Keyword Listen.
-
-52
-00:03:51,516 --> 00:03:55,552
-Messages enthält den Dialog für die iterative Verbesserung.
-
-53
-00:03:55,552 --> 00:04:02,119
-Foreign Keys, Indizes, Check Constraints und kaskadierendes Löschen sichern die Datenintegrität.
-
-54
-00:04:02,719 --> 00:04:08,968
-Damit erfüllt das Projekt die zentralen KI Engineering Anforderungen: zwei Text APIs,
-
-55
-00:04:08,968 --> 00:04:15,365
-professionelle Prompt Vorlagen, dynamische Kontextinjektion, RAG, Conversation History,
-
-56
-00:04:15,365 --> 00:04:18,820
-Vergleichsanalyse und persistente Datenhaltung.
-
-57
-00:04:18,820 --> 00:04:24,481
-Der Demo Modus macht alle Schritte ohne kostenpflichtigen API Aufruf prüfbar.
-
-58
-00:04:24,481 --> 00:04:30,804
-Nächste Ausbaustufen wären PostgreSQL, Alembic, Authentifizierung und Objektspeicher.
-
-59
-00:04:31,404 --> 00:04:37,086
-Lebenslauf Boost AI zeigt damit einen vollständigen End to End Workflow: echte Daten
-
-60
-00:04:37,086 --> 00:04:43,241
+00:03:42,205 --> 00:03:48,903
 hochladen, relevanten Kontext finden, zwei KI Entwürfe vergleichen, gezielt nachbessern und
 
-61
-00:04:43,241 --> 00:04:46,149
+47
+00:03:48,903 --> 00:03:52,069
 in sechs Designs professionell exportieren.
 
-62
-00:04:46,149 --> 00:04:48,043
+48
+00:03:52,069 --> 00:03:54,130
 Vielen Dank für das Ansehen.
