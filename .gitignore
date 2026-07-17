@@ -10,3 +10,6 @@ data/
 # IDE / Editor
 .idea/
 .vscode/
+
+# Video build artifacts
+docs/video/build/

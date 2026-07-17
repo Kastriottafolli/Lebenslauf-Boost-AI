@@ -172,19 +172,19 @@ def slide_1() -> Image.Image:
     text_block(
         draw,
         (96, 455),
-        "KI-gestützte Lebenslauf-Optimierung – passgenau zur Stellenanzeige, transparent verglichen und ohne erfundene Fakten.",
-        size=30,
+        "KI-gestützte Lebenslauf-Optimierung – Sapphire Nightfall Design, Boosti-Tour, RAG, Modellvergleich und sechs Export-Designs. Ohne erfundene Fakten.",
+        size=28,
         color="#cbc5bf",
         width=760,
         spacing=14,
     )
     x = 96
-    for label in ["RAG", "2 KI-Anbieter", "ATS-Score", "PDF & Word"]:
+    for label in ["Boosti", "RAG", "2 KI-Anbieter", "6 Designs"]:
         x += pill(draw, x, 650, label) + 14
     draw.rounded_rectangle((930, 165, 1820, 890), radius=28, fill="#211d1b", outline="#6e593b", width=3)
     fit_image(ASSETS / "01-hero.png", image, (950, 185, 1800, 870), crop=True)
-    draw.rounded_rectangle((1180, 835, 1570, 892), radius=28, fill="#2a241d", outline=GOLD)
-    draw.text((1375, 864), "Dein CV. Deine Fakten. Besser formuliert.", anchor="mm", font=font(17, True), fill=GOLD)
+    draw.rounded_rectangle((1120, 835, 1630, 892), radius=28, fill="#2a241d", outline=GOLD)
+    draw.text((1375, 864), "Dein CV. Deine Fakten. Professionell formuliert.", anchor="mm", font=font(17, True), fill=GOLD)
     footer(draw)
     return image
 
@@ -219,9 +219,9 @@ def slide_2() -> Image.Image:
         [
             "Lebenslauf und Stellenanzeige werden gemeinsam analysiert.",
             "RAG liefert nur relevante, belegte CV-Inhalte an die KI.",
-            "Claude und OpenAI erzeugen vergleichbare Entwürfe.",
-            "Ein ATS-Keyword-Check bewertet die Passung transparent.",
-            "Der ausgewählte Entwurf wird verfeinert und exportiert.",
+            "Professionelle Prompts steuern Claude und OpenAI.",
+            "ATS-Keyword-Check und 5-Sekunden-Ladeübergänge.",
+            "Verfeinern, sechs Designs wählen und als PDF/Word exportieren.",
         ],
         width=760,
         color=GREEN,
@@ -240,9 +240,9 @@ def slide_3() -> Image.Image:
     title(draw, "Vom Upload zum fertigen Lebenslauf", "Ein durchgängiger, nachvollziehbarer Prozess in drei UI-Schritten.")
 
     screenshots = [
-        (ASSETS / "02-input-upload.png", "1", "Eingabe & Upload", "Stelle + CV · RAG-Index"),
-        (ASSETS / "03-compare-output.png", "2", "Vergleichen & Bearbeiten", "2 Modelle · ATS-Score · Refine"),
-        (ASSETS / "05-design-export.png", "3", "Design & Download", "3 Designs · PDF oder Word"),
+        (ASSETS / "02-input-upload.png", "1", "Eingabe & Upload", "Stelle + CV · Key-Links · RAG"),
+        (ASSETS / "03-compare-output.png", "2", "Vergleichen & Bearbeiten", "2 Modelle · ATS · Refine"),
+        (ASSETS / "05-design-export.png", "3", "Design & Download", "6 Designs · PDF oder Word"),
     ]
     x_positions = [78, 662, 1246]
     for (source, number, heading, description), x in zip(screenshots, x_positions):
@@ -278,9 +278,9 @@ def slide_4() -> Image.Image:
     fit_image(ROOT / "docs" / "schema.png", image, (1027, 335, 1718, 870), crop=False)
 
     labels = [
-        ("Frontend", "Vanilla JS · DE/EN"),
+        ("Frontend", "Sapphire · Boosti · DE/EN"),
         ("Backend", "FastAPI · Pydantic"),
-        ("KI", "Claude · OpenAI · RAG"),
+        ("KI", "Prompts · Claude · OpenAI"),
         ("Persistenz", "4 Tabellen · Versionen"),
     ]
     x = 90
@@ -302,12 +302,12 @@ def slide_5() -> Image.Image:
         (
             "Erfüllt",
             PURPLE,
-            ["2 Text-APIs", "Few-shot + Chain-of-Thought", "RAG & Kontextinjektion", "Conversation History", "ATS-Vergleichsanalyse"],
+            ["2 Text-APIs", "Professionelle Prompt-Vorlagen", "RAG & Kontextinjektion", "Conversation History", "ATS-Vergleichsanalyse"],
         ),
         (
             "Sicher",
             GREEN,
-            ["BYOK: Keys nur im Browser", "Keine erfundenen Fakten", "Demo-Modus ohne Kosten", "Validierung & Constraints", "Kaskadierendes Löschen"],
+            ["BYOK + Key-Links Anthropic/OpenAI", "Keine erfundenen Fakten", "Demo-Modus ohne Kosten", "5s Ladeübergänge", "Kaskadierendes Löschen"],
         ),
         (
             "Roadmap",

@@ -42,8 +42,9 @@ NARRATIONS = {
     "title": (
         "Hallo und willkommen zur Vorstellung von Lebenslauf Boost AI. "
         "Das Projekt optimiert einen vorhandenen Lebenslauf gezielt fuer eine Stellenanzeige. "
-        "Dabei verbindet es zwei Sprachmodelle, Retrieval Augmented Generation, "
-        "einen ATS Keyword Check und den Export als PDF oder Word in einer einzigen Anwendung."
+        "Die Oberflaeche im Sapphire Nightfall Design wird vom Maskottchen Boosti begleitet. "
+        "Zwei Sprachmodelle, Retrieval Augmented Generation, ein ATS Keyword Check und der Export "
+        "als PDF oder Word in sechs Designs stecken in einer einzigen Anwendung."
     ),
     "problem": (
         "Die Ausgangssituation ist einfach: Bewerberinnen und Bewerber muessen ihren Lebenslauf "
@@ -57,18 +58,17 @@ NARRATIONS = {
         "Im ersten Schritt wird die vollstaendige Stellenanzeige eingefuegt. Zusaetzlich lassen "
         "sich Wuensche zu Ton, Schwerpunkt und Laenge festlegen. Danach wird der Lebenslauf als "
         "PDF, Word Dokument oder Textdatei hochgeladen. Die App extrahiert den Text und kann sogar "
-        "ein Bewerbungsfoto erkennen. Anschliessend zerlegt das RAG Modul den Inhalt in Abschnitte "
-        "und erstellt einen Suchindex. Ohne OpenAI Key wird automatisch ein lokaler TF IDF "
-        "Fallback verwendet. So bleibt die Demo vollstaendig nutzbar."
+        "ein Bewerbungsfoto erkennen. Fuer Claude und OpenAI gibt es direkte Links, falls noch "
+        "kein API Key vorhanden ist. Ohne Key laeuft der Demo Modus. Anschliessend zerlegt das "
+        "RAG Modul den Inhalt in Abschnitte und erstellt einen Suchindex."
     ),
     "generation": (
         "Fuer die Generierung kann Claude, OpenAI oder der direkte Vergleich gewaehlt werden. "
-        "Die Prompt Pipeline kombiniert Rollen Prompting, Few Shot Beispiele und eine strukturierte "
-        "Analyse. Stellenanzeige, Nutzerwuensche und passende RAG Auszuege werden dynamisch in den "
-        "Prompt eingesetzt. Im Vergleichsmodus entstehen zwei unabhaengige Versionen. Danach "
-        "berechnet die App fuer beide einen ATS Score. Hier zeigt die Demo eine vollstaendige "
-        "Abdeckung der erkannten Schluesselbegriffe. Gleichzeitig bleiben Anbieter, Modell, "
-        "Prompt Technik und Demo Status transparent sichtbar."
+        "Professionelle Prompt Vorlagen kombinieren Rollen Prompting, Few Shot Beispiele und "
+        "Chain of Thought. Stellenanzeige, Nutzerwuensche und passende RAG Auszuege werden "
+        "dynamisch eingesetzt. Beim Absenden zeigt eine fuenfsekundige Ladesequenz den Fortschritt, "
+        "bevor die Bearbeitungsseite erscheint. Im Vergleichsmodus entstehen zwei unabhaengige "
+        "Versionen mit ATS Score, Keyword Check und transparenter Modellangabe."
     ),
     "refine": (
         "Der generierte Inhalt kann direkt bearbeitet werden. Noch wichtiger ist die iterative "
@@ -78,20 +78,19 @@ NARRATIONS = {
         "Modell behaelt den Kontext, ohne den gesamten Prozess neu zu starten."
     ),
     "export": (
-        "Im letzten Anwendungsschritt wird ein Design ausgewaehlt. Zur Verfuegung stehen Modern, "
-        "Classic und Minimal. Die Vorschau zeigt sofort, wie der Lebenslauf aufgebaut sein wird. "
-        "Auch ein automatisch erkanntes Foto kann ersetzt oder entfernt werden. Danach waehlt "
+        "Im letzten Anwendungsschritt wird ein Design ausgewaehlt. Zur Verfuegung stehen sechs "
+        "Vorlagen: Azure, Executive, Nordic, Sapphire, Cobalt und Slate. Die Vorschau aktualisiert "
+        "sich sofort. Auch ein erkanntes Foto kann ersetzt oder entfernt werden. Danach waehlt "
         "die Person PDF oder Word, legt den Dateinamen fest und laedt das fertige Dokument herunter. "
         "Der Export ist zustandslos und speichert keine zusaetzliche Datei in der Datenbank."
     ),
     "architecture": (
-        "Technisch besteht das Projekt aus einem schlanken Vanilla JavaScript Frontend und einem "
-        "FastAPI Backend. Pydantic validiert alle Requests. Eine eigene Provider Schicht kapselt "
-        "Anthropic Claude und OpenAI, sodass beide ueber dieselbe Schnittstelle angesprochen werden. "
-        "Die Fachlogik ist getrennt in Datei Extraktion, RAG und Keyword Analyse, Prompt Aufbau "
-        "sowie PDF und DOCX Export. SQLAlchemy verbindet die Anwendung mit SQLite. API Keys folgen "
-        "dem Bring Your Own Key Prinzip: Sie bleiben im Browser, werden nur fuer den Request "
-        "uebertragen und niemals serverseitig gespeichert."
+        "Technisch besteht das Projekt aus einem Vanilla JavaScript Frontend und einem FastAPI "
+        "Backend. Pydantic validiert alle Requests. Eine Provider Schicht kapselt Anthropic Claude "
+        "und OpenAI. Die Fachlogik ist getrennt in Datei Extraktion, RAG, Prompt Aufbau und Export. "
+        "SQLAlchemy verbindet die Anwendung mit SQLite. API Keys folgen dem Bring Your Own Key "
+        "Prinzip: Sie bleiben im Browser, werden nur fuer den Request uebertragen und niemals "
+        "serverseitig gespeichert."
     ),
     "database": (
         "Die Datenbank ist um die Tabelle sessions aufgebaut. Eine Sitzung besitzt hoechstens "
@@ -103,16 +102,15 @@ NARRATIONS = {
     ),
     "quality": (
         "Damit erfuellt das Projekt die zentralen KI Engineering Anforderungen: zwei Text APIs, "
-        "mehrere Prompt Techniken, dynamische Kontextinjektion, RAG, Conversation History, "
-        "eine anwendungsspezifische Vergleichsanalyse und persistente Datenhaltung. Der Demo Modus "
-        "macht alle Schritte ohne kostenpflichtigen API Aufruf pruefbar. Fuer einen produktiven "
-        "Mehrbenutzerbetrieb waeren PostgreSQL, Alembic Migrationen, Authentifizierung und "
-        "Objektspeicher die naechsten sinnvollen Ausbaustufen."
+        "professionelle Prompt Vorlagen, dynamische Kontextinjektion, RAG, Conversation History, "
+        "Vergleichsanalyse und persistente Datenhaltung. Der Demo Modus macht alle Schritte ohne "
+        "kostenpflichtigen API Aufruf pruefbar. Naechste Ausbaustufen waeren PostgreSQL, Alembic, "
+        "Authentifizierung und Objektspeicher."
     ),
     "outro": (
         "Lebenslauf Boost AI zeigt damit einen vollstaendigen End to End Workflow: echte Daten "
         "hochladen, relevanten Kontext finden, zwei KI Entwuerfe vergleichen, gezielt nachbessern "
-        "und ein professionelles Dokument exportieren. Vielen Dank fuer das Ansehen."
+        "und in sechs Designs professionell exportieren. Vielen Dank fuer das Ansehen."
     ),
 }
 
@@ -171,6 +169,12 @@ GERMAN_WORDS = {
     "pruefbar": "prüfbar",
     "Qualitaet": "Qualität",
     "Datenintegritaet": "Datenintegrität",
+    "laeuft": "läuft",
+    "fuenfsekundige": "fünfsekundige",
+    "fuenfsekundigen": "fünfsekundigen",
+    "Naechste": "Nächste",
+    "naechste": "nächste",
+    "Vorlagen": "Vorlagen",
 }
 
 
@@ -257,13 +261,13 @@ def architecture_slide(path: Path) -> None:
     image = background()
     draw = ImageDraw.Draw(image)
     draw.text((100, 70), "Architektur", font=font(52, True), fill="#f6f0e7")
-    draw.text((100, 136), "Klare Trennung von UI, API, KI-Logik und Persistenz", font=font(25), fill="#aaa4a0")
+    draw.text((100, 136), "UI mit Boosti, FastAPI-Backend, professionelle Prompts und Persistenz", font=font(25), fill="#aaa4a0")
 
     boxes = [
-        (90, 300, 390, 630, "Frontend", ["Vanilla HTML / CSS / JS", "DE / EN", "BYOK im Browser"], "#315f55"),
+        (90, 300, 390, 630, "Frontend", ["Sapphire Nightfall", "Boosti-Tour · DE/EN", "BYOK + Key-Links"], "#315f55"),
         (520, 250, 880, 680, "FastAPI", ["REST-Endpunkte", "Pydantic", "Orchestrierung"], "#765b2d"),
         (1010, 190, 1390, 440, "KI & RAG", ["Claude + OpenAI", "Few-shot + CoT", "Embeddings / TF-IDF"], "#58447a"),
-        (1010, 520, 1390, 770, "Services", ["Datei-Extraktion", "ATS-Analyse", "PDF / DOCX"], "#2e557d"),
+        (1010, 520, 1390, 770, "Services", ["Datei-Extraktion", "ATS-Analyse", "6 PDF/DOCX-Designs"], "#2e557d"),
         (1510, 330, 1810, 640, "SQLite", ["sessions", "cv_documents", "generations", "messages"], "#7d4c2e"),
     ]
     for x1, y1, x2, y2, heading, lines, color in boxes:
@@ -296,8 +300,8 @@ def technology_slide(path: Path) -> None:
     draw = ImageDraw.Draw(image)
     draw.text((100, 70), "Qualität, Sicherheit und Roadmap", font=font(52, True), fill="#f6f0e7")
     columns = [
-        ("KI Engineering", ["2 Text-APIs", "RAG + Kontextinjektion", "Few-shot + Chain-of-Thought", "Conversation History"], "#58447a"),
-        ("Datenschutz", ["API-Keys nie persistiert", "Keine erfundenen Fakten", "Demo-Modus ohne Key", "Kaskadierendes Loeschen"], "#315f55"),
+        ("KI Engineering", ["2 Text-APIs", "RAG + Kontextinjektion", "Professionelle Prompts", "Conversation History"], "#58447a"),
+        ("Datenschutz", ["API-Keys nie persistiert", "Keine erfundenen Fakten", "Demo-Modus ohne Key", "Key-Links Anthropic/OpenAI"], "#315f55"),
         ("Nächste Schritte", ["PostgreSQL", "Alembic Migrationen", "Login und Nutzerkonten", "Tests und Docker"], "#765b2d"),
     ]
     x = 100
@@ -342,7 +346,7 @@ def make_slides() -> None:
         ASSETS / "00-title.png",
         "Projektvorstellung",
         "Lebenslauf Boost AI",
-        "KI-gestützte CV-Optimierung mit RAG, Modellvergleich und ATS-Analyse",
+        "Sapphire Nightfall · Boosti · RAG · Modellvergleich · 6 Export-Designs",
         "FastAPI  |  SQLite  |  Claude + OpenAI  |  PDF & Word",
     )
     architecture_slide(ASSETS / "06-architecture.png")

@@ -57,7 +57,7 @@ führt dabei Schritt für Schritt durch die ganze App.
 Die vollständige deutschsprachige Projektvorstellung zeigt den Ablauf von
 CV-Upload und RAG über den KI-Vergleich bis zum PDF-/Word-Export:
 
-- [Projektvideo öffnen (MP4, 4:59 Minuten)](docs/video/lebenslauf-boost-ai-projektvideo.mp4)
+- [Projektvideo öffnen (MP4, ca. 4:48 Minuten)](docs/video/lebenslauf-boost-ai-projektvideo.mp4)
 - [Deutsche Untertitel](docs/video/lebenslauf-boost-ai-projektvideo.srt)
 - [Sprechertext und Kapitel](docs/video/README.md)
 
