@@ -19,5 +19,6 @@ python-docx==1.1.2
 reportlab==4.2.5
 Pillow==11.0.0
 
-# Projektdokumentation / Präsentation
+# Projektdokumentation / Präsentation / Video
 python-pptx==1.0.2
+edge-tts>=6.1.0
