@@ -1,7 +1,7 @@
 # Technical Interview Explainer — Sprechertext (Deutsch)
 
 Stimme: `de-DE-FlorianMultilingualNeural` via edge-tts
-Dauer: ca. 7.5 Minuten
+Dauer: ca. 6.8 Minuten
 
 1. TITLE — Lebenslauf Boost AI
 Hallo — vielen Dank für die Gelegenheit, Lebenslauf Boost AI vorzustellen. Das ist ein Full-Stack-KI-Engineering-Projekt, das ich gebaut habe, um einen echten Lebenslauf gezielt auf eine Stellenanzeige zuzuschneiden. In diesem Video erkläre ich, wie Frontend und Backend funktionieren, welche externen APIs wir aufrufen und warum, wie das Prompt-System aufgebaut ist, und wie die Pipeline vom Upload bis zum Export läuft.

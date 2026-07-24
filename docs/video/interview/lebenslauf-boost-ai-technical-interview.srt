@@ -1,435 +1,435 @@
 1
-00:00:00,200 --> 00:00:04,683
+00:00:00,050 --> 00:00:04,130
 Hallo — vielen Dank für die Gelegenheit, Lebenslauf Boost AI vorzustellen.
 
 2
-00:00:04,683 --> 00:00:09,711
+00:00:04,130 --> 00:00:08,707
 Das ist ein Full-Stack-KI-Engineering-Projekt, das ich gebaut habe, um einen echten
 
 3
-00:00:09,711 --> 00:00:13,164
+00:00:08,707 --> 00:00:11,850
 Lebenslauf gezielt auf eine Stellenanzeige zuzuschneiden.
 
 4
-00:00:13,164 --> 00:00:18,253
+00:00:11,850 --> 00:00:16,482
 In diesem Video erkläre ich, wie Frontend und Backend funktionieren, welche externen
 
 5
-00:00:18,253 --> 00:00:23,463
+00:00:16,482 --> 00:00:21,224
 APIs wir aufrufen und warum, wie das Prompt-System aufgebaut ist, und wie die Pipeline
 
 6
-00:00:23,463 --> 00:00:25,402
+00:00:21,224 --> 00:00:22,988
 vom Upload bis zum Export läuft.
 
 7
-00:00:25,902 --> 00:00:29,565
+00:00:23,138 --> 00:00:26,493
 Auf Produktebene lösen wir ein praktisches Bewerbungsproblem.
 
 8
-00:00:29,565 --> 00:00:34,428
+00:00:26,493 --> 00:00:30,948
 Bewerberinnen und Bewerber müssen ihren Lebenslauf für jede Stelle anpassen, aber
 
 9
-00:00:34,428 --> 00:00:38,512
+00:00:30,948 --> 00:00:34,689
 unkontrollierte generative KI erfindet oft Fähigkeiten oder Erfolge.
 
 10
-00:00:38,512 --> 00:00:43,255
+00:00:34,689 --> 00:00:39,034
 Unser Leitprinzip ist Wahrhaftigkeit zuerst: Das Modell darf nur Fakten aus dem
 
 11
-00:00:43,255 --> 00:00:45,357
+00:00:39,034 --> 00:00:40,959
 hochgeladenen Lebenslauf verwenden.
 
 12
-00:00:45,357 --> 00:00:50,641
+00:00:40,959 --> 00:00:45,799
 Wir holen die relevantesten CV-Abschnitte per RAG, erzeugen einen oder zwei Entwürfe mit
 
 13
-00:00:50,641 --> 00:00:55,805
+00:00:45,799 --> 00:00:50,530
 Claude und OpenAI, bewerten sie gegen die Stellen-Keywords, lassen den Text verfeinern
 
 14
-00:00:55,805 --> 00:01:00,008
+00:00:50,530 --> 00:00:54,380
 und exportieren ein fertiges PDF oder Word in einem von sechs Designs.
 
 15
-00:01:00,508 --> 00:01:04,304
+00:00:54,530 --> 00:00:57,979
 Architektonisch habe ich das System bewusst modular gehalten.
 
 16
-00:01:04,304 --> 00:01:09,595
+00:00:57,979 --> 00:01:02,785
 Das Frontend ist eine schlanke Vanilla-JavaScript-SPA — ohne React-Build — im eigenen
 
 17
-00:01:09,595 --> 00:01:14,698
+00:01:02,785 --> 00:01:07,421
 Sapphire-Nightfall-Designsystem, mit Boosti als animiertem Guide durch den Ablauf.
 
 18
-00:01:14,698 --> 00:01:18,743
+00:01:07,421 --> 00:01:11,097
 Das Backend ist FastAPI mit dünnen Routern und dickeren Services.
 
 19
-00:01:18,743 --> 00:01:24,033
+00:01:11,097 --> 00:01:15,903
 LLM-Zugriffe laufen über eine Provider-Abstraktion, sodass Claude und OpenAI dieselbe
 
 20
-00:01:24,033 --> 00:01:25,340
+00:01:15,903 --> 00:01:17,090
 Schnittstelle teilen.
 
 21
-00:01:25,340 --> 00:01:30,693
+00:01:17,090 --> 00:01:21,953
 Die Prompt-Texte liegen außerhalb des Codes als deutsche und englische Vorlagen, damit
 
 22
-00:01:30,693 --> 00:01:34,240
+00:01:21,953 --> 00:01:25,176
 Prompt Engineering ohne Python-Änderungen möglich bleibt.
 
 23
-00:01:34,240 --> 00:01:36,730
+00:01:25,176 --> 00:01:27,437
 SQLite speichert Sitzungen und Historie.
 
 24
-00:01:36,730 --> 00:01:42,082
+00:01:27,437 --> 00:01:32,300
 Fehlen Keys oder Embeddings, fällt die App sauber in einen klar gekennzeichneten Demo-
 
 25
-00:01:42,082 --> 00:01:43,638
+00:01:32,300 --> 00:01:33,713
 Modus — statt zu crashen.
 
 26
-00:01:44,138 --> 00:01:47,725
+00:01:33,863 --> 00:01:37,121
 Im Frontend ist die Oberfläche ein dreistufiger Wizard.
 
 27
-00:01:47,725 --> 00:01:52,811
+00:01:37,121 --> 00:01:41,742
 Schritt eins sammelt Stellenbeschreibung, optionale Wünsche, die CV-Datei, die
 
 28
-00:01:52,811 --> 00:01:57,376
+00:01:41,742 --> 00:01:45,888
 Anbieterwahl — Claude, OpenAI oder Vergleich — und die Prompt-Technik.
 
 29
-00:01:57,376 --> 00:02:03,115
+00:01:45,888 --> 00:01:51,101
 Schritt zwei ist die Bearbeitungsfläche: generierter Markdown, Vergleichsleiste bei zwei
 
 30
-00:02:03,115 --> 00:02:08,071
+00:01:51,101 --> 00:01:55,603
 Modellen, ATS-Keyword-Panel und Verfeinern-Chips wie kürzer oder förmlicher.
 
 31
-00:02:08,071 --> 00:02:12,245
+00:01:55,603 --> 00:01:59,394
 Schritt drei ist Design und Download mit sechs visuellen Themes.
 
 32
-00:02:12,245 --> 00:02:17,853
+00:01:59,394 --> 00:02:04,489
 API-Keys folgen dem Bring-your-own-key-Prinzip: sie liegen nur in localStorage, werden
 
 33
-00:02:17,853 --> 00:02:21,635
+00:02:04,489 --> 00:02:07,924
 pro Request mitgeschickt und serverseitig nie gespeichert.
 
 34
-00:02:21,635 --> 00:02:26,657
+00:02:07,924 --> 00:02:12,486
 Alle Netzaufrufe laufen über ein kleines api.js-Modul, inklusive Timeout beim
 
 35
-00:02:26,657 --> 00:02:27,700
+00:02:12,486 --> 00:02:13,433
 Generieren.
 
 36
-00:02:28,200 --> 00:02:31,681
+00:02:13,583 --> 00:02:16,759
 Im Backend habe ich HTTP von der Fachlogik getrennt.
 
 37
-00:02:31,681 --> 00:02:36,836
+00:02:16,759 --> 00:02:21,462
 Router übernehmen Sitzungen, Dokument-Upload, Generierung, Refine und Export.
 
 38
-00:02:36,836 --> 00:02:42,594
+00:02:21,462 --> 00:02:26,715
 Services machen die eigentliche Arbeit: Datei-Extraktion aus PDF, DOCX oder Text, RAG-
 
 39
-00:02:42,594 --> 00:02:47,883
+00:02:26,715 --> 00:02:31,540
 Indexierung und Retrieval, Orchestrierung der Generierung sowie PDF- oder Word-
 
 40
-00:02:47,883 --> 00:02:48,954
+00:02:31,540 --> 00:02:32,517
 Rendering.
 
 41
-00:02:48,954 --> 00:02:54,645
+00:02:32,517 --> 00:02:37,709
 Das LLM-Paket definiert einen abstrakten Provider und konkrete Anthropic- und OpenAI-
 
 42
-00:02:54,645 --> 00:03:00,201
+00:02:37,709 --> 00:02:42,778
 Implementierungen, die beide ein strukturiertes Ergebnis mit Inhalt, Modellname und
 
 43
-00:03:00,201 --> 00:03:01,674
+00:02:42,778 --> 00:02:44,122
 Demo-Flag zurückgeben.
 
 44
-00:03:01,674 --> 00:03:03,884
+00:02:44,122 --> 00:02:46,137
 Pydantic validiert jeden Request.
 
 45
-00:03:03,884 --> 00:03:09,239
+00:02:46,137 --> 00:02:51,023
 Die Session ist der Hub: höchstens ein CV-Dokument, viele Generierungen und eine
 
 46
-00:03:09,239 --> 00:03:11,114
+00:02:51,023 --> 00:02:52,733
 Message-Historie für Refine.
 
 47
-00:03:11,614 --> 00:03:16,352
+00:02:52,883 --> 00:02:57,166
 Wir nutzen zwei verschiedene Text-Generierungs-APIs — das war eine explizite
 
 48
-00:03:16,352 --> 00:03:17,537
+00:02:57,166 --> 00:02:58,236
 Projektanforderung.
 
 49
-00:03:17,537 --> 00:03:23,024
+00:02:58,236 --> 00:03:03,195
 Für Claude rufen wir die Anthropic Messages API mit System-Prompt und Message-Liste auf.
 
 50
-00:03:23,024 --> 00:03:28,261
+00:03:03,195 --> 00:03:07,928
 Für OpenAI nutzen wir Chat Completions mit denselben logischen Rollen und zusätzlich
 
 51
-00:03:28,261 --> 00:03:33,436
+00:03:07,928 --> 00:03:12,604
 OpenAI Embeddings — text-embedding-3-small — um CV-Chunks für RAG zu vektorisieren.
 
 52
-00:03:33,436 --> 00:03:38,860
+00:03:12,604 --> 00:03:17,506
 Die Key-Auflösung ist wichtig für Datenschutz und Demos: Ein in der UI eingegebener Key
 
 53
-00:03:38,860 --> 00:03:44,347
+00:03:17,506 --> 00:03:22,465
 hat Vorrang, sonst greift ein Server-Environment-Key, und wenn beides fehlt, liefern wir
 
 54
-00:03:44,347 --> 00:03:49,397
+00:03:22,465 --> 00:03:27,029
 einen gekennzeichneten Demo-Lebenslauf, damit der komplette Produktfluss trotzdem
 
 55
-00:03:49,397 --> 00:03:50,394
+00:03:27,029 --> 00:03:27,930
 testbar bleibt.
 
 56
-00:03:50,394 --> 00:03:55,632
+00:03:27,930 --> 00:03:32,663
 Im Vergleichsmodus laufen beide Provider unabhängig; wir lassen nicht ein Modell das
 
 57
-00:03:55,632 --> 00:04:01,056
+00:03:32,663 --> 00:03:37,565
 andere bewerten, sondern ranken Entwürfe mit unserem eigenen ATS-Keyword-Overlap-Score.
 
 58
-00:04:01,556 --> 00:04:06,788
+00:03:37,715 --> 00:03:42,424
 Das Prompt-System ist einer der Teile, die ich besonders bewusst gestaltet habe.
 
 59
-00:04:06,788 --> 00:04:12,216
+00:03:42,424 --> 00:03:47,309
 Unter dem Ordner prompts liegen zwölf Vorlagen — sechs logische Rollen, jeweils auf
 
 60
-00:04:12,216 --> 00:04:17,644
+00:03:47,309 --> 00:03:52,194
 Deutsch und Englisch: System-Rolle, Few-shot-Beispiele, Chain-of-Thought-Anleitung,
 
 61
-00:04:17,644 --> 00:04:20,652
+00:03:52,194 --> 00:03:54,901
 Ausgabeformat, User-Message-Gerüst und Refine.
 
 62
-00:04:20,652 --> 00:04:26,407
+00:03:54,901 --> 00:04:00,081
 Role Prompting setzt eine erfahrene Resume-Writer-Persona, die strikt faktentreu bleibt.
 
 63
-00:04:26,407 --> 00:04:31,442
+00:04:00,081 --> 00:04:04,612
 Few-shot zeigt schwache versus starke Bullets, damit das Modell wirkungsstark
 
 64
-00:04:31,442 --> 00:04:33,796
+00:04:04,612 --> 00:04:06,731
 formuliert, ohne Zahlen zu erfinden.
 
 65
-00:04:33,796 --> 00:04:39,355
+00:04:06,731 --> 00:04:11,734
 Chain-of-Thought erzwingt eine interne Sieben-Schritt-Analyse — Stellenanforderungen,
 
 66
-00:04:39,355 --> 00:04:44,587
+00:04:11,734 --> 00:04:16,442
 Evidenz-Mapping, Keyword-Plan — diese Schritte erscheinen aber nie gegenüber der
 
 67
-00:04:44,587 --> 00:04:46,222
+00:04:16,442 --> 00:04:17,914
 Nutzerin oder dem Nutzer.
 
 68
-00:04:46,222 --> 00:04:49,492
+00:04:17,914 --> 00:04:20,857
 Format-Constraints fixieren die Markdown-Struktur.
 
 69
-00:04:49,492 --> 00:04:55,050
+00:04:20,857 --> 00:04:25,859
 Und Dynamic Context Injection füllt die User-Message mit Stellenanzeige, Wünschen und
 
 70
-00:04:55,050 --> 00:04:56,620
+00:04:25,859 --> 00:04:27,272
 abgerufenen CV-Auszügen.
 
 71
-00:04:56,620 --> 00:05:02,048
+00:04:27,272 --> 00:04:32,157
 Ist die Technik auf auto gestellt, kombinieren wir Few-shot und Chain-of-Thought in
 
 72
-00:05:02,048 --> 00:05:03,094
+00:04:32,157 --> 00:04:33,099
 einem Prompt.
 
 73
-00:05:03,594 --> 00:05:06,772
+00:04:33,249 --> 00:04:36,135
 So läuft die Generierungs-Pipeline der Reihe nach.
 
 74
-00:05:06,772 --> 00:05:10,394
+00:04:36,135 --> 00:04:39,425
 Erstens extrahiert der Upload Text und optional ein Foto.
 
 75
-00:05:10,394 --> 00:05:15,415
+00:04:39,425 --> 00:04:43,985
 Zweitens zerlegen wir den Lebenslauf in Chunks — etwa siebenhundert Zeichen mit
 
 76
-00:05:15,415 --> 00:05:20,881
+00:04:43,985 --> 00:04:48,949
 Überlappung — und bauen einen Index mit Embeddings, wenn ein OpenAI-Key vorhanden ist,
 
 77
-00:05:20,881 --> 00:05:22,851
+00:04:48,949 --> 00:04:50,739
 sonst mit reinem Python-TF-IDF.
 
 78
-00:05:22,851 --> 00:05:28,316
+00:04:50,739 --> 00:04:55,703
 Drittens holen wir beim Generieren die Top-Chunks, die am besten zu Stellenanzeige und
 
 79
-00:05:28,316 --> 00:05:29,333
+00:04:55,703 --> 00:04:56,627
 Wünschen passen.
 
 80
-00:05:29,333 --> 00:05:34,290
+00:04:56,627 --> 00:05:01,129
 Viertens baut prompts.py die System-Persona, die gewählten Technik-Blöcke, die
 
 81
-00:05:34,290 --> 00:05:37,722
+00:05:01,129 --> 00:05:04,246
 Formatregeln und den injizierten RAG-Kontext zusammen.
 
 82
-00:05:37,722 --> 00:05:43,188
+00:05:04,246 --> 00:05:09,210
 Fünftens rufen wir einen oder beide Provider auf, führen die ATS-Keyword-Analyse gegen
 
 83
-00:05:43,188 --> 00:05:48,717
+00:05:09,210 --> 00:05:14,232
 die Stellenanzeige durch und speichern jeden Entwurf plus die Conversation-Messages für
 
 84
-00:05:48,717 --> 00:05:49,988
+00:05:14,232 --> 00:05:15,387
 späteres Verfeinern.
 
 85
-00:05:50,488 --> 00:05:54,355
+00:05:15,537 --> 00:05:19,027
 Nach dem ersten Entwurf nutzt Refine die Conversation History.
 
 86
-00:05:54,355 --> 00:05:59,843
+00:05:19,027 --> 00:05:23,982
 Wir senden die vorherige User-Nachricht, den Assistant-Entwurf und eine neue Anweisung —
 
 87
-00:05:59,843 --> 00:06:05,144
+00:05:23,982 --> 00:05:28,767
 zum Beispiel kürzer oder technischer — und speichern eine neue Generation mit Technik
 
 88
-00:06:05,144 --> 00:06:06,142
+00:05:28,767 --> 00:05:29,668
 refine.
 
 89
-00:06:06,142 --> 00:06:09,946
+00:05:29,668 --> 00:05:33,102
 Nichts wird überschrieben, Versionen bleiben nachvollziehbar.
 
 90
-00:06:09,946 --> 00:06:15,372
+00:05:33,102 --> 00:05:38,000
 Im Vergleichsmodus hebt die UI den höheren ATS-Score hervor, aber die Nutzerin oder der
 
 91
-00:06:15,372 --> 00:06:16,931
+00:05:38,000 --> 00:05:39,408
 Nutzer kann beide wählen.
 
 92
-00:06:16,931 --> 00:06:22,357
+00:05:39,408 --> 00:05:44,306
 Der Export ist bewusst zustandslos: der Client schickt finalen Markdown, Design, Format
 
 93
-00:06:22,357 --> 00:06:23,729
+00:05:44,306 --> 00:05:45,544
 und optional ein Foto.
 
 94
-00:06:23,729 --> 00:06:29,092
+00:05:45,544 --> 00:05:50,386
 ReportLab und python-docx rendern sechs visuelle Themes, ohne Dateien in die Datenbank
 
 95
-00:06:29,092 --> 00:06:30,090
+00:05:50,386 --> 00:05:51,287
 zu schreiben.
 
 96
-00:06:30,590 --> 00:06:36,141
+00:05:51,437 --> 00:05:56,498
 Wenn ich das Engineering-Urteilsvermögen für ein Bewerbungsgespräch zusammenfasse,
 
 97
-00:06:36,141 --> 00:06:37,698
+00:05:56,498 --> 00:05:57,918
 betone ich vier Punkte.
 
 98
-00:06:37,698 --> 00:06:40,406
+00:05:57,918 --> 00:06:00,387
 Privacy: Nutzer-Keys bleiben im Browser.
 
 99
-00:06:40,406 --> 00:06:45,619
+00:06:00,387 --> 00:06:05,140
 Zuverlässigkeit: Der Demo-Modus erlaubt den kompletten Flow ohne Credentials.
 
 100
-00:06:45,619 --> 00:06:51,577
+00:06:05,140 --> 00:06:10,572
 Evaluation: Wir messen Passung mit einem anwendungsspezifischen ATS-Keyword-Score, nicht
 
 101
-00:06:51,577 --> 00:06:52,999
+00:06:10,572 --> 00:06:11,868
 mit vagen Eindrücken.
 
 102
-00:06:52,999 --> 00:06:58,753
+00:06:11,868 --> 00:06:17,115
 Und Wartbarkeit: Prompts sind Daten, Provider sind austauschbar, Router bleiben dünn.
 
 103
-00:06:58,753 --> 00:07:04,305
+00:06:17,115 --> 00:06:22,177
 Die ehrlichen nächsten Schritte für Produktion wären PostgreSQL mit Alembic, echte
 
 104
-00:07:04,305 --> 00:07:09,856
+00:06:22,177 --> 00:06:27,239
 Authentifizierung, breitere automatisierte Tests und containerisiertes Deployment.
 
 105
-00:07:10,356 --> 00:07:15,263
+00:06:27,389 --> 00:06:31,788
 Das ist das System von Ende zu Ende: ein produktförmiger KI-Workflow mit klarer
 
 106
-00:07:15,263 --> 00:07:20,730
+00:06:31,788 --> 00:06:36,688
 Architektur, zwei echten Modell-Providern, einem strukturierten Prompt-Stack, Retrieval-
 
 107
-00:07:20,730 --> 00:07:25,265
+00:06:36,688 --> 00:06:40,754
 Grounding und einer vollständigen User Journey vom Upload bis zum Export.
 
 108
-00:07:25,265 --> 00:07:30,545
+00:06:40,754 --> 00:06:45,487
 Gerne gehe ich tiefer in jede Schicht — Prompts, RAG oder das FastAPI-Service-Design.
 
 109
-00:07:30,545 --> 00:07:32,222
+00:06:45,487 --> 00:06:46,991
 Vielen Dank fürs Zuschauen.

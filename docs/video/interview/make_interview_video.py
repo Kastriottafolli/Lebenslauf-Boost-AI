@@ -441,15 +441,32 @@ def render_scene_image(scene: Scene, index: int, total: int) -> Path:
     return path
 
 
-async def synthesize(text: str, dest: Path) -> float:
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    communicate = edge_tts.Communicate(text, VOICE, rate="-5%", pitch="-2Hz")
-    await communicate.save(str(dest))
+def normalize_tts_text(text: str) -> str:
+    """Make narration flow smoothly for neural TTS (avoid long pause glyphs)."""
+    text = text.replace("—", ", ")
+    text = text.replace("–", ", ")
+    text = text.replace("  ", " ")
+    text = re.sub(r"\s+,", ",", text)
+    text = re.sub(r",\s*,", ",", text)
+    # Keep sentences crisp; avoid stacked pauses around colons
+    text = text.replace(" : ", ": ")
+    return text.strip()
+
+
+def probe_duration(path: Path) -> float:
     probe = subprocess.run(
-        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(dest)],
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", str(path)],
         check=True, text=True, capture_output=True,
     )
     return float(probe.stdout.strip())
+
+
+async def synthesize(text: str, dest: Path) -> float:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    # Slightly brisker delivery reduces "hanging" pauses between clauses
+    communicate = edge_tts.Communicate(normalize_tts_text(text), VOICE, rate="+3%")
+    await communicate.save(str(dest))
+    return probe_duration(dest)
 
 
 def srt_time(seconds: float) -> str:
@@ -469,8 +486,8 @@ def write_srt(timed: list[tuple[Scene, float, float]], path: Path) -> None:
             chunks.extend(textwrap.wrap(sentence, width=88) or [sentence])
         weights = [max(len(c), 16) for c in chunks]
         total = sum(weights) or 1
-        cursor = start + 0.2
-        usable = max(dur - 0.5, 0.4)
+        cursor = start + 0.05
+        usable = max(dur - 0.15, 0.4)
         for chunk, w in zip(chunks, weights):
             end = cursor + usable * w / total
             entries.append(f"{n}\n{srt_time(cursor)} --> {srt_time(end)}\n{chunk}\n")
@@ -480,23 +497,74 @@ def write_srt(timed: list[tuple[Scene, float, float]], path: Path) -> None:
 
 
 def render_clip(image: Path, audio: Path, duration: float, dest: Path) -> None:
-    final = duration + 0.55
-    fade_out = max(final - 0.45, 0)
+    """Video length matches speech exactly — no trailing silence / voice cutoffs."""
+    # Tiny visual fades only; audio stays continuous and uncropped
+    fade_out_start = max(duration - 0.18, 0)
     vf = (
         f"scale={WIDTH}:{HEIGHT}:force_original_aspect_ratio=increase,"
         f"crop={WIDTH}:{HEIGHT},"
-        f"zoompan=z='min(zoom+0.00004,1.018)':d=1:s={WIDTH}x{HEIGHT}:fps={FPS},"
-        f"fade=t=in:st=0:d=0.35,fade=t=out:st={fade_out:.3f}:d=0.4"
+        f"zoompan=z='min(1+0.00003*on,1.012)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s={WIDTH}x{HEIGHT}:fps={FPS},"
+        f"fade=t=in:st=0:d=0.12,fade=t=out:st={fade_out_start:.3f}:d=0.18"
     )
     subprocess.run(
         [
-            "ffmpeg", "-y", "-loop", "1", "-i", str(image), "-i", str(audio),
+            "ffmpeg", "-y",
+            "-loop", "1", "-framerate", str(FPS), "-i", str(image),
+            "-i", str(audio),
             "-vf", vf,
-            "-af", f"afade=t=in:st=0:d=0.15,afade=t=out:st={max(duration-0.25,0):.3f}:d=0.22,loudnorm=I=-16:TP=-1.5:LRA=11",
-            "-t", f"{final:.3f}", "-r", str(FPS),
-            "-c:v", "libx264", "-preset", "slow", "-crf", "16",
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "256k", "-ar", "48000",
+            # Keep full voice; only soft 40ms edges, no loudnorm (avoids pumping/dropouts)
+            "-af", "afade=t=in:st=0:d=0.04,afade=t=out:st={0}:d=0.04".format(max(duration - 0.04, 0)),
+            "-t", f"{duration:.3f}",
+            "-r", str(FPS),
+            "-c:v", "libx264", "-preset", "medium", "-crf", "17",
+            "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-ac", "1",
+            "-shortest",
             "-movflags", "+faststart", str(dest),
+        ],
+        check=True,
+    )
+
+
+def stitch_seamless(clips: list[Path], audio_files: list[Path], final: Path) -> None:
+    """Concat video clips and rebuild one continuous normalized voice track."""
+    # 1) Seamless audio concat (no gaps)
+    audio_list = BUILD / "audio_concat.txt"
+    audio_list.write_text("\n".join(f"file '{p.as_posix()}'" for p in audio_files), encoding="utf-8")
+    voice = BUILD / "voiceover-continuous.wav"
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(audio_list),
+            "-c:a", "pcm_s16le", "-ar", "48000", "-ac", "1", str(voice),
+        ],
+        check=True,
+    )
+
+    # 2) Video concat
+    video_list = BUILD / "video_concat.txt"
+    video_list.write_text("\n".join(f"file '{p.as_posix()}'" for p in clips), encoding="utf-8")
+    video_raw = BUILD / "video-concat.mp4"
+    subprocess.run(
+        [
+            "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(video_list),
+            "-c", "copy", str(video_raw),
+        ],
+        check=True,
+    )
+
+    # 3) Mux with continuous voice + gentle final loudness (one pass only)
+    subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-i", str(video_raw),
+            "-i", str(voice),
+            "-map", "0:v:0", "-map", "1:a:0",
+            "-c:v", "copy",
+            "-af", "loudnorm=I=-16:TP=-1.5:LRA=11:linear=true",
+            "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-ac", "1",
+            "-shortest",
+            "-movflags", "+faststart",
+            str(final),
         ],
         check=True,
     )
@@ -504,13 +572,20 @@ def render_clip(image: Path, audio: Path, duration: float, dest: Path) -> None:
 
 async def build() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    if BUILD.exists():
+        # Fresh audio/video avoids stale padded clips
+        for old in BUILD.glob("*"):
+            if old.is_file():
+                old.unlink()
     BUILD.mkdir(parents=True, exist_ok=True)
+
     total = len(SCENES)
     timed: list[tuple[Scene, float, float]] = []
     clips: list[Path] = []
+    audios: list[Path] = []
     elapsed = 0.0
-
     script_lines = []
+
     for i, scene in enumerate(SCENES, 1):
         print(f"[{i}/{total}] {scene.key}")
         img = render_scene_image(scene, i, total)
@@ -518,19 +593,18 @@ async def build() -> None:
         dur = await synthesize(scene.narration, audio)
         clip = BUILD / f"{i:02d}-{scene.key}.mp4"
         render_clip(img, audio, dur, clip)
-        scene_dur = dur + 0.55
-        timed.append((scene, elapsed, scene_dur))
+        # Use measured clip duration for timeline accuracy
+        clip_dur = probe_duration(clip)
+        timed.append((scene, elapsed, clip_dur))
         clips.append(clip)
-        elapsed += scene_dur
+        audios.append(audio)
+        elapsed += clip_dur
         script_lines.append(f"{i}. {scene.key.upper()} — {scene.title}\n{scene.narration}\n")
 
-    concat = BUILD / "concat.txt"
-    concat.write_text("\n".join(f"file '{c.as_posix()}'" for c in clips), encoding="utf-8")
     final = OUT / "lebenslauf-boost-ai-technical-interview.mp4"
-    subprocess.run(
-        ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat), "-c", "copy", "-movflags", "+faststart", str(final)],
-        check=True,
-    )
+    print("Stitching seamless voice + video…")
+    stitch_seamless(clips, audios, final)
+
     srt = OUT / "lebenslauf-boost-ai-technical-interview.srt"
     write_srt(timed, srt)
     (OUT / "sprechertext.md").write_text(
@@ -546,7 +620,7 @@ async def build() -> None:
         f"- **Video:** [`lebenslauf-boost-ai-technical-interview.mp4`](lebenslauf-boost-ai-technical-interview.mp4)\n"
         f"- **Untertitel:** [`lebenslauf-boost-ai-technical-interview.srt`](lebenslauf-boost-ai-technical-interview.srt)\n"
         f"- **Sprechertext:** [`sprechertext.md`](sprechertext.md)\n"
-        f"- **Stimme:** `{VOICE}` (Edge TTS neural, Deutsch)\n\n"
+        f"- **Stimme:** `{VOICE}` (Edge TTS neural, Deutsch, nahtlos geschnitten)\n\n"
         "Neu erzeugen:\n\n```bash\n.venv/bin/python docs/video/interview/make_interview_video.py\n```\n",
         encoding="utf-8",
     )
