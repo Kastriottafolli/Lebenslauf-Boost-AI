@@ -1,7 +1,7 @@
-"""Studio-quality technical interview explainer video (English).
+"""Studio-Qualität: technisches Interview-Erklärvideo (Deutsch).
 
-Realistic Edge TTS voiceover + Sapphire Nightfall motion slides.
-Output: docs/video/interview/lebenslauf-boost-ai-technical-interview.mp4
+Realistische Edge-TTS-Stimme + Sapphire-Nightfall-Motion-Slides.
+Ausgabe: docs/video/interview/lebenslauf-boost-ai-technical-interview.mp4
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ BUILD = OUT / "build"
 SLIDES = OUT / "slides"
 WIDTH, HEIGHT = 1920, 1080
 FPS = 30
-VOICE = "en-US-AndrewMultilingualNeural"  # warm, confident, authentic
+VOICE = "de-DE-FlorianMultilingualNeural"  # natürlich, klar, professionell
 
 # Sapphire Nightfall
 INK = "#0f1728"
@@ -49,243 +49,248 @@ class Scene:
     layout: str = "bullets"  # bullets | split | diagram | title | outro
 
 
-# ── Interview script (hire-me technical walkthrough) ──────────────────────────
+# ── Interview-Skript (technischer Walkthrough auf Deutsch) ────────────────────
 
 SCENES: list[Scene] = [
     Scene(
         key="title",
         title="Lebenslauf Boost AI",
-        subtitle="A technical walkthrough — architecture, APIs, prompts, and end-to-end flow",
+        subtitle="Technischer Walkthrough — Architektur, APIs, Prompts und End-to-End-Ablauf",
         bullets=[],
         layout="title",
         narration=(
-            "Hi — thank you for the opportunity to walk you through Lebenslauf Boost AI. "
-            "This is a full-stack AI engineering project I built to optimize a real résumé "
-            "against a specific job posting. In this video I'll explain how the frontend and backend work, "
-            "which external APIs we call and why, how the prompt system is designed, "
-            "and how the full pipeline runs from upload to export."
+            "Hallo — vielen Dank für die Gelegenheit, Lebenslauf Boost AI vorzustellen. "
+            "Das ist ein Full-Stack-KI-Engineering-Projekt, das ich gebaut habe, "
+            "um einen echten Lebenslauf gezielt auf eine Stellenanzeige zuzuschneiden. "
+            "In diesem Video erkläre ich, wie Frontend und Backend funktionieren, "
+            "welche externen APIs wir aufrufen und warum, wie das Prompt-System aufgebaut ist, "
+            "und wie die Pipeline vom Upload bis zum Export läuft."
         ),
     ),
     Scene(
         key="pitch",
-        title="What the product does",
-        subtitle="Problem, solution, and design principles",
+        title="Was das Produkt leistet",
+        subtitle="Problem, Lösung und Designprinzipien",
         bullets=[
-            "Problem: generic CVs fail ATS filters and waste candidate time",
-            "Solution: tailor a real CV to one job posting with grounded AI",
-            "Truthfulness first — never invent employers, degrees, or metrics",
-            "Dual providers: Anthropic Claude and OpenAI, with side-by-side compare",
-            "End-to-end: upload → RAG → generate → refine → PDF/Word export",
+            "Problem: generische CVs scheitern an ATS-Filtern und kosten Zeit",
+            "Lösung: echten Lebenslauf mit geerdeter KI auf eine Stelle zuschneiden",
+            "Wahrhaftigkeit zuerst — keine erfundenen Arbeitgeber, Abschlüsse oder Kennzahlen",
+            "Zwei Anbieter: Anthropic Claude und OpenAI, auch im Direktvergleich",
+            "End-to-End: Upload → RAG → Generieren → Verfeinern → PDF/Word-Export",
         ],
         narration=(
-            "At a high level, the product solves a practical hiring problem. "
-            "Candidates need their résumé rewritten for each job, but unconstrained generative AI "
-            "often invents skills or achievements. Our design principle is truthfulness first: "
-            "the model may only use facts from the uploaded CV. "
-            "We retrieve the most relevant CV sections with RAG, generate one or two drafts with Claude and OpenAI, "
-            "score them against the job keywords, let the user refine the text, "
-            "and export a polished PDF or Word file in one of six designs."
+            "Auf Produktebene lösen wir ein praktisches Bewerbungsproblem. "
+            "Bewerberinnen und Bewerber müssen ihren Lebenslauf für jede Stelle anpassen, "
+            "aber unkontrollierte generative KI erfindet oft Fähigkeiten oder Erfolge. "
+            "Unser Leitprinzip ist Wahrhaftigkeit zuerst: "
+            "Das Modell darf nur Fakten aus dem hochgeladenen Lebenslauf verwenden. "
+            "Wir holen die relevantesten CV-Abschnitte per RAG, erzeugen einen oder zwei Entwürfe mit Claude und OpenAI, "
+            "bewerten sie gegen die Stellen-Keywords, lassen den Text verfeinern "
+            "und exportieren ein fertiges PDF oder Word in einem von sechs Designs."
         ),
     ),
     Scene(
         key="architecture",
-        title="System architecture",
-        subtitle="Clear separation of UI, API, AI, and persistence",
+        title="Systemarchitektur",
+        subtitle="Klare Trennung von UI, API, KI und Persistenz",
         bullets=[
-            "Frontend: vanilla ES modules — Sapphire Nightfall UI + Boosti tour",
-            "Backend: FastAPI routers → services → LLM provider layer",
-            "Prompts: editable text templates under prompts/, loaded with cache",
-            "Persistence: SQLite via SQLAlchemy — sessions, CV, generations, messages",
-            "Graceful fallbacks: embeddings → TF-IDF, live API → labeled demo mode",
+            "Frontend: Vanilla-ES-Module — Sapphire Nightfall UI + Boosti-Tour",
+            "Backend: FastAPI-Router → Services → LLM-Provider-Schicht",
+            "Prompts: editierbare Textdateien unter prompts/, mit Cache geladen",
+            "Persistenz: SQLite via SQLAlchemy — sessions, CV, generations, messages",
+            "Fallbacks: Embeddings → TF-IDF, Live-API → gekennzeichneter Demo-Modus",
         ],
         layout="diagram",
         narration=(
-            "Architecturally, I kept the system intentionally modular. "
-            "The frontend is a lightweight vanilla JavaScript SPA — no React build step — "
-            "styled in a custom Sapphire Nightfall design system, with Boosti, an animated guide that walks users through the flow. "
-            "The backend is FastAPI with thin routers and thicker services. "
-            "LLM access goes through a provider abstraction so Claude and OpenAI share the same interface. "
-            "Prompt text lives outside the code as German and English template files, "
-            "so prompt engineering can evolve without touching Python. "
-            "SQLite stores sessions and history. And when keys or embeddings are missing, "
-            "the app degrades gracefully into a clearly labeled demo mode instead of failing."
+            "Architektonisch habe ich das System bewusst modular gehalten. "
+            "Das Frontend ist eine schlanke Vanilla-JavaScript-SPA — ohne React-Build — "
+            "im eigenen Sapphire-Nightfall-Designsystem, mit Boosti als animiertem Guide durch den Ablauf. "
+            "Das Backend ist FastAPI mit dünnen Routern und dickeren Services. "
+            "LLM-Zugriffe laufen über eine Provider-Abstraktion, sodass Claude und OpenAI dieselbe Schnittstelle teilen. "
+            "Die Prompt-Texte liegen außerhalb des Codes als deutsche und englische Vorlagen, "
+            "damit Prompt Engineering ohne Python-Änderungen möglich bleibt. "
+            "SQLite speichert Sitzungen und Historie. Fehlen Keys oder Embeddings, "
+            "fällt die App sauber in einen klar gekennzeichneten Demo-Modus — statt zu crashen."
         ),
     ),
     Scene(
         key="frontend",
-        title="Frontend — how the UI works",
-        subtitle="Three steps, BYOK keys, i18n, and client orchestration",
+        title="Frontend — so funktioniert die UI",
+        subtitle="Drei Schritte, BYOK-Keys, i18n und Client-Orchestrierung",
         bullets=[
-            "Step 1 Input: job posting, wishes, CV upload, provider, technique",
-            "Step 2 Edit: markdown editor, compare cards, ATS chips, refine",
-            "Step 3 Design: six themes, live preview, PDF or DOCX download",
-            "BYOK: API keys stay in browser localStorage — never saved in the DB",
-            "api.js talks to /api/session, upload-cv, generate, refine, export",
+            "Schritt 1 Eingabe: Stelle, Wünsche, CV-Upload, Anbieter, Technik",
+            "Schritt 2 Bearbeiten: Markdown-Editor, Vergleich, ATS-Chips, Refine",
+            "Schritt 3 Design: sechs Themes, Live-Vorschau, PDF oder DOCX",
+            "BYOK: API-Keys nur im Browser-localStorage — nie in der Datenbank",
+            "api.js spricht /api/session, upload-cv, generate, refine, export",
         ],
         screenshot=ASSETS_UI / "01-hero.png",
         layout="split",
         narration=(
-            "On the frontend, the experience is a three-step wizard. "
-            "Step one collects the job description, optional wishes, the CV file, "
-            "the provider choice — Claude, OpenAI, or compare — and the prompt technique. "
-            "Step two is the editing surface: the generated markdown, a compare bar when both models run, "
-            "an ATS keyword panel, and refine chips like shorter or more formal. "
-            "Step three is design and download with six visual themes. "
-            "API keys follow a bring-your-own-key model: they live only in localStorage, "
-            "are attached to each request, and are never persisted server-side. "
-            "All network calls go through a small api.js module with timeouts on generation."
+            "Im Frontend ist die Oberfläche ein dreistufiger Wizard. "
+            "Schritt eins sammelt Stellenbeschreibung, optionale Wünsche, die CV-Datei, "
+            "die Anbieterwahl — Claude, OpenAI oder Vergleich — und die Prompt-Technik. "
+            "Schritt zwei ist die Bearbeitungsfläche: generierter Markdown, Vergleichsleiste bei zwei Modellen, "
+            "ATS-Keyword-Panel und Verfeinern-Chips wie kürzer oder förmlicher. "
+            "Schritt drei ist Design und Download mit sechs visuellen Themes. "
+            "API-Keys folgen dem Bring-your-own-key-Prinzip: sie liegen nur in localStorage, "
+            "werden pro Request mitgeschickt und serverseitig nie gespeichert. "
+            "Alle Netzaufrufe laufen über ein kleines api.js-Modul, inklusive Timeout beim Generieren."
         ),
     ),
     Scene(
         key="backend",
-        title="Backend — request path",
-        subtitle="Routers, services, and the LLM layer",
+        title="Backend — der Request-Pfad",
+        subtitle="Router, Services und die LLM-Schicht",
         bullets=[
-            "routers/: HTTP only — sessions, documents, generations, exports",
-            "services/: extraction, RAG, generation orchestration, export",
-            "llm/: AnthropicProvider, OpenAIProvider, shared LLMResult",
-            "Pydantic schemas validate every payload before business logic",
-            "One session hubs CV document, generations, and chat messages",
+            "routers/: nur HTTP — sessions, documents, generations, exports",
+            "services/: Extraktion, RAG, Generierungs-Orchestrierung, Export",
+            "llm/: AnthropicProvider, OpenAIProvider, gemeinsames LLMResult",
+            "Pydantic-Schemas validieren jeden Payload vor der Fachlogik",
+            "Eine Session bündelt CV-Dokument, Generierungen und Chat-Messages",
         ],
         narration=(
-            "On the backend, I separated HTTP from business logic. "
-            "Routers handle sessions, document upload, generation, refine, and export. "
-            "Services own the real work: file extraction from PDF, DOCX, or text, "
-            "RAG indexing and retrieval, generation orchestration, and PDF or Word rendering. "
-            "The LLM package defines an abstract provider, then concrete Anthropic and OpenAI implementations "
-            "that both return a structured result with content, model name, and demo flag. "
-            "Pydantic validates every request. "
-            "A session is the hub: at most one CV document, many generations, and a message history used for refine."
+            "Im Backend habe ich HTTP von der Fachlogik getrennt. "
+            "Router übernehmen Sitzungen, Dokument-Upload, Generierung, Refine und Export. "
+            "Services machen die eigentliche Arbeit: Datei-Extraktion aus PDF, DOCX oder Text, "
+            "RAG-Indexierung und Retrieval, Orchestrierung der Generierung sowie PDF- oder Word-Rendering. "
+            "Das LLM-Paket definiert einen abstrakten Provider und konkrete Anthropic- und OpenAI-Implementierungen, "
+            "die beide ein strukturiertes Ergebnis mit Inhalt, Modellname und Demo-Flag zurückgeben. "
+            "Pydantic validiert jeden Request. "
+            "Die Session ist der Hub: höchstens ein CV-Dokument, viele Generierungen und eine Message-Historie für Refine."
         ),
     ),
     Scene(
         key="apis",
-        title="External APIs — what we call and how",
+        title="Externe APIs — was wir aufrufen und wie",
         subtitle="Anthropic Messages API + OpenAI Chat & Embeddings",
         bullets=[
-            "Anthropic: messages.create — system prompt + user/assistant turns",
-            "OpenAI Chat: chat.completions.create — same logical roles",
-            "OpenAI Embeddings: text-embedding-3-small for RAG vectors",
-            "Key precedence: UI BYOK key → server .env key → demo fallback",
-            "Compare mode calls both providers independently, then ranks by ATS",
+            "Anthropic: messages.create — System-Prompt + User/Assistant-Turns",
+            "OpenAI Chat: chat.completions.create — dieselben logischen Rollen",
+            "OpenAI Embeddings: text-embedding-3-small für RAG-Vektoren",
+            "Key-Reihenfolge: UI-BYOK → Server-.env → Demo-Fallback",
+            "Vergleichsmodus ruft beide unabhängig auf und rankt per ATS",
         ],
         narration=(
-            "We use two different text-generation APIs, which was an explicit project requirement. "
-            "For Claude, we call Anthropic's Messages API with a system prompt and a message list. "
-            "For OpenAI, we call Chat Completions with the same logical roles, "
-            "and separately we use OpenAI embeddings — text-embedding-3-small — to vectorize CV chunks for RAG. "
-            "Key resolution is important for privacy and demos: "
-            "a key typed in the UI wins, otherwise we fall back to a server environment key, "
-            "and if neither exists we return a labeled demo résumé so the full product flow still works. "
-            "In compare mode, both providers run independently; we do not ask one model to judge the other. "
-            "Instead we rank drafts with our own ATS keyword overlap score."
+            "Wir nutzen zwei verschiedene Text-Generierungs-APIs — das war eine explizite Projektanforderung. "
+            "Für Claude rufen wir die Anthropic Messages API mit System-Prompt und Message-Liste auf. "
+            "Für OpenAI nutzen wir Chat Completions mit denselben logischen Rollen "
+            "und zusätzlich OpenAI Embeddings — text-embedding-3-small — um CV-Chunks für RAG zu vektorisieren. "
+            "Die Key-Auflösung ist wichtig für Datenschutz und Demos: "
+            "Ein in der UI eingegebener Key hat Vorrang, sonst greift ein Server-Environment-Key, "
+            "und wenn beides fehlt, liefern wir einen gekennzeichneten Demo-Lebenslauf, "
+            "damit der komplette Produktfluss trotzdem testbar bleibt. "
+            "Im Vergleichsmodus laufen beide Provider unabhängig; "
+            "wir lassen nicht ein Modell das andere bewerten, "
+            "sondern ranken Entwürfe mit unserem eigenen ATS-Keyword-Overlap-Score."
         ),
     ),
     Scene(
         key="prompts",
-        title="Prompt engineering system",
-        subtitle="Twelve templates · four techniques · one assembly pipeline",
+        title="Prompt-Engineering-System",
+        subtitle="Zwölf Vorlagen · vier Techniken · eine Assembly-Pipeline",
         bullets=[
-            "12 template files: 6 roles × German and English",
-            "Role prompting: senior résumé writer + ATS specialist persona",
-            "Few-shot: weak → strong bullet rewrites with metric discipline",
-            "Chain-of-thought: 7 internal analysis steps — never printed",
-            "Format constraints + dynamic context injection of RAG chunks",
-            "auto technique = few-shot AND chain-of-thought together",
+            "12 Template-Dateien: 6 Rollen × Deutsch und Englisch",
+            "Role Prompting: Senior-Resume-Writer + ATS-Spezialist-Persona",
+            "Few-shot: schwach → stark umformulierte Bullets, ohne Fake-Zahlen",
+            "Chain-of-Thought: 7 interne Analyseschritte — nie im Output",
+            "Format-Constraints + dynamische Kontextinjektion der RAG-Chunks",
+            "Technik auto = Few-shot UND Chain-of-Thought zusammen",
         ],
         narration=(
-            "The prompt system is one of the parts I'm most intentional about. "
-            "There are twelve template files under the prompts folder — six logical roles, each in German and English: "
-            "system role, few-shot examples, chain-of-thought instructions, output format, the user message shell, and refine. "
-            "Role prompting sets a senior executive résumé writer who must stay factual. "
-            "Few-shot shows weak versus strong bullets so the model learns impact writing without inventing numbers. "
-            "Chain-of-thought forces a private seven-step analysis — job requirements, evidence mapping, keyword plan — "
-            "but those steps are never shown to the user. "
-            "Format constraints lock the markdown structure. "
-            "And dynamic context injection fills the user message with the job posting, wishes, and retrieved CV excerpts. "
-            "When technique is set to auto, we combine few-shot and chain-of-thought in one prompt."
+            "Das Prompt-System ist einer der Teile, die ich besonders bewusst gestaltet habe. "
+            "Unter dem Ordner prompts liegen zwölf Vorlagen — sechs logische Rollen, jeweils auf Deutsch und Englisch: "
+            "System-Rolle, Few-shot-Beispiele, Chain-of-Thought-Anleitung, Ausgabeformat, User-Message-Gerüst und Refine. "
+            "Role Prompting setzt eine erfahrene Resume-Writer-Persona, die strikt faktentreu bleibt. "
+            "Few-shot zeigt schwache versus starke Bullets, damit das Modell wirkungsstark formuliert, ohne Zahlen zu erfinden. "
+            "Chain-of-Thought erzwingt eine interne Sieben-Schritt-Analyse — Stellenanforderungen, Evidenz-Mapping, Keyword-Plan — "
+            "diese Schritte erscheinen aber nie gegenüber der Nutzerin oder dem Nutzer. "
+            "Format-Constraints fixieren die Markdown-Struktur. "
+            "Und Dynamic Context Injection füllt die User-Message mit Stellenanzeige, Wünschen und abgerufenen CV-Auszügen. "
+            "Ist die Technik auf auto gestellt, kombinieren wir Few-shot und Chain-of-Thought in einem Prompt."
         ),
     ),
     Scene(
         key="pipeline",
-        title="End-to-end generation pipeline",
-        subtitle="From upload to ATS-scored draft",
+        title="End-to-End-Generierungs-Pipeline",
+        subtitle="Vom Upload zum ATS-bewerteten Entwurf",
         bullets=[
-            "1. Extract text and optional photo from PDF / DOCX / TXT",
-            "2. Chunk ~700 chars, embed or TF-IDF index, store on session",
-            "3. Retrieve top-k chunks for the job + wishes query",
-            "4. Assemble system + technique + format + injected context",
-            "5. Call provider(s), score keywords, persist generation + messages",
+            "1. Text und optional Foto aus PDF / DOCX / TXT extrahieren",
+            "2. Chunks ~700 Zeichen, Embeddings oder TF-IDF-Index speichern",
+            "3. Top-k-Chunks zur Stelle + Wünsche abrufen",
+            "4. System + Technik + Format + injizierten Kontext zusammenbauen",
+            "5. Provider aufrufen, Keywords scoren, Generation + Messages speichern",
         ],
         screenshot=ASSETS_UI / "03-compare-output.png",
         layout="split",
         narration=(
-            "Here is the generation pipeline in order. "
-            "First, upload extracts text and optionally a photo. "
-            "Second, we chunk the CV — about seven hundred characters with overlap — "
-            "and build an index with embeddings when an OpenAI key is available, otherwise pure-Python TF-IDF. "
-            "Third, at generate time we retrieve the top chunks most relevant to the job description and wishes. "
-            "Fourth, prompts.py assembles the system persona, the selected technique blocks, the format rules, "
-            "and the injected RAG context. "
-            "Fifth, we call one or both providers, run ATS keyword analysis against the job posting, "
-            "and persist each draft plus the conversation messages for later refine."
+            "So läuft die Generierungs-Pipeline der Reihe nach. "
+            "Erstens extrahiert der Upload Text und optional ein Foto. "
+            "Zweitens zerlegen wir den Lebenslauf in Chunks — etwa siebenhundert Zeichen mit Überlappung — "
+            "und bauen einen Index mit Embeddings, wenn ein OpenAI-Key vorhanden ist, sonst mit reinem Python-TF-IDF. "
+            "Drittens holen wir beim Generieren die Top-Chunks, die am besten zu Stellenanzeige und Wünschen passen. "
+            "Viertens baut prompts.py die System-Persona, die gewählten Technik-Blöcke, die Formatregeln "
+            "und den injizierten RAG-Kontext zusammen. "
+            "Fünftens rufen wir einen oder beide Provider auf, führen die ATS-Keyword-Analyse gegen die Stellenanzeige durch "
+            "und speichern jeden Entwurf plus die Conversation-Messages für späteres Verfeinern."
         ),
     ),
     Scene(
         key="refine_export",
-        title="Refine, compare, and export",
-        subtitle="Conversation history and six design themes",
+        title="Verfeinern, Vergleichen und Export",
+        subtitle="Conversation History und sechs Design-Themes",
         bullets=[
-            "Refine sends last user + assistant + new instruction",
-            "Each refine creates a new generation row — history is kept",
-            "Compare UI surfaces winner by ATS score, user can override",
-            "Export is stateless: markdown + design + format in the request",
-            "Six designs: Azure, Executive, Nordic, Sapphire, Cobalt, Slate",
+            "Refine sendet letzte User- + Assistant-Nachricht + neue Anweisung",
+            "Jeder Refine erzeugt eine neue Generation — Historie bleibt erhalten",
+            "Vergleichs-UI zeigt ATS-Gewinner, Nutzer:in kann überschreiben",
+            "Export ist zustandslos: Markdown + Design + Format im Request",
+            "Sechs Designs: Azure, Executive, Nordic, Sapphire, Cobalt, Slate",
         ],
         screenshot=ASSETS_UI / "05-design-export.png",
         layout="split",
         narration=(
-            "After the first draft, refine uses conversation history. "
-            "We send the previous user message, the assistant draft, and a new instruction — "
-            "for example make it shorter or more technical — then store a new generation with technique refine. "
-            "Nothing is overwritten, so versions remain auditable. "
-            "In compare mode the UI highlights the higher ATS score, but the user can pick either draft. "
-            "Export is intentionally stateless: the client sends the final markdown, design, format, and optional photo. "
-            "ReportLab and python-docx render six visual themes without writing files into the database."
+            "Nach dem ersten Entwurf nutzt Refine die Conversation History. "
+            "Wir senden die vorherige User-Nachricht, den Assistant-Entwurf und eine neue Anweisung — "
+            "zum Beispiel kürzer oder technischer — und speichern eine neue Generation mit Technik refine. "
+            "Nichts wird überschrieben, Versionen bleiben nachvollziehbar. "
+            "Im Vergleichsmodus hebt die UI den höheren ATS-Score hervor, aber die Nutzerin oder der Nutzer kann beide wählen. "
+            "Der Export ist bewusst zustandslos: der Client schickt finalen Markdown, Design, Format und optional ein Foto. "
+            "ReportLab und python-docx rendern sechs visuelle Themes, ohne Dateien in die Datenbank zu schreiben."
         ),
     ),
     Scene(
         key="quality",
-        title="Quality, security, and trade-offs",
-        subtitle="What I would emphasize in a hiring interview",
+        title="Qualität, Sicherheit und Trade-offs",
+        subtitle="Was ich in einem Bewerbungsgespräch betonen würde",
         bullets=[
-            "Privacy: BYOK keys never land in SQLite",
-            "Reliability: demo mode keeps the UX testable without paid keys",
-            "Evaluation: ATS overlap is an application-specific metric",
-            "Maintainability: prompts as files, providers behind an ABC",
-            "Next: PostgreSQL, Alembic, auth, tests, and Docker",
+            "Privacy: BYOK-Keys landen nie in SQLite",
+            "Zuverlässigkeit: Demo-Modus macht den Flow ohne bezahlte Keys testbar",
+            "Evaluation: ATS-Overlap ist eine anwendungsspezifische Metrik",
+            "Wartbarkeit: Prompts als Dateien, Provider hinter einer ABC",
+            "Nächste Schritte: PostgreSQL, Alembic, Auth, Tests und Docker",
         ],
         narration=(
-            "If I were summarizing engineering judgment for a hiring conversation, I'd highlight four things. "
-            "Privacy: user keys stay in the browser. "
-            "Reliability: demo mode means reviewers can exercise the full flow without credentials. "
-            "Evaluation: we measure fit with an application-specific ATS keyword score, not vague vibes. "
-            "And maintainability: prompts are data, providers are swappable, routers stay thin. "
-            "The honest next steps for production would be PostgreSQL with Alembic, real authentication, "
-            "broader automated tests, and containerized deployment."
+            "Wenn ich das Engineering-Urteilsvermögen für ein Bewerbungsgespräch zusammenfasse, betone ich vier Punkte. "
+            "Privacy: Nutzer-Keys bleiben im Browser. "
+            "Zuverlässigkeit: Der Demo-Modus erlaubt den kompletten Flow ohne Credentials. "
+            "Evaluation: Wir messen Passung mit einem anwendungsspezifischen ATS-Keyword-Score, nicht mit vagen Eindrücken. "
+            "Und Wartbarkeit: Prompts sind Daten, Provider sind austauschbar, Router bleiben dünn. "
+            "Die ehrlichen nächsten Schritte für Produktion wären PostgreSQL mit Alembic, echte Authentifizierung, "
+            "breitere automatisierte Tests und containerisiertes Deployment."
         ),
     ),
     Scene(
         key="outro",
-        title="Thank you",
-        subtitle="Lebenslauf Boost AI — grounded generation, dual APIs, end-to-end product thinking",
+        title="Vielen Dank",
+        subtitle="Lebenslauf Boost AI — geerdete Generierung, zwei APIs, durchgängiges Produktdenken",
         bullets=[],
         layout="outro",
         narration=(
-            "That's the system end to end: a product-shaped AI workflow with clear architecture, "
-            "two real model providers, a structured prompt stack, retrieval grounding, and a complete user journey "
-            "from upload to export. Happy to go deeper on any layer — prompts, RAG, or the FastAPI service design. "
-            "Thank you for watching."
+            "Das ist das System von Ende zu Ende: ein produktförmiger KI-Workflow mit klarer Architektur, "
+            "zwei echten Modell-Providern, einem strukturierten Prompt-Stack, Retrieval-Grounding "
+            "und einer vollständigen User Journey vom Upload bis zum Export. "
+            "Gerne gehe ich tiefer in jede Schicht — Prompts, RAG oder das FastAPI-Service-Design. "
+            "Vielen Dank fürs Zuschauen."
         ),
     ),
 ]
@@ -337,7 +342,7 @@ def studio_bg() -> Image.Image:
 
 def chrome(draw: ImageDraw.ImageDraw, index: int, total: int) -> None:
     draw.rounded_rectangle((70, 48, 420, 92), radius=18, fill=ACCENT)
-    draw.text((245, 70), "TECHNICAL WALKTHROUGH", anchor="mm", font=font(15, True), fill="#fff")
+    draw.text((245, 70), "TECHNISCHER WALKTHROUGH", anchor="mm", font=font(14, True), fill="#fff")
     draw.text((1840, 70), f"{index:02d} / {total:02d}", anchor="ra", font=font(18, True), fill=SOFT)
     draw.line((70, 1010, 1850, 1010), fill=LINE, width=2)
     draw.text((70, 1030), "LEBENSLAUF BOOST AI", font=font(13, True), fill=SOFT)
@@ -377,7 +382,7 @@ def render_scene_image(scene: Scene, index: int, total: int) -> Path:
             draw.text((WIDTH // 2, y), line, anchor="ma", font=font(28), fill=MUTED)
             y += 44
         draw.rounded_rectangle((760, 700, 1160, 760), radius=30, fill=ACCENT)
-        draw.text((960, 730), "Interview-style explainer", anchor="mm", font=font(20, True), fill="#fff")
+        draw.text((960, 730), "Erklärvideo im Interview-Stil", anchor="mm", font=font(20, True), fill="#fff")
 
     elif scene.layout == "outro":
         draw.text((WIDTH // 2, 380), scene.title, anchor="ma", font=font(64, True, serif=True), fill=WHITE)
@@ -529,20 +534,20 @@ async def build() -> None:
     srt = OUT / "lebenslauf-boost-ai-technical-interview.srt"
     write_srt(timed, srt)
     (OUT / "sprechertext.md").write_text(
-        "# Technical Interview Explainer — Narration\n\n"
-        f"Voice: `{VOICE}` via edge-tts\n"
-        f"Duration target: ~{elapsed/60:.1f} minutes\n\n"
+        "# Technical Interview Explainer — Sprechertext (Deutsch)\n\n"
+        f"Stimme: `{VOICE}` via edge-tts\n"
+        f"Dauer: ca. {elapsed/60:.1f} Minuten\n\n"
         + "\n".join(script_lines),
         encoding="utf-8",
     )
     (OUT / "README.md").write_text(
-        "# Technical Interview Explainer Video\n\n"
-        "Professional English walkthrough of Lebenslauf Boost AI — architecture, APIs, prompts, and product flow.\n\n"
+        "# Technical Interview Explainer Video (Deutsch)\n\n"
+        "Professioneller Walkthrough von Lebenslauf Boost AI — Architektur, APIs, Prompts und Produktfluss.\n\n"
         f"- **Video:** [`lebenslauf-boost-ai-technical-interview.mp4`](lebenslauf-boost-ai-technical-interview.mp4)\n"
-        f"- **Subtitles:** [`lebenslauf-boost-ai-technical-interview.srt`](lebenslauf-boost-ai-technical-interview.srt)\n"
-        f"- **Script:** [`sprechertext.md`](sprechertext.md)\n"
-        f"- **Voice:** `{VOICE}` (Edge TTS neural)\n\n"
-        "Regenerate:\n\n```bash\n.venv/bin/python docs/video/interview/make_interview_video.py\n```\n",
+        f"- **Untertitel:** [`lebenslauf-boost-ai-technical-interview.srt`](lebenslauf-boost-ai-technical-interview.srt)\n"
+        f"- **Sprechertext:** [`sprechertext.md`](sprechertext.md)\n"
+        f"- **Stimme:** `{VOICE}` (Edge TTS neural, Deutsch)\n\n"
+        "Neu erzeugen:\n\n```bash\n.venv/bin/python docs/video/interview/make_interview_video.py\n```\n",
         encoding="utf-8",
     )
     print(f"\nDone: {final}\nDuration: {elapsed:.1f}s ({elapsed/60:.1f} min)\nSubtitles: {srt}")

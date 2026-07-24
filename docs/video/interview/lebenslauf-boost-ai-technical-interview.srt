@@ -1,411 +1,435 @@
 1
-00:00:00,200 --> 00:00:05,371
-Hi — thank you for the opportunity to walk you through Lebenslauf Boost AI.
+00:00:00,200 --> 00:00:04,683
+Hallo — vielen Dank für die Gelegenheit, Lebenslauf Boost AI vorzustellen.
 
 2
-00:00:05,371 --> 00:00:11,368
-This is a full-stack AI engineering project I built to optimize a real résumé against a
+00:00:04,683 --> 00:00:09,711
+Das ist ein Full-Stack-KI-Engineering-Projekt, das ich gebaut habe, um einen echten
 
 3
-00:00:11,368 --> 00:00:12,816
-specific job posting.
+00:00:09,711 --> 00:00:13,164
+Lebenslauf gezielt auf eine Stellenanzeige zuzuschneiden.
 
 4
-00:00:12,816 --> 00:00:18,607
-In this video I'll explain how the frontend and backend work, which external APIs we
+00:00:13,164 --> 00:00:18,253
+In diesem Video erkläre ich, wie Frontend und Backend funktionieren, welche externen
 
 5
-00:00:18,607 --> 00:00:24,398
-call and why, how the prompt system is designed, and how the full pipeline runs from
+00:00:18,253 --> 00:00:23,463
+APIs wir aufrufen und warum, wie das Prompt-System aufgebaut ist, und wie die Pipeline
 
 6
-00:00:24,398 --> 00:00:25,570
-upload to export.
+00:00:23,463 --> 00:00:25,402
+vom Upload bis zum Export läuft.
 
 7
-00:00:26,070 --> 00:00:30,749
-At a high level, the product solves a practical hiring problem.
+00:00:25,902 --> 00:00:29,565
+Auf Produktebene lösen wir ein praktisches Bewerbungsproblem.
 
 8
-00:00:30,749 --> 00:00:36,987
-Candidates need their résumé rewritten for each job, but unconstrained generative AI
+00:00:29,565 --> 00:00:34,428
+Bewerberinnen und Bewerber müssen ihren Lebenslauf für jede Stelle anpassen, aber
 
 9
-00:00:36,987 --> 00:00:39,734
-often invents skills or achievements.
+00:00:34,428 --> 00:00:38,512
+unkontrollierte generative KI erfindet oft Fähigkeiten oder Erfolge.
 
 10
-00:00:39,734 --> 00:00:45,750
-Our design principle is truthfulness first: the model may only use facts from the
+00:00:38,512 --> 00:00:43,255
+Unser Leitprinzip ist Wahrhaftigkeit zuerst: Das Modell darf nur Fakten aus dem
 
 11
-00:00:45,750 --> 00:00:46,938
-uploaded CV.
+00:00:43,255 --> 00:00:45,357
+hochgeladenen Lebenslauf verwenden.
 
 12
-00:00:46,938 --> 00:00:53,102
-We retrieve the most relevant CV sections with RAG, generate one or two drafts with
+00:00:45,357 --> 00:00:50,641
+Wir holen die relevantesten CV-Abschnitte per RAG, erzeugen einen oder zwei Entwürfe mit
 
 13
-00:00:53,102 --> 00:00:59,414
-Claude and OpenAI, score them against the job keywords, let the user refine the text,
+00:00:50,641 --> 00:00:55,805
+Claude und OpenAI, bewerten sie gegen die Stellen-Keywords, lassen den Text verfeinern
 
 14
-00:00:59,414 --> 00:01:03,944
-and export a polished PDF or Word file in one of six designs.
+00:00:55,805 --> 00:01:00,008
+und exportieren ein fertiges PDF oder Word in einem von sechs Designs.
 
 15
-00:01:04,444 --> 00:01:08,664
-Architecturally, I kept the system intentionally modular.
+00:01:00,508 --> 00:01:04,304
+Architektonisch habe ich das System bewusst modular gehalten.
 
 16
-00:01:08,664 --> 00:01:15,180
-The frontend is a lightweight vanilla JavaScript SPA — no React build step — styled in a
+00:01:04,304 --> 00:01:09,595
+Das Frontend ist eine schlanke Vanilla-JavaScript-SPA — ohne React-Build — im eigenen
 
 17
-00:01:15,180 --> 00:01:21,696
-custom Sapphire Nightfall design system, with Boosti, an animated guide that walks users
+00:01:09,595 --> 00:01:14,698
+Sapphire-Nightfall-Designsystem, mit Boosti als animiertem Guide durch den Ablauf.
 
 18
-00:01:21,696 --> 00:01:22,955
-through the flow.
+00:01:14,698 --> 00:01:18,743
+Das Backend ist FastAPI mit dünnen Routern und dickeren Services.
 
 19
-00:01:22,955 --> 00:01:27,545
-The backend is FastAPI with thin routers and thicker services.
+00:01:18,743 --> 00:01:24,033
+LLM-Zugriffe laufen über eine Provider-Abstraktion, sodass Claude und OpenAI dieselbe
 
 20
-00:01:27,545 --> 00:01:33,617
-LLM access goes through a provider abstraction so Claude and OpenAI share the same
+00:01:24,033 --> 00:01:25,340
+Schnittstelle teilen.
 
 21
-00:01:33,617 --> 00:01:34,802
-interface.
+00:01:25,340 --> 00:01:30,693
+Die Prompt-Texte liegen außerhalb des Codes als deutsche und englische Vorlagen, damit
 
 22
-00:01:34,802 --> 00:01:40,873
-Prompt text lives outside the code as German and English template files, so prompt
+00:01:30,693 --> 00:01:34,240
+Prompt Engineering ohne Python-Änderungen möglich bleibt.
 
 23
-00:01:40,873 --> 00:01:44,353
-engineering can evolve without touching Python.
+00:01:34,240 --> 00:01:36,730
+SQLite speichert Sitzungen und Historie.
 
 24
-00:01:44,353 --> 00:01:46,945
-SQLite stores sessions and history.
+00:01:36,730 --> 00:01:42,082
+Fehlen Keys oder Embeddings, fällt die App sauber in einen klar gekennzeichneten Demo-
 
 25
-00:01:46,945 --> 00:01:53,090
-And when keys or embeddings are missing, the app degrades gracefully into a clearly
+00:01:42,082 --> 00:01:43,638
+Modus — statt zu crashen.
 
 26
-00:01:53,090 --> 00:01:55,830
-labeled demo mode instead of failing.
+00:01:44,138 --> 00:01:47,725
+Im Frontend ist die Oberfläche ein dreistufiger Wizard.
 
 27
-00:01:56,330 --> 00:02:00,619
-On the frontend, the experience is a three-step wizard.
+00:01:47,725 --> 00:01:52,811
+Schritt eins sammelt Stellenbeschreibung, optionale Wünsche, die CV-Datei, die
 
 28
-00:02:00,619 --> 00:02:07,480
-Step one collects the job description, optional wishes, the CV file, the provider choice
+00:01:52,811 --> 00:01:57,376
+Anbieterwahl — Claude, OpenAI oder Vergleich — und die Prompt-Technik.
 
 29
-00:02:07,480 --> 00:02:11,847
-— Claude, OpenAI, or compare — and the prompt technique.
+00:01:57,376 --> 00:02:03,115
+Schritt zwei ist die Bearbeitungsfläche: generierter Markdown, Vergleichsleiste bei zwei
 
 30
-00:02:11,847 --> 00:02:18,631
-Step two is the editing surface: the generated markdown, a compare bar when both models
+00:02:03,115 --> 00:02:08,071
+Modellen, ATS-Keyword-Panel und Verfeinern-Chips wie kürzer oder förmlicher.
 
 31
-00:02:18,631 --> 00:02:24,245
-run, an ATS keyword panel, and refine chips like shorter or more formal.
+00:02:08,071 --> 00:02:12,245
+Schritt drei ist Design und Download mit sechs visuellen Themes.
 
 32
-00:02:24,245 --> 00:02:28,690
-Step three is design and download with six visual themes.
+00:02:12,245 --> 00:02:17,853
+API-Keys folgen dem Bring-your-own-key-Prinzip: sie liegen nur in localStorage, werden
 
 33
-00:02:28,690 --> 00:02:35,551
-API keys follow a bring-your-own-key model: they live only in localStorage, are attached
+00:02:17,853 --> 00:02:21,635
+pro Request mitgeschickt und serverseitig nie gespeichert.
 
 34
-00:02:35,551 --> 00:02:39,684
-to each request, and are never persisted server-side.
+00:02:21,635 --> 00:02:26,657
+Alle Netzaufrufe laufen über ein kleines api.js-Modul, inklusive Timeout beim
 
 35
-00:02:39,684 --> 00:02:45,844
-All network calls go through a small api.js module with timeouts on generation.
+00:02:26,657 --> 00:02:27,700
+Generieren.
 
 36
-00:02:46,344 --> 00:02:50,594
-On the backend, I separated HTTP from business logic.
+00:02:28,200 --> 00:02:31,681
+Im Backend habe ich HTTP von der Fachlogik getrennt.
 
 37
-00:02:50,594 --> 00:02:56,448
-Routers handle sessions, document upload, generation, refine, and export.
+00:02:31,681 --> 00:02:36,836
+Router übernehmen Sitzungen, Dokument-Upload, Generierung, Refine und Export.
 
 38
-00:02:56,448 --> 00:03:03,265
-Services own the real work: file extraction from PDF, DOCX, or text, RAG indexing and
+00:02:36,836 --> 00:02:42,594
+Services machen die eigentliche Arbeit: Datei-Extraktion aus PDF, DOCX oder Text, RAG-
 
 39
-00:03:03,265 --> 00:03:08,317
-retrieval, generation orchestration, and PDF or Word rendering.
+00:02:42,594 --> 00:02:47,883
+Indexierung und Retrieval, Orchestrierung der Generierung sowie PDF- oder Word-
 
 40
-00:03:08,317 --> 00:03:14,732
-The LLM package defines an abstract provider, then concrete Anthropic and OpenAI
+00:02:47,883 --> 00:02:48,954
+Rendering.
 
 41
-00:03:14,732 --> 00:03:21,709
-implementations that both return a structured result with content, model name, and demo
+00:02:48,954 --> 00:02:54,645
+Das LLM-Paket definiert einen abstrakten Provider und konkrete Anthropic- und OpenAI-
 
 42
-00:03:21,709 --> 00:03:22,992
-flag.
+00:02:54,645 --> 00:03:00,201
+Implementierungen, die beide ein strukturiertes Ergebnis mit Inhalt, Modellname und
 
 43
-00:03:22,992 --> 00:03:25,638
-Pydantic validates every request.
+00:03:00,201 --> 00:03:01,674
+Demo-Flag zurückgeben.
 
 44
-00:03:25,638 --> 00:03:32,535
-A session is the hub: at most one CV document, many generations, and a message history
+00:03:01,674 --> 00:03:03,884
+Pydantic validiert jeden Request.
 
 45
-00:03:32,535 --> 00:03:33,818
-used for refine.
+00:03:03,884 --> 00:03:09,239
+Die Session ist der Hub: höchstens ein CV-Dokument, viele Generierungen und eine
 
 46
-00:03:34,318 --> 00:03:40,629
-We use two different text-generation APIs, which was an explicit project requirement.
+00:03:09,239 --> 00:03:11,114
+Message-Historie für Refine.
 
 47
-00:03:40,629 --> 00:03:46,939
-For Claude, we call Anthropic's Messages API with a system prompt and a message list.
+00:03:11,614 --> 00:03:16,352
+Wir nutzen zwei verschiedene Text-Generierungs-APIs — das war eine explizite
 
 48
-00:03:46,939 --> 00:03:53,398
-For OpenAI, we call Chat Completions with the same logical roles, and separately we use
+00:03:16,352 --> 00:03:17,537
+Projektanforderung.
 
 49
-00:03:53,398 --> 00:03:59,041
-OpenAI embeddings — text-embedding-3-small — to vectorize CV chunks for RAG.
+00:03:17,537 --> 00:03:23,024
+Für Claude rufen wir die Anthropic Messages API mit System-Prompt und Message-Liste auf.
 
 50
-00:03:59,041 --> 00:04:05,574
-Key resolution is important for privacy and demos: a key typed in the UI wins, otherwise
+00:03:23,024 --> 00:03:28,261
+Für OpenAI nutzen wir Chat Completions mit denselben logischen Rollen und zusätzlich
 
 51
-00:04:05,574 --> 00:04:12,107
-we fall back to a server environment key, and if neither exists we return a labeled demo
+00:03:28,261 --> 00:03:33,436
+OpenAI Embeddings — text-embedding-3-small — um CV-Chunks für RAG zu vektorisieren.
 
 52
-00:04:12,107 --> 00:04:15,374
-résumé so the full product flow still works.
+00:03:33,436 --> 00:03:38,860
+Die Key-Auflösung ist wichtig für Datenschutz und Demos: Ein in der UI eingegebener Key
 
 53
-00:04:15,374 --> 00:04:21,833
-In compare mode, both providers run independently; we do not ask one model to judge the
+00:03:38,860 --> 00:03:44,347
+hat Vorrang, sonst greift ein Server-Environment-Key, und wenn beides fehlt, liefern wir
 
 54
-00:04:21,833 --> 00:04:23,021
-other.
+00:03:44,347 --> 00:03:49,397
+einen gekennzeichneten Demo-Lebenslauf, damit der komplette Produktfluss trotzdem
 
 55
-00:04:23,021 --> 00:04:27,624
-Instead we rank drafts with our own ATS keyword overlap score.
+00:03:49,397 --> 00:03:50,394
+testbar bleibt.
 
 56
-00:04:28,124 --> 00:04:32,703
-The prompt system is one of the parts I'm most intentional about.
+00:03:50,394 --> 00:03:55,632
+Im Vergleichsmodus laufen beide Provider unabhängig; wir lassen nicht ein Modell das
 
 57
-00:04:32,703 --> 00:04:38,691
-There are twelve template files under the prompts folder — six logical roles, each in
+00:03:55,632 --> 00:04:01,056
+andere bewerten, sondern ranken Entwürfe mit unserem eigenen ATS-Keyword-Overlap-Score.
 
 58
-00:04:38,691 --> 00:04:44,468
-German and English: system role, few-shot examples, chain-of-thought instructions,
+00:04:01,556 --> 00:04:06,788
+Das Prompt-System ist einer der Teile, die ich besonders bewusst gestaltet habe.
 
 59
-00:04:44,468 --> 00:04:47,991
-output format, the user message shell, and refine.
+00:04:06,788 --> 00:04:12,216
+Unter dem Ordner prompts liegen zwölf Vorlagen — sechs logische Rollen, jeweils auf
 
 60
-00:04:47,991 --> 00:04:53,274
-Role prompting sets a senior executive résumé writer who must stay factual.
+00:04:12,216 --> 00:04:17,644
+Deutsch und Englisch: System-Rolle, Few-shot-Beispiele, Chain-of-Thought-Anleitung,
 
 61
-00:04:53,274 --> 00:04:59,192
-Few-shot shows weak versus strong bullets so the model learns impact writing without
+00:04:17,644 --> 00:04:20,652
+Ausgabeformat, User-Message-Gerüst und Refine.
 
 62
-00:04:59,192 --> 00:05:00,460
-inventing numbers.
+00:04:20,652 --> 00:04:26,407
+Role Prompting setzt eine erfahrene Resume-Writer-Persona, die strikt faktentreu bleibt.
 
 63
-00:05:00,460 --> 00:05:06,237
-Chain-of-thought forces a private seven-step analysis — job requirements, evidence
+00:04:26,407 --> 00:04:31,442
+Few-shot zeigt schwache versus starke Bullets, damit das Modell wirkungsstark
 
 64
-00:05:06,237 --> 00:05:11,028
-mapping, keyword plan — but those steps are never shown to the user.
+00:04:31,442 --> 00:04:33,796
+formuliert, ohne Zahlen zu erfinden.
 
 65
-00:05:11,028 --> 00:05:14,339
-Format constraints lock the markdown structure.
+00:04:33,796 --> 00:04:39,355
+Chain-of-Thought erzwingt eine interne Sieben-Schritt-Analyse — Stellenanforderungen,
 
 66
-00:05:14,339 --> 00:05:20,397
-And dynamic context injection fills the user message with the job posting, wishes, and
+00:04:39,355 --> 00:04:44,587
+Evidenz-Mapping, Keyword-Plan — diese Schritte erscheinen aber nie gegenüber der
 
 67
-00:05:20,397 --> 00:05:21,947
-retrieved CV excerpts.
+00:04:44,587 --> 00:04:46,222
+Nutzerin oder dem Nutzer.
 
 68
-00:05:21,947 --> 00:05:28,006
-When technique is set to auto, we combine few-shot and chain-of-thought in one prompt.
+00:04:46,222 --> 00:04:49,492
+Format-Constraints fixieren die Markdown-Struktur.
 
 69
-00:05:28,506 --> 00:05:31,632
-Here is the generation pipeline in order.
+00:04:49,492 --> 00:04:55,050
+Und Dynamic Context Injection füllt die User-Message mit Stellenanzeige, Wünschen und
 
 70
-00:05:31,632 --> 00:05:35,519
-First, upload extracts text and optionally a photo.
+00:04:55,050 --> 00:04:56,620
+abgerufenen CV-Auszügen.
 
 71
-00:05:35,519 --> 00:05:41,923
-Second, we chunk the CV — about seven hundred characters with overlap — and build an
+00:04:56,620 --> 00:05:02,048
+Ist die Technik auf auto gestellt, kombinieren wir Few-shot und Chain-of-Thought in
 
 72
-00:05:41,923 --> 00:05:48,326
-index with embeddings when an OpenAI key is available, otherwise pure-Python TF-IDF.
+00:05:02,048 --> 00:05:03,094
+einem Prompt.
 
 73
-00:05:48,326 --> 00:05:54,958
-Third, at generate time we retrieve the top chunks most relevant to the job description
+00:05:03,594 --> 00:05:06,772
+So läuft die Generierungs-Pipeline der Reihe nach.
 
 74
-00:05:54,958 --> 00:05:56,178
-and wishes.
+00:05:06,772 --> 00:05:10,394
+Erstens extrahiert der Upload Text und optional ein Foto.
 
 75
-00:05:56,178 --> 00:06:02,505
-Fourth, prompts.py assembles the system persona, the selected technique blocks, the
+00:05:10,394 --> 00:05:15,415
+Zweitens zerlegen wir den Lebenslauf in Chunks — etwa siebenhundert Zeichen mit
 
 76
-00:06:02,505 --> 00:06:05,783
-format rules, and the injected RAG context.
+00:05:15,415 --> 00:05:20,881
+Überlappung — und bauen einen Index mit Embeddings, wenn ein OpenAI-Key vorhanden ist,
 
 77
-00:06:05,783 --> 00:06:12,416
-Fifth, we call one or both providers, run ATS keyword analysis against the job posting,
+00:05:20,881 --> 00:05:22,851
+sonst mit reinem Python-TF-IDF.
 
 78
-00:06:12,416 --> 00:06:17,828
-and persist each draft plus the conversation messages for later refine.
+00:05:22,851 --> 00:05:28,316
+Drittens holen wir beim Generieren die Top-Chunks, die am besten zu Stellenanzeige und
 
 79
-00:06:18,328 --> 00:06:22,250
-After the first draft, refine uses conversation history.
+00:05:28,316 --> 00:05:29,333
+Wünschen passen.
 
 80
-00:06:22,250 --> 00:06:28,063
-We send the previous user message, the assistant draft, and a new instruction — for
+00:05:29,333 --> 00:05:34,290
+Viertens baut prompts.py die System-Persona, die gewählten Technik-Blöcke, die
 
 81
-00:06:28,063 --> 00:06:34,086
-example make it shorter or more technical — then store a new generation with technique
+00:05:34,290 --> 00:05:37,722
+Formatregeln und den injizierten RAG-Kontext zusammen.
 
 82
-00:06:34,086 --> 00:06:35,206
-refine.
+00:05:37,722 --> 00:05:43,188
+Fünftens rufen wir einen oder beide Provider auf, führen die ATS-Keyword-Analyse gegen
 
 83
-00:06:35,206 --> 00:06:38,918
-Nothing is overwritten, so versions remain auditable.
+00:05:43,188 --> 00:05:48,717
+die Stellenanzeige durch und speichern jeden Entwurf plus die Conversation-Messages für
 
 84
-00:06:38,918 --> 00:06:44,801
-In compare mode the UI highlights the higher ATS score, but the user can pick either
+00:05:48,717 --> 00:05:49,988
+späteres Verfeinern.
 
 85
-00:06:44,801 --> 00:06:45,921
-draft.
+00:05:50,488 --> 00:05:54,355
+Nach dem ersten Entwurf nutzt Refine die Conversation History.
 
 86
-00:06:45,921 --> 00:06:52,014
-Export is intentionally stateless: the client sends the final markdown, design, format,
+00:05:54,355 --> 00:05:59,843
+Wir senden die vorherige User-Nachricht, den Assistant-Entwurf und eine neue Anweisung —
 
 87
-00:06:52,014 --> 00:06:53,345
-and optional photo.
+00:05:59,843 --> 00:06:05,144
+zum Beispiel kürzer oder technischer — und speichern eine neue Generation mit Technik
 
 88
-00:06:53,345 --> 00:06:59,017
-ReportLab and python-docx render six visual themes without writing files into the
+00:06:05,144 --> 00:06:06,142
+refine.
 
 89
-00:06:59,017 --> 00:07:00,138
-database.
+00:06:06,142 --> 00:06:09,946
+Nichts wird überschrieben, Versionen bleiben nachvollziehbar.
 
 90
-00:07:00,638 --> 00:07:06,944
-If I were summarizing engineering judgment for a hiring conversation, I'd highlight four
+00:06:09,946 --> 00:06:15,372
+Im Vergleichsmodus hebt die UI den höheren ATS-Score hervor, aber die Nutzerin oder der
 
 91
-00:07:06,944 --> 00:07:08,090
-things.
+00:06:15,372 --> 00:06:16,931
+Nutzer kann beide wählen.
 
 92
-00:07:08,090 --> 00:07:10,885
-Privacy: user keys stay in the browser.
+00:06:16,931 --> 00:06:22,357
+Der Export ist bewusst zustandslos: der Client schickt finalen Markdown, Design, Format
 
 93
-00:07:10,885 --> 00:07:17,048
-Reliability: demo mode means reviewers can exercise the full flow without credentials.
+00:06:22,357 --> 00:06:23,729
+und optional ein Foto.
 
 94
-00:07:17,048 --> 00:07:23,067
-Evaluation: we measure fit with an application-specific ATS keyword score, not vague
+00:06:23,729 --> 00:06:29,092
+ReportLab und python-docx rendern sechs visuelle Themes, ohne Dateien in die Datenbank
 
 95
-00:07:23,067 --> 00:07:24,214
-vibes.
+00:06:29,092 --> 00:06:30,090
+zu schreiben.
 
 96
-00:07:24,214 --> 00:07:30,090
-And maintainability: prompts are data, providers are swappable, routers stay thin.
+00:06:30,590 --> 00:06:36,141
+Wenn ich das Engineering-Urteilsvermögen für ein Bewerbungsgespräch zusammenfasse,
 
 97
-00:07:30,090 --> 00:07:35,464
-The honest next steps for production would be PostgreSQL with Alembic, real
+00:06:36,141 --> 00:06:37,698
+betone ich vier Punkte.
 
 98
-00:07:35,464 --> 00:07:40,480
-authentication, broader automated tests, and containerized deployment.
+00:06:37,698 --> 00:06:40,406
+Privacy: Nutzer-Keys bleiben im Browser.
 
 99
-00:07:40,980 --> 00:07:47,299
-That's the system end to end: a product-shaped AI workflow with clear architecture, two
+00:06:40,406 --> 00:06:45,619
+Zuverlässigkeit: Der Demo-Modus erlaubt den kompletten Flow ohne Credentials.
 
 100
-00:07:47,299 --> 00:07:53,400
-real model providers, a structured prompt stack, retrieval grounding, and a complete
+00:06:45,619 --> 00:06:51,577
+Evaluation: Wir messen Passung mit einem anwendungsspezifischen ATS-Keyword-Score, nicht
 
 101
-00:07:53,400 --> 00:07:55,942
-user journey from upload to export.
+00:06:51,577 --> 00:06:52,999
+mit vagen Eindrücken.
 
 102
-00:07:55,942 --> 00:08:01,607
-Happy to go deeper on any layer — prompts, RAG, or the FastAPI service design.
+00:06:52,999 --> 00:06:58,753
+Und Wartbarkeit: Prompts sind Daten, Provider sind austauschbar, Router bleiben dünn.
 
 103
-00:08:01,607 --> 00:08:03,278
-Thank you for watching.
+00:06:58,753 --> 00:07:04,305
+Die ehrlichen nächsten Schritte für Produktion wären PostgreSQL mit Alembic, echte
+
+104
+00:07:04,305 --> 00:07:09,856
+Authentifizierung, breitere automatisierte Tests und containerisiertes Deployment.
+
+105
+00:07:10,356 --> 00:07:15,263
+Das ist das System von Ende zu Ende: ein produktförmiger KI-Workflow mit klarer
+
+106
+00:07:15,263 --> 00:07:20,730
+Architektur, zwei echten Modell-Providern, einem strukturierten Prompt-Stack, Retrieval-
+
+107
+00:07:20,730 --> 00:07:25,265
+Grounding und einer vollständigen User Journey vom Upload bis zum Export.
+
+108
+00:07:25,265 --> 00:07:30,545
+Gerne gehe ich tiefer in jede Schicht — Prompts, RAG oder das FastAPI-Service-Design.
+
+109
+00:07:30,545 --> 00:07:32,222
+Vielen Dank fürs Zuschauen.

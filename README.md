@@ -61,15 +61,15 @@ CV-Upload und RAG über den KI-Vergleich bis zum PDF-/Word-Export:
 - [Deutsche Untertitel](docs/video/lebenslauf-boost-ai-projektvideo.srt)
 - [Sprechertext und Kapitel](docs/video/README.md)
 
-### Technical Interview Explainer (English)
+### Technical Interview Explainer (Deutsch)
 
-Studio-style English walkthrough for hiring conversations — frontend, backend,
-APIs, prompt techniques, RAG pipeline, and export:
+Studio-Walkthrough für Bewerbungsgespräche — Frontend, Backend, APIs,
+Prompt-Techniken, RAG-Pipeline und Export:
 
-- [Technical interview video (MP4, ~8:03)](docs/video/interview/lebenslauf-boost-ai-technical-interview.mp4)
-- [English subtitles](docs/video/interview/lebenslauf-boost-ai-technical-interview.srt)
-- [Full narration script](docs/video/interview/sprechertext.md)
-- Voice: Edge TTS `en-US-AndrewMultilingualNeural` (neural, natural)
+- [Technical-Interview-Video (MP4)](docs/video/interview/lebenslauf-boost-ai-technical-interview.mp4)
+- [Deutsche Untertitel](docs/video/interview/lebenslauf-boost-ai-technical-interview.srt)
+- [Vollständiger Sprechertext](docs/video/interview/sprechertext.md)
+- Stimme: Edge TTS `de-DE-FlorianMultilingualNeural` (neural, natürlich)
 
 ---
 
