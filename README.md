@@ -44,6 +44,23 @@ führt dabei Schritt für Schritt durch die ganze App.
 
 ---
 
+## GitHub Pages
+
+**[Oberflächen-Vorschau öffnen](https://kastriottafolli.github.io/Lebenslauf-Boost-AI/)**
+
+GitHub Pages zeigt die vorhandene Oberfläche mit allen drei Schritten und Sprachwechsel
+(DE/EN). Diese statische Vorschau führt keine API-Aufrufe aus und nimmt keine Lebensläufe
+oder API-Keys entgegen. Upload, KI-Generierung, der regelbasierte Demo-Modus und Export
+benötigen das Python-Backend; siehe [Getting Started](#getting-started).
+
+Änderungen auf `main` werden über `.github/workflows/pages.yml` automatisch veröffentlicht.
+In den Repository-Einstellungen muss **Pages → Source → GitHub Actions** ausgewählt sein.
+Der Build `python scripts/build_pages.py` erstellt ausschließlich Frontend und statische
+Assets in `_site/`. Das Backend und Konfigurationsdateien werden nicht veröffentlicht.
+Die lokal gestartete vollständige App bleibt unverändert verfügbar.
+
+---
+
 ## Screenshots
 
 | 1 · Eingabe & Upload | 2 · Bearbeiten & Keyword-Check | 3 · Design & Download |

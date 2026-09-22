@@ -14,3 +14,6 @@ data/
 # Video build artifacts
 docs/video/build/
 docs/video/interview/build/
+
+# GitHub Pages build
+_site/
