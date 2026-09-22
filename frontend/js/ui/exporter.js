@@ -82,7 +82,7 @@ export async function download() {
     a.href = url;
     a.download = filename || `${body.filename}.${state.format}`;
     document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
     await hideOverlay();
     burstConfetti(56);
     toast(t("downloadOk"), "ok");

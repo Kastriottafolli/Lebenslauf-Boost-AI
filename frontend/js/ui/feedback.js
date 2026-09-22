@@ -9,7 +9,7 @@ export function toast(msg, kind = "") {
   el.textContent = msg;
   el.className = `toast ${kind}`;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.add("hidden"), 3400);
+  toastTimer = setTimeout(() => el.classList.add("hidden"), kind === "err" ? 10000 : 3400);
 }
 
 let stepTimer = null;
@@ -20,15 +20,15 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/** Feste Dauer: 5 s bei Seitenwechsel; kürzer für Refine/Export. */
-const STEP_LOAD_MS = 5000;
+/** Brief feedback without artificial multi-second delays. */
+const STEP_LOAD_MS = 600;
 
 function minDurationFor(mode) {
   if (mode === "generate" || mode === "compare" || mode === "design") {
     return STEP_LOAD_MS;
   }
-  if (mode === "refine") return 2200;
-  if (mode === "export") return 1800;
+  if (mode === "refine") return 300;
+  if (mode === "export") return 300;
   return 1500;
 }
 
@@ -106,7 +106,7 @@ export function showOverlay(msg, steps, mode = "generate") {
         if (i === 0) li.className = "act";
         ul.appendChild(li);
       });
-      // 4 Schritte gleichmäßig über die 5 s verteilen
+      // Fortschritt über die kurze Mindestdauer verteilen
       const stepGap = Math.floor(minMs / Math.max(1, steps.length));
       let i = 0;
       stepTimer = setInterval(() => {

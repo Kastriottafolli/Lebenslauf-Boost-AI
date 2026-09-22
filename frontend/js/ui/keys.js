@@ -11,16 +11,10 @@ export function getKeys() {
   };
 }
 
-export function saveKeys() {
-  try { localStorage.setItem(KEY_STORE, JSON.stringify(getKeys())); } catch (e) { /* ignore */ }
-}
-
+// Keys stay only in the current tab's input fields, never in persistent storage.
+export function saveKeys() {}
 export function loadKeys() {
-  try {
-    const k = JSON.parse(localStorage.getItem(KEY_STORE) || "{}");
-    if (k.openai) $("#keyOpenai").value = k.openai;
-    if (k.anthropic) $("#keyAnthropic").value = k.anthropic;
-  } catch (e) { /* ignore */ }
+  try { localStorage.removeItem(KEY_STORE); } catch { /* storage may be blocked */ }
 }
 
 /** Zeigt nur die zum gewählten Anbieter passenden Key-Felder. */

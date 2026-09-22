@@ -17,3 +17,5 @@ docs/video/interview/build/
 
 # GitHub Pages build
 _site/
+
+node_modules/

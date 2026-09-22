@@ -1,0 +1,7 @@
+.pages-notice { position:relative; z-index:2; margin:24px auto; padding:22px; width:calc(100% - 32px); max-width:1100px; border:1px solid #6298d8; border-radius:16px; background:#edf5ff; color:#173450; display:flex; flex-wrap:wrap; align-items:center; gap:16px; }
+.pages-notice > div { flex:1 1 420px; }
+.pages-notice p { margin:8px 0 0; line-height:1.6; }
+.pages-notice #exampleStatus:empty { display:none; }
+.pages-notice #exampleStatus { flex-basis:100%; margin:0; }
+.pages-notice .btn { flex-shrink:0; }
+#appError { position:relative; padding:20px; margin:16px; background:#fff0ed; color:#7a1c14; border-radius:12px; }

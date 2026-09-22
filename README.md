@@ -44,20 +44,44 @@ führt dabei Schritt für Schritt durch die ganze App.
 
 ---
 
-## GitHub Pages
+## GitHub Pages — direkt nutzbare Browser-App
 
-**[Oberflächen-Vorschau öffnen](https://kastriottafolli.github.io/Lebenslauf-Boost-AI/)**
+**[App öffnen](https://kastriottafolli.github.io/Lebenslauf-Boost-AI/)**
 
-GitHub Pages zeigt die vorhandene Oberfläche mit allen drei Schritten und Sprachwechsel
-(DE/EN). Diese statische Vorschau führt keine API-Aufrufe aus und nimmt keine Lebensläufe
-oder API-Keys entgegen. Upload, KI-Generierung, der regelbasierte Demo-Modus und Export
-benötigen das Python-Backend; siehe [Getting Started](#getting-started).
+Zum Vorführen: **Beispiel laden → Lebenslauf generieren → Weiter zu Design & Download**.
+Das Beispiel ist fiktiv und startet immer ohne API-Keys im kostenlosen Demo-Modus.
 
-Änderungen auf `main` werden über `.github/workflows/pages.yml` automatisch veröffentlicht.
-In den Repository-Einstellungen muss **Pages → Source → GitHub Actions** ausgewählt sein.
-Der Build `python scripts/build_pages.py` erstellt ausschließlich Frontend und statische
-Assets in `_site/`. Das Backend und Konfigurationsdateien werden nicht veröffentlicht.
-Die lokal gestartete vollständige App bleibt unverändert verfügbar.
+- PDF, DOCX und TXT werden lokal eingelesen (max. 10 MB, PDF max. 30 Seiten).
+  Gescannte PDFs benötigen vorher OCR. Fotos können separat ergänzt werden.
+- Ohne Key: klar markierte, regelbasierte Entwürfe, Vergleich, Keyword-Check,
+  direktes Bearbeiten, einfache Anpassungen und echte PDF-/Word-Downloads.
+  Die Demo übernimmt ausschließlich Angaben aus dem Ausgangstext und erfindet keine
+  fehlenden Fähigkeiten. Freie KI-Umformulierungen benötigen einen Key.
+- Mit eigenem Key: direkte Anfragen an Claude bzw. OpenAI; im Vergleichsmodus
+  nutzt jede Version den jeweils zugehörigen Key. Ein fehlender Key ergibt eine
+  Demo-Version. Anbieterfehler werden angezeigt, nicht als KI-Erfolg ausgegeben.
+- Schlüssel bleiben nur im geöffneten Tab, nicht in `localStorage`. Mit Key werden
+  Lebenslauf, Stellenanzeige und Wünsche direkt an den jeweiligen Anbieter gesendet.
+  API-Guthaben und Modellzugriff sind erforderlich; Anbietergebühren können anfallen.
+  Organisationen, die Browser-Anfragen blockieren, müssen die Python-App verwenden.
+- Browser-Modus: lokale Textverarbeitung und Keyword-Abgleich; keine SQLite-Datenbank,
+  serverseitige Speicherung, Embeddings oder automatische Fotoextraktion.
+  Die vollständige Python-Variante bleibt über [Getting Started](#getting-started) verfügbar.
+
+Änderungen auf `main` werden nach Browser-Tests automatisch durch
+`.github/workflows/pages.yml` veröffentlicht. Der Build benötigt Node.js 22+ und Python 3:
+
+```bash
+npm ci
+npm test
+npm run build
+python3 -m http.server 8000 --directory _site
+```
+
+`_site/` enthält nur die Browser-App und ihre Assets. Bibliotheken sind über
+`package-lock.json` fixiert und werden lokal gebündelt. Es werden keine API-Keys
+in den Build übernommen. Die Schrift Noto Sans wird unter der SIL Open Font License
+mitgeliefert (`static/fonts/OFL.txt`).
 
 ---
 
@@ -549,7 +573,7 @@ lebenslauf-boost-ai/
 
 ### Geplant
 
-- [ ] Beispiel-Modus (Muster-CV + Muster-Stelle mit einem Klick)
+- [x] Beispiel-Modus in der GitHub-Pages-App (Muster-CV + Muster-Stelle mit einem Klick)
 - [ ] Formatierte Live-Vorschau im Editor (statt Roh-Markdown)
 - [ ] Anschreiben-Generator
 - [ ] Versions-Verlauf mit Zurückspringen

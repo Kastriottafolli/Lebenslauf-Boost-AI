@@ -8,6 +8,7 @@ import { updatePhotoThumb } from "./exporter.js";
 import { mascotProblem, tourNotify } from "./mascot.js";
 
 export async function uploadCv(file) {
+  state.hasCv = false;
   const status = $("#uploadStatus");
   const dz = $("#dropzone");
   dz.classList.remove("dz-ok");
@@ -23,9 +24,9 @@ export async function uploadCv(file) {
     dz.classList.add("dz-ok");
     status.className = "upload-status ok";
     let msg = t("uploadOk")(d.filename, d.characters, d.rag_mode);
+    state.photo = d.photo || null;
+    updatePhotoThumb();
     if (d.photo) {
-      state.photo = d.photo;
-      updatePhotoThumb();
       msg += " " + t("photoDetected");
     }
     status.textContent = msg;

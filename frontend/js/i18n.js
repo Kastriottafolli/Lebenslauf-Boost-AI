@@ -344,3 +344,8 @@ export function applyI18n() {
     if (typeof v === "string") el.placeholder = v;
   });
 }
+
+// Platform-specific copy is registered before UI initialization.
+export function setOverrides(overrides) {
+  for (const lang of ["de", "en"]) Object.assign(I18N[lang], overrides[lang] || {});
+}

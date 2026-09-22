@@ -1,0 +1,22 @@
+{
+  "name": "lebenslauf-boost-pages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "python3 scripts/build_pages.py && node scripts/bundle_pages.mjs",
+    "test": "node --test frontend/tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@pdf-lib/fontkit": "1.1.1",
+    "docx": "9.7.1",
+    "mammoth": "1.12.3",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "6.3.289"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

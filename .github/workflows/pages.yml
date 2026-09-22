@@ -25,9 +25,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm test
       - uses: actions/configure-pages@v5
-      - name: Build static interface preview
-        run: python scripts/build_pages.py
+      - name: Build functional browser app
+        run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

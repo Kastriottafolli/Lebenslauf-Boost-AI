@@ -104,6 +104,7 @@ function wireEvents() {
   $("#photoInput").addEventListener("change", (e) => {
     const f = e.target.files[0];
     if (!f) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(f.type) || f.size > 10 * 1024 * 1024) { toast("Foto: PNG/JPEG/WebP, max. 10 MB", "err"); return; }
     const reader = new FileReader();
     reader.onload = () => { state.photo = reader.result; updatePhotoThumb(); renderPreview(); };
     reader.readAsDataURL(f);
