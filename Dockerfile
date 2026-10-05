@@ -22,7 +22,7 @@ COPY prompts prompts
 COPY --from=frontend /app/frontend frontend
 COPY --from=frontend /app/static static
 COPY --from=frontend /app/_site _site
-RUN mkdir -p data/uploads && chown -R candidaro:candidaro /app/data
+RUN find /app/backend /app/frontend /app/static /app/_site -type d -exec chmod 755 {} + && mkdir -p data/uploads && chown -R candidaro:candidaro /app/data
 USER candidaro
 EXPOSE 8000
 CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
