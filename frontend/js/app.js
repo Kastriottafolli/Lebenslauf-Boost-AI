@@ -6,7 +6,7 @@ import { BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core
 import { SAMPLE } from "./browser/demo.js";
 import { readDocument } from "./browser/import.js";
 import branding from "../../static/branding.json" with { type: "json" };
-import { BOOSTY_SYSTEM, TOUR, boostyAnswer } from "./core/boosty.js";
+import { TOUR, GUIDES, helpForTopic, boostyAnswer } from "./core/boosty.js";
 import { mountAdmin } from "./admin.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
@@ -16,6 +16,7 @@ const tr = (de, en, sq) => translate(state.language, de, en, sq);
 let toastTimer, installPrompt, editorMode = false;
 let comparisonResults = [];
 let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
+let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
 function usage(event) {
   if (!BROWSER_ONLY) api("/api/usage", { session_id: getSession().session_id, event }).catch(() => {});
 }
@@ -30,13 +31,44 @@ function guideTo(index) {
     notify(tr("Erstelle zuerst eine Mappe mit der Demo oder deiner KI. Danach begleite ich dich zum Export.", "Create an application using demo or AI first. Then I can guide you to export."));
     return;
   }
+  showStep(tip.step);
   tourIndex = index;
   tourActive = true;
-  showStep(tip.step);
   tourTarget = $(tip.target);
   tourTarget?.classList.add("boosty-tour-target");
   tourTarget?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
   boostyTip();
+  $("#guideText").textContent = tip[state.language];
+  $("#boostyGuide").hidden = false;
+  scheduleGuide();
+}
+function setBoostyAnswer(value) {
+  boostyTopic = value.topic;
+  $("#boostyAnswer").textContent = value.content;
+  $("#boostyShow").hidden = GUIDES[value.topic] === undefined && !["admin","privacy"].includes(value.topic);
+}
+function showBoostyTarget() {
+  $("#boostyDialog").close();
+  if (boostyTopic === "admin" || boostyTopic === "privacy" || (boostyTopic === "save" && !state.documents)) {
+    stopGuide();
+    tourTarget = $(boostyTopic === "admin" ? "#adminLink" : boostyTopic === "save" ? "#accountBtn" : "#privacyBtn");
+    tourTarget.classList.add("boosty-tour-target");
+    tourActive = true;
+    $("#guideText").textContent = helpForTopic(boostyTopic,state.language).content;
+    $("#boostyGuide").hidden = false;
+    tourTarget.scrollIntoView({behavior:"smooth",block:"center"});
+    scheduleGuide();
+  } else {
+    guideTo(GUIDES[boostyTopic]);
+    if (state.documents && ["quality","documents"].includes(boostyTopic)) {
+      tourTarget?.classList.remove("boosty-tour-target");
+      tourTarget=$(boostyTopic==="quality"?"#quality":"#documentTabs");
+      tourTarget?.classList.add("boosty-tour-target");
+      $("#guideText").textContent=helpForTopic(boostyTopic,state.language).content;
+      tourTarget?.scrollIntoView({behavior:"smooth",block:"center"});
+      scheduleGuide();
+    }
+  }
 }
 async function askBoosty(event) {
   event.preventDefault();
@@ -45,20 +77,46 @@ async function askBoosty(event) {
   const answer = $("#boostyAnswer"), submit = $("#boostyForm button");
   submit.disabled = true;
   try {
-    if (!$("#boostyAi").checked) {
-      answer.textContent = tr("Boosty · Bedienungshilfe\n\n", "Boosty · App help\n\n") + boostyAnswer(question, state.language).content;
+    if (!$("#boostyAi").checked || !boostyConfig.enabled) {
+      setBoostyAnswer(boostyAnswer(question,state.language));
       return;
     }
-    const options = collectProvider();
-    if (!state.keys[state.provider]) throw new Error(tr("Trage deinen API-Key in Schritt 3 ein. Für Bedienungsfragen kannst du KI deaktivieren.", "Enter your API key in step 3. For app help you can disable AI."));
     answer.textContent = tr("Boosty denkt nach …", "Boosty is thinking …");
-    const result = BROWSER_ONLY ? await callProvider(state.provider, state.keys[state.provider], BOOSTY_SYSTEM, [{ role: "user", content: `Language: ${state.language}\nQuestion: ${question}` }], options) : await api("/api/assistant", { session_id: getSession().session_id, question, language: state.language, ...options, keys: keysBody(), consent: true });
-    answer.textContent = tr("Boosty · KI-Antwort · Angaben prüfen\n\n", "Boosty · AI answer · Verify details\n\n") + result.content;
+    const result = await api("/api/assistant", {session_id:getSession().session_id,question,language:state.language,consent:true});
+    setBoostyAnswer(helpForTopic(result.topic,state.language));
   } catch (error) {
-    answer.textContent = error.message;
+    setBoostyAnswer(boostyAnswer(question,state.language));
+    answer.textContent = error.message + "\n\n" + answer.textContent;
   } finally {
     submit.disabled = false;
   }
+}
+function stopGuide() {
+  tourTarget?.classList.remove("boosty-tour-target");
+  tourActive = false;
+  $("#boostyGuide").hidden = true;
+  $("#boostyPointer").setAttribute("hidden","");
+}
+function scheduleGuide() {
+  placeGuide();
+  cancelAnimationFrame(guideFrame);
+  guideFrame = requestAnimationFrame(placeGuide);
+}
+function placeGuide() {
+  if (!tourActive || !tourTarget) return;
+  const r=tourTarget.getBoundingClientRect(), guide=$("#boostyGuide");
+  if (!r.width || !r.height) {stopGuide();return;}
+  const width=guide.offsetWidth, height=guide.offsetHeight, gap=16;
+  let x=r.right+gap;
+  if (x+width > innerWidth-gap) x=r.left-width-gap;
+  if (x<gap) x=Math.max(gap,Math.min(innerWidth-width-gap,r.right-width));
+  let y=r.top;
+  if (r.width > innerWidth*.7) y=r.bottom+gap;
+  y=Math.max(gap,Math.min(innerHeight-height-gap,y));
+  guide.style.left=x+"px"; guide.style.top=y+"px";
+  const line=$("#boostyLine"), endX=Math.max(gap,Math.min(innerWidth-gap,r.left+(tourTarget.id==="dropzone"?r.width/2:Math.min(r.width/2,70)))), endY=Math.max(gap,Math.min(innerHeight-gap,tourTarget.id==="dropzone"?r.bottom-35:r.top+Math.min(r.height/2,36)));
+  line.setAttribute("x1",String(x+42));line.setAttribute("y1",String(y+54));line.setAttribute("x2",String(endX));line.setAttribute("y2",String(endY));
+  $("#boostyPointer").removeAttribute("hidden");
 }
 function notify(message, error = false) {
   $("#status").textContent = message;
@@ -78,7 +136,7 @@ async function busy(label, work, stages = false) {
   $("#busyTitle").textContent = label;
   $("#busy").hidden = false;
   $("#workspace").setAttribute("aria-busy", "true");
-  const blocked = $$("main, header, footer, #boostyLauncher").map(el => [el, el.inert]);
+  const blocked = $$("main, header, footer, #boostyLauncher, #boostyGuide").map(el => [el, el.inert]);
   blocked.forEach(([el]) => el.inert = true);
   const report = (percent, phase) => {
     $("#busyProgress").value = percent;
@@ -127,6 +185,9 @@ function editorView() {
 }
 function applyLanguage() {
   document.documentElement.lang = state.language;
+  $("#guideHeading").textContent=tr("Boosty zeigt’s dir","Boosty shows you","Boosty të tregon");
+  $("#privacyBtn").href=new URL("datenschutz/"+(__RUNTIME__ === "browser" && state.language!=="de"?state.language+"/":"?lang="+state.language),new URL($("meta[name=app-base]")?.content || "./",location.href)).href;
+  $("#legalBtn").href=new URL("impressum/"+(__RUNTIME__ === "browser" && state.language!=="de"?state.language+"/":"?lang="+state.language),new URL($("meta[name=app-base]")?.content || "./",location.href)).href;
   document.title = branding.name + " – " + tr("Lebenslauf und Bewerbung mit KI", "AI resume and application builder");
   $$("[data-de]").forEach((el) => el.textContent = el.dataset[state.language] ?? tr(el.dataset.de, el.dataset.en));
   $$("[data-placeholder-de]").forEach((el) => el.placeholder = el.dataset["placeholder" + ({de:"De",en:"En",sq:"Sq"}[state.language])]);
@@ -201,7 +262,7 @@ function showStep(step) {
   }
   state.step = step;
   if (!tourActive) tourIndex = Math.max(0, TOUR.findIndex(t => t.step === step));
-  else tourActive = false;
+  else stopGuide();
   boostyTip();
   $$("[data-panel]").forEach((el) => el.hidden = Number(el.dataset.panel) !== step);
   $$("[data-step]").forEach((el) => {
@@ -585,15 +646,8 @@ async function showProjects() {
   }
   $("#projectsDialog").showModal();
 }
-function showInfo(title, text) {
-  $("#infoTitle").textContent = title;
-  const p = document.createElement("p");
-  p.className = "legal-text";
-  p.textContent = text;
-  $("#infoContent").replaceChildren(p);
-  $("#infoDialog").showModal();
-}
 function clearPersonalMemory() {
+  stopGuide();
   $("#boostyAnswer").textContent = "";
   $("#boostyQuestion").value = "";
   $("#boostyAi").checked = false;
@@ -885,13 +939,18 @@ async function init() {
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   $("#clearData").addEventListener("click", action(deleteData));
   $("#helpBtn").addEventListener("click", () => {
-    $("#boostyAnswer").textContent = boostyAnswer("start", state.language).content;
+    setBoostyAnswer(boostyAnswer("start", state.language));
     $("#boostyDialog").showModal();
   });
+  $("#boostyShow").addEventListener("click",showBoostyTarget);
+  $("#guideClose").addEventListener("click",stopGuide);
+  $("#guideNext").addEventListener("click",()=>guideTo((tourIndex+1)%TOUR.length));
+  window.addEventListener("resize",scheduleGuide);
+  document.addEventListener("scroll",scheduleGuide,true);
   $("#boostyNext").addEventListener("click", () => guideTo((tourIndex + 1) % TOUR.length));
   $("#boostyForm").addEventListener("submit", askBoosty);
   $$("[data-boosty]").forEach(button => button.addEventListener("click", () => {
-    $("#boostyAnswer").textContent = boostyAnswer(button.dataset.boosty, state.language).content;
+    setBoostyAnswer(boostyAnswer(button.dataset.boosty, state.language));
   }));
   $("#adminLink").addEventListener("click", (event) => {
     event.preventDefault();
@@ -900,16 +959,6 @@ async function init() {
     $("#adminDialog").showModal();
   });
   $("#adminDialog").addEventListener("close", () => embeddedAdmin?.clear());
-  $("#privacyBtn").addEventListener("click", action(async () => {
-    const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");
-    showInfo(tr("Datenschutz", "Privacy"), $("#privacyExplanation").textContent + "\n\n" + tr("Verantwortlicher: ", "Controller: ") + info.operator_name + "\n" + info.operator_address + "\n" + info.operator_email + "\n\n" + tr("Konten speichern deine E-Mail-Adresse und einen geschützten Passwort-Hash. Bewerbungen werden auf deinen Wunsch gespeichert und bleiben bis zur Löschung erhalten. Anonyme Uploads werden nach ", "Accounts store your email and a protected password hash. Applications are saved when you choose and remain until deleted. Anonymous uploads are removed after ") + (info.retention_days || 30) + tr(" Tagen bereinigt. Keine Werbe-Tracker oder gespeicherten API-Keys. Keine persönlichen Daten im Service-Worker-Cache. Exporte auf deinem Gerät und Daten beim KI-Anbieter werden durch eine Kontolöschung nicht entfernt. Der Betreiber kann für Support und Verwaltung auf gespeicherte Inhalte zugreifen; Admin-Zugriffe werden protokolliert. Nutzungsereignisse (Konto, Zeitpunkt, Funktion, Erfolg/Fehler) bleiben 30 Tage, Admin-Protokolle und tägliche Summen 90 Tage. Keine IP-Adressen, Frage- oder Dokumenttexte in der Statistik. Bei Kontolöschung wird die Kontozuordnung der Nutzungsereignisse entfernt. Details zu Hosting und Anbietervereinbarungen müssen vor dem öffentlichen Start ergänzt werden.", " days. No advertising trackers or stored API keys. Personal data is never cached by the service worker. Deleting an account does not remove exports on your device or data at AI providers. The operator can access stored content for support and administration; admin access is audited. Usage metadata (account, time, function, result) remains for 30 days, admin audit logs and daily totals for 90 days. Analytics excludes IP addresses, questions and document text. Account deletion removes its association with usage events. Hosting and provider agreements must be documented before public launch."));
-  }));
-  $("#legalBtn").addEventListener("click", action(async () => {
-    const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");
-    showInfo(tr("Impressum", "Legal notice"), info.operator_name ? `${info.operator_name}
-${info.operator_address}
-${info.operator_email}` : tr("Betreiberangaben noch nicht hinterlegt. Vor \xF6ffentlichem Betrieb m\xFCssen Name, ladungsf\xE4hige Anschrift und Kontakt erg\xE4nzt werden.", "Operator details are not configured. Before public launch, add the legal operator name, postal address and contact."));
-  }));
   window.addEventListener("beforeunload", (event) => {
     if (readProfile().source_text || state.documents) {
       event.preventDefault();
@@ -977,6 +1026,9 @@ ${info.operator_email}` : tr("Betreiberangaben noch nicht hinterlegt. Vor \xF6ff
     state.account = result.email;
     accountView();
   }
+  if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config");} catch { /* Local help remains available. */ }}
+  $("#boostyAi").disabled=!boostyConfig.enabled;
+  $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit · Separat vom Lebenslauf", "OpenAI software help ready · Separate from resume AI", "Ndihma OpenAI gati · Veç IA-së për CV") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
   const params = new URLSearchParams(location.search);
   if (params.has("jobUrl")) {
     $("#jobUrl").value = params.get("jobUrl");

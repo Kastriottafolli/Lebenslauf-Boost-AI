@@ -383,31 +383,33 @@ def test_api_abuse_limit():
     )
 
 
-def test_boosty_requires_consent_ownership_and_own_key(monkeypatch):
+def test_boosty_requires_consent_ownership_and_separate_operator_key(monkeypatch):
+    from backend.config import get_settings
+    from backend.llm import llm_service
+    from backend.services import boosty_service
+
+    settings = get_settings()
     seen = []
-
-    def answer(self, system, messages, **_kwargs):
-        seen.append((system, messages))
-        return LLMResult("Follow the four steps.", self.name, "test-model")
-
-    monkeypatch.setattr(HTTPProvider, "generate", answer)
+    monkeypatch.setattr(settings,"boosty_enabled",False)
+    monkeypatch.setattr(settings,"boosty_openai_api_key","")
+    monkeypatch.setattr(settings,"allow_server_keys",False)
+    monkeypatch.setattr(boosty_service,"classify",lambda question: seen.append(question) or "save")
     client = TestClient(app)
     sid = session(client)
-    body = {
-        "session_id": sid,
-        "question": "How do I save?",
-        "provider": "openai",
-        "keys": {"openai": "synthetic-key"},
-    }
-    assert client.post("/api/assistant", json=body).status_code == 422
+    body = {"session_id":sid,"question":"How do I save?"}
+    assert client.post("/api/assistant",json=body).status_code == 422
     body["consent"] = True
-    stranger = TestClient(app)
-    assert stranger.post("/api/assistant", json=body).status_code == 403
-    assert client.post("/api/assistant", json={**body, "keys": {}}).status_code == 422
-    result = client.post("/api/assistant", json=body)
-    assert result.status_code == 200 and result.json()["model"] == "test-model"
-    assert seen[0][1] == [{"role": "user", "content": "Language: de\nQuestion: How do I save?"}]
-    assert SOURCE not in seen[0][0] and "synthetic-key" not in str(seen)
+    assert TestClient(app).post("/api/assistant",json=body).status_code == 403
+    assert client.post("/api/assistant",json=body).status_code == 503
+    monkeypatch.setattr(settings,"boosty_enabled",True)
+    monkeypatch.setattr(settings,"boosty_openai_api_key","synthetic-operator-help-key")
+    assert not llm_service.get_provider("openai").available()
+    assert client.post("/api/assistant",json={**body,"keys":{"openai":"synthetic-user-key"}}).status_code == 422
+    result = client.post("/api/assistant",json=body)
+    assert result.status_code == 200 and result.json()["topic"] == "save"
+    assert "Bewerbung speichern" in result.json()["content"]
+    assert seen == ["How do I save?"]
+    assert "synthetic" not in client.get("/api/assistant/config").text
 
 
 def test_usage_is_metadata_only_and_account_deletion_unlinks_events():

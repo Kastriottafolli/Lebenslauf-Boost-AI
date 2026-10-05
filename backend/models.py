@@ -257,3 +257,11 @@ class AuthAttempt(Base):
     id = Column(String(36), primary_key=True, default=_uuid)
     bucket = Column(String(64), nullable=False, index=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class AssistantQuota(Base):
+    """Daily request counts only; no questions, keys or account association."""
+    __tablename__ = "assistant_quota"
+    day = Column(String(10), primary_key=True)
+    bucket = Column(String(36), primary_key=True)
+    calls = Column(Integer, nullable=False, default=0)

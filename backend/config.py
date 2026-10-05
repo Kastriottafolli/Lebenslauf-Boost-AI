@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,6 +25,12 @@ class Settings(BaseSettings):
     azure_api_key: str = ""
     azure_model: str = ""
     azure_endpoint: str = ""
+    # Dedicated help key: never read by CV/document providers.
+    boosty_enabled: bool = False
+    boosty_openai_api_key: str = ""
+    boosty_openai_model: str = Field("gpt-6-luna", pattern=r"^[A-Za-z0-9._:-]{1,100}$")
+    boosty_daily_limit: int = Field(500, ge=1, le=100000)
+    boosty_session_daily_limit: int = Field(20, ge=1, le=200)
     allow_server_keys: bool = False
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000,capacitor://localhost,http://localhost,https://localhost"
     allowed_hosts: str = "localhost,127.0.0.1,testserver"

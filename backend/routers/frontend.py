@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 
 router = APIRouter(tags=["Frontend"])
@@ -112,6 +112,23 @@ def sitemap():
     if not path.exists():
         raise HTTPException(404, "Configure SITE_URL and rebuild first")
     return FileResponse(path, media_type="application/xml")
+
+
+@router.get("/impressum", include_in_schema=False)
+@router.get("/impressum/", include_in_schema=False)
+@router.get("/datenschutz", include_in_schema=False)
+@router.get("/datenschutz/", include_in_schema=False)
+def legal_notice(request: Request, lang: str = "de"):
+    from backend.config import get_settings
+    from backend.services.legal_service import render
+
+    settings = get_settings()
+    kind = "privacy" if "datenschutz" in request.url.path else "legal"
+    return HTMLResponse(render(kind, lang, {
+        "operator_name":settings.operator_name,
+        "operator_address":settings.operator_address,
+        "operator_email":settings.operator_email,
+    }, settings.site_url, retention_days=settings.retention_days), headers={"Cache-Control":"no-cache"})
 
 
 @router.get("/{language}/{slug}/", include_in_schema=False)

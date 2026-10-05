@@ -130,3 +130,9 @@ python -m backend.manage_admin --email DEINE-ADMIN-EMAIL
 ```
 
 Die private Datei mit einmaligem Setup-Code bleibt außerhalb von Git und Webauslieferung. Auf dem Produktionsserver getrennt provisionieren. Passwort-Hashes, Tokens und Keys erscheinen nicht in den Datenansichten. Statistik zählt Seitenaufrufe/Sitzungen; keine exakte Zahl eindeutiger Besucher.
+
+## Betreiberrechtstexte und Boosty-KI
+
+Impressum und Datenschutzerklärung unter `/impressum/` und `/datenschutz/` sind dauerhaft verlinkt. Offene Betreiber-/Hostingangaben bleiben sichtbar als Entwurf: [Rechtstext-Vorbereitung](docs/product/LEGAL-READINESS.md). Der öffentliche GitHub-Link wurde entfernt; das Repository wird dadurch nicht privat.
+
+Boosty bewegt sich mit Hinweis und Zeiger zu festen Bedienfeldern. Ein eigener serverseitiger OpenAI-Key kann ausschließlich die Software-Themenerkennung versorgen: [Sichere Einrichtung](docs/product/BOOSTY-SETUP.md). API-Key nicht im Chat teilen. [Token- und Kostenbeispiele](docs/product/AI-COSTS.md).

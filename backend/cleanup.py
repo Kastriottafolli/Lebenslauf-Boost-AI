@@ -9,6 +9,7 @@ from backend.models import (
     AdminAudit,
     AdminLogin,
     Application,
+    AssistantQuota,
     AuthAttempt,
     DailyMetric,
     Login,
@@ -24,6 +25,7 @@ def cleanup():
         now = datetime.now(UTC).replace(tzinfo=None)
         db.query(AdminLogin).filter(AdminLogin.expires_at <= now).delete()
         db.query(AuthAttempt).filter(AuthAttempt.created_at < now - timedelta(minutes=15)).delete()
+        db.query(AssistantQuota).filter(AssistantQuota.day < (now - timedelta(days=30)).date().isoformat()).delete()
         db.query(Activity).filter(Activity.created_at < now - timedelta(days=30)).delete()
         db.query(AdminAudit).filter(AdminAudit.created_at < now - timedelta(days=90)).delete()
         db.query(DailyMetric).filter(
