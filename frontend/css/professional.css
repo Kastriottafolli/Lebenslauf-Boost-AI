@@ -1357,3 +1357,15 @@ dialog .close {
 
 .boosty-guide #guideChat{margin-left:16px}.boosty-launcher.compact{padding:4px;border-radius:50%;width:64px;height:64px}.boosty-launcher.compact img{width:54px;height:54px}.boosty-launcher.compact>span{display:none}
 @media(max-width:700px){.hero-art{display:block;order:-1;min-height:150px;height:150px}.hero-art .paper-mini,.hero-art .floating-note{display:none}.hero-boosty{width:160px;right:calc(50% - 80px);bottom:0}}
+
+/* A deliberate entry screen: the studio is revealed only after a choice. */
+[hidden] {display:none !important;}
+body[data-view="welcome"] main {min-height:calc(100dvh - 210px);display:grid;align-items:center;}
+body[data-view="welcome"] .hero {padding:38px 10px 50px;width:100%;}
+body[data-view="welcome"] footer {padding-top:18px;padding-bottom:18px;}
+body[data-view="welcome"] footer > .brand,body[data-view="welcome"] footer > span,body[data-view="welcome"] #guideLink {display:none;}
+body[data-view="welcome"] footer {gap:8px;}
+#infoDialog {width:min(850px,calc(100vw - 32px));max-height:85dvh;overflow:auto;}
+#infoDialog .value-grid {margin-top:22px;}
+body[data-view="studio"] .workspace {padding-top:32px;}
+@media(max-width:700px){body[data-view="welcome"] .hero{padding:18px 0 26px;gap:16px;}body[data-view="welcome"] main{min-height:calc(100dvh - 180px);}#infoDialog .value-grid{grid-template-columns:1fr;}body[data-view="welcome"] .topbar nav{gap:10px;}body[data-view="welcome"] .hero h1{font-size:36px;}}

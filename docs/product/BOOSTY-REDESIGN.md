@@ -51,3 +51,7 @@ Die Datenschutzhinweise wurden auf automatische Kontospeicherung, Fotos und den 
 - Chat: direkte Softwareantwort, sichtbarer Gesprächsverlauf, Ablehnung eines Programmierauftrags und albanische Hilfe geprüft.
 - Mobile Prüfung bei 390 × 844: keine horizontale Überbreite, eingebettete Begleitung und freie Exportbuttons. Keine echten Bewerbungsdaten oder Anbieter-Keys eingesetzt.
 - Android-/iOS-Webressourcen können per `npm run mobile:sync` aktualisiert werden. Installation auf echten Geräten und Store-Veröffentlichung sind gesonderte Schritte.
+
+## Eigenständiger Einstieg
+
+Beim ersten anonymen Aufruf ist ausschließlich die Startansicht sichtbar: Boosty, kurze Erklärung und Konto erstellen / Einloggen / Als Gast weitermachen. Der Editor ist bereits im HTML `hidden`, damit er auch vor dem Laden von JavaScript nicht sichtbar wird. Informationen und FAQ öffnen separat im Informationsdialog. Erst eine bewusste Gastwahl oder eine erfolgreiche Kontoanmeldung/-registrierung öffnet das Studio. Eine gültige bestehende Anmeldung führt direkt ins Studio; Abmelden und Kontolöschung schließen die Kontoansicht und kehren zum Einstieg zurück. Geteilte Stellenlinks dürfen den Editor vor dieser Wahl nicht aufdecken.

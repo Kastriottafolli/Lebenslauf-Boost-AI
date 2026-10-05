@@ -15,7 +15,7 @@ const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Te
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
 const state = { language: LANGUAGES.includes(new URLSearchParams(location.search).get("lang")) ? new URLSearchParams(location.search).get("lang") : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
 const tr = (de, en, sq) => translate(state.language, de, en, sq);
-let toastTimer, installPrompt, editorMode = false, accountMode="login", accountBusy=false;
+let toastTimer, installPrompt, editorMode = false, accountMode="login", accountBusy=false, studioEntered=false;
 let comparisonResults = [];
 let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
 let chatEpoch = 0, chatPending = false;
@@ -26,14 +26,39 @@ function usage(event) {
 }
 function boostyTip() {
   const tip = TOUR[tourIndex];
-  $("#launcherTip").textContent = tr(...[labelsForStep(state.step)[0],labelsForStep(state.step)[1],labelsForStep(state.step)[2]]);
+  $("#launcherTip").textContent = studioEntered ? tr(...labelsForStep(state.step)) : tr("Dein Start","Get started","Fillo këtu");
   $("#boostyTip").textContent = tip[state.language];
 }
 function labelsForStep(step) {
   return ({1:["Dein Profil","Your profile","Profili yt"],2:["Deine Stelle","Your opportunity","Vendi yt i punës"],3:["Deine KI","Your AI","IA jote"],4:["Deine Mappe","Your application","Dosja jote"]})[step];
 }
+function enterStudio({guide=true}={}) {
+  studioEntered=true;
+  document.body.dataset.view="studio";
+  $("#how").hidden=true;
+  $("#workspace").hidden=false;
+  $$("[data-studio]").forEach(el=>el.hidden=false);
+  window.scrollTo({top:0,behavior:"instant"});
+  $("#workspaceTitle").focus({preventScroll:true});
+  boostyTip();
+  if(guide)followStep();
+  scheduleGuide();
+}
+function returnWelcome() {
+  studioEntered=false;
+  stopGuide();
+  document.body.dataset.view="welcome";
+  $("#how").hidden=false;
+  $("#workspace").hidden=true;
+  $$("[data-studio]").forEach(el=>el.hidden=true);
+  $("#accountDialog").close();
+  window.scrollTo({top:0,behavior:"instant"});
+  $("#welcomeLogin").focus({preventScroll:true});
+  boostyTip();
+  scheduleGuide();
+}
 function followStep() {
-  if (!$("#followBoosty").checked) return;
+  if (!studioEntered || !$("#followBoosty").checked) return;
   const tip=TOUR[[0,0,3,5,7][state.step]];
   tourIndex=TOUR.indexOf(tip);tourTarget?.classList.remove("boosty-tour-target");
   tourTarget=$(tip.target);tourActive=true;
@@ -92,9 +117,14 @@ function setBoostyAnswer(value, target = null) {
 
 function showBoostyTarget() {
   $("#boostyDialog").close();
+  if(!studioEntered && !["admin","privacy","save"].includes(boostyTopic)) {
+    notify(tr("Wähle zuerst: Konto erstellen, einloggen oder als Gast weitermachen.","Choose create account, sign in or continue as guest first.","Zgjidh fillimisht: krijo llogari, hyr ose vazhdo si vizitor."));
+    $("#welcomeGuest").focus();return;
+  }
+  if(!studioEntered && boostyTopic==="admin") {notify(helpForTopic("admin",state.language).content);return;}
   if (boostyTopic === "admin" || boostyTopic === "privacy" || boostyTopic === "save") {
     stopGuide();
-    tourTarget = $(boostyTopic === "admin" ? "#adminLink" : boostyTopic === "save" ? (state.account?"#projectsBtn":"#accountBtn") : "#privacyBtn");
+    tourTarget = $(boostyTopic === "admin" ? "#adminLink" : boostyTopic === "save" ? (state.account?"#projectsBtn":studioEntered?"#accountBtn":"#welcomeLogin") : "#privacyBtn");
     tourTarget.classList.add("boosty-tour-target");
     tourActive = true;
     $("#guideText").dataset.topic=boostyTopic;
@@ -153,7 +183,7 @@ function stopGuide() {
   $("#boostyPointer").setAttribute("hidden","");
 }
 function placeLauncher() {
-  const launcher=$("#boostyLauncher"),workspace=$("#workspace").getBoundingClientRect(),compact=workspace.top<220;
+  const launcher=$("#boostyLauncher"),workspace=$("#workspace").getBoundingClientRect(),compact=studioEntered && workspace.top<220;
   launcher.classList.toggle("compact",compact);
   launcher.hidden=false;
   if(!compact){launcher.style.top="";launcher.style.left="";launcher.style.bottom="";launcher.style.right="";return;}
@@ -370,7 +400,7 @@ function showStep(step) {
     if (Number(el.dataset.step) === step) el.setAttribute("aria-current", "step");
     else el.removeAttribute("aria-current");
   });
-  $(".studio-content").scrollIntoView({behavior:"instant",block:"start"});
+  if(studioEntered)$(".studio-content").scrollIntoView({behavior:"instant",block:"start"});
   followStep();
   scheduleSave();
 }
@@ -778,6 +808,7 @@ async function credentials(mode) {
     setLoginToken(result.access_token);
     await newSession(state.language);
     accountView();
+    enterStudio();
     if(hasDraft())scheduleSave();
     if(mode!=="register"){$("#accountDialog").close();if(!hasDraft())await showProjects();}
     else $("#workspace").scrollIntoView({behavior:"instant",block:"start"});
@@ -936,8 +967,9 @@ async function init() {
   $("#workspace").addEventListener("click",()=>queueMicrotask(scheduleSave));
   $("#followBoosty").addEventListener("change",()=>$("#followBoosty").checked?followStep():stopGuide());
   $("#newApplication").addEventListener("click",action(async()=>{if(!await leaveCurrent())return;if(!state.account&&hasDraft()&&!confirm(tr("Gastdaten verwerfen und neu beginnen? Sichere vorher deine Projektdatei.","Discard guest data and start again? Download your project first.","Fshi të dhënat e vizitorit dhe fillo sërish? Ruaj fillimisht projektin.")))return;clearPersonalMemory();accountView();followStep();}));
-  const enterStudio=()=>{$("#workspace").scrollIntoView({behavior:"smooth",block:"start"});followStep();};
-  $("#welcomeGuest").addEventListener("click",enterStudio);
+  $("#welcomeGuest").addEventListener("click",()=>enterStudio());
+  $("#infoBtn").addEventListener("click",()=>$("#infoDialog").showModal());
+  $$("a.brand").forEach(link=>link.addEventListener("click",event=>{event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});}));
   $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
   $("#welcomeLogin").addEventListener("click",()=>openAccount());
   $("#welcomeHistory").addEventListener("click",action(showProjects));
@@ -1127,6 +1159,7 @@ async function init() {
     await newSession(state.language);
     $("#accountResult").textContent = "";
     accountView();
+    returnWelcome();
     notify(tr("Abgemeldet. Gespeicherte Bewerbungen bleiben in deinem Konto erhalten.", "Signed out. Saved applications remain in your account."));
   }));
   $("#deleteAccount").addEventListener("click", action(async () => {
@@ -1139,6 +1172,7 @@ async function init() {
     clearPersonalMemory();
     $("#accountDialog").close();
     accountView();
+    returnWelcome();
     await newSession(state.language);
     notify(tr("Konto gel\xF6scht.", "Account deleted."));
   }));
@@ -1232,6 +1266,7 @@ async function init() {
     const result = await api("/api/account");
     state.account = result.email;
     accountView();
+    if(state.account)enterStudio();
   }
   if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config");} catch { /* Local help remains available. */ }}
   boostyConnectionView();
