@@ -239,14 +239,18 @@ def test_owned_project_crud_recovery_and_account_deletion():
         "documents": documents,
         "title": "Example job",
         "status": "draft",
+        "design": "classic",
     }
     pid = owner.post("/api/projects", json=project).json()["id"]
+    assert owner.get("/api/projects/" + pid).json()["design"] == "classic"
     assert len(owner.get("/api/projects").json()) == 1
     assert stranger.get("/api/projects/" + pid).status_code == 404
     assert stranger.delete("/api/projects/" + pid).status_code == 404
     project["status"] = "interview"
+    project["design"] = "sapphire"
     assert owner.put("/api/projects/" + pid, json=project).status_code == 200
     assert owner.get("/api/projects/" + pid).json()["status"] == "interview"
+    assert owner.get("/api/projects/" + pid).json()["design"] == "sapphire"
     assert owner.post("/api/account/logout", json={}).status_code == 200
     assert owner.get("/api/projects").status_code == 401
     recovered = owner.post(

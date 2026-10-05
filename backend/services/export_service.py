@@ -7,6 +7,8 @@ Modell erzeugte Markdown-Lebenslauf wird geparst und layoutet.
 
 import html
 import io
+import json
+from pathlib import Path
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -18,6 +20,8 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     HRFlowable,
     Paragraph,
@@ -30,49 +34,17 @@ from reportlab.platypus import (
     Image as RLImage,
 )
 
-# Farb- und Stilpalette je Design — "Sapphire Nightfall".
+_STATIC = Path(__file__).resolve().parents[2] / "static"
+_DESIGNS = json.loads((_STATIC / "document-designs.json").read_text())
 _PALETTE = {
-    "classic": {
-        "accent": "#262B40",
-        "muted": "#4A5568",
-        "rule": "#262B40",
-        "serif": True,
-    },
-    "modern": {
-        "accent": "#0474C4",
-        "muted": "#5379AE",
-        "rule": "#0474C4",
-        "serif": False,
-    },
-    "minimal": {
-        "accent": "#5379AE",
-        "muted": "#7D8698",
-        "rule": "#C9D6EA",
-        "serif": False,
-    },
-    "sapphire": {
-        "accent": "#06457F",
-        "muted": "#5379AE",
-        "rule": "#06457F",
-        "serif": False,
-    },
-    "cobalt": {
-        "accent": "#0474C4",
-        "muted": "#4A5568",
-        "rule": "#A8C4EC",
-        "serif": False,
-    },
-    "slate": {
-        "accent": "#2C444C",
-        "muted": "#64748B",
-        "rule": "#9DB3B9",
-        "serif": True,
-    },
+    key: {**value, **{color: "#" + value[color] for color in ("accent", "muted", "rule", "ink", "surface")}}
+    for key, value in _DESIGNS.items()
 }
-
-# Designs mit Akzentleiste oben bzw. GROSSGESCHRIEBENEN Abschnittstiteln.
-_TOPBAR_DESIGNS = ("modern", "sapphire", "cobalt")
-_UPPERCASE_DESIGNS = ("classic", "minimal", "slate")
+_TOPBAR_DESIGNS = tuple(key for key, value in _DESIGNS.items() if value["topbar"])
+_UPPERCASE_DESIGNS = tuple(key for key, value in _DESIGNS.items() if value["uppercase"])
+for family in ("Sans", "Serif"):
+    for weight in ("Regular", "Bold"):
+        pdfmetrics.registerFont(TTFont(f"Boosty{family}{weight}", _STATIC / "fonts" / f"Noto{family}-{weight}.ttf"))
 
 _HEADER_TYPES = ("name", "title", "contact")
 
@@ -145,9 +117,9 @@ def to_pdf(
 ) -> bytes:
     pal = _PALETTE.get(design, _PALETTE["modern"])
     serif = pal["serif"]
-    base = "Times-Roman" if serif else "Helvetica"
-    bold = "Times-Bold" if serif else "Helvetica-Bold"
-    italic = "Times-Italic" if serif else "Helvetica-Oblique"
+    base = "BoostySerifRegular" if serif else "BoostySansRegular"
+    bold = "BoostySerifBold" if serif else "BoostySansBold"
+    italic = base
     accent = HexColor(pal["accent"])
     muted = HexColor(pal["muted"])
     rule = HexColor(pal["rule"])
@@ -157,8 +129,10 @@ def to_pdf(
         "name": ParagraphStyle(
             "name",
             fontName=bold,
-            fontSize=23 if design == "minimal" else 25,
-            textColor=HexColor("#111111"),
+            fontSize=pal["nameSize"],
+            textColor=HexColor("#FFFFFF" if pal["dark"] else pal["accent"]),
+            backColor=accent if pal["dark"] else None,
+            borderPadding=8 if pal["dark"] else 0,
             alignment=name_align,
             spaceAfter=2,
             leading=27,
@@ -183,10 +157,14 @@ def to_pdf(
         "section": ParagraphStyle(
             "section",
             fontName=bold,
-            fontSize=12.5,
+            fontSize=pal["sectionSize"],
             textColor=accent,
-            spaceBefore=13,
-            spaceAfter=2,
+            backColor=HexColor(pal["surface"]) if pal["dark"] or pal["rail"] else None,
+            borderPadding=5 if pal["dark"] or pal["rail"] else 0,
+            spaceBefore=16,
+            spaceAfter=7,
+            leading=16,
+            keepWithNext=True,
         ),
         "entry": ParagraphStyle(
             "entry",
@@ -257,16 +235,8 @@ def to_pdf(
         if t == "section":
             label = text.upper() if design in _UPPERCASE_DESIGNS else text
             story.append(Paragraph(label, styles["section"]))
-            thickness = 0.5 if design == "minimal" else (1.5 if design in _TOPBAR_DESIGNS else 1)
-            story.append(
-                HRFlowable(
-                    width="100%",
-                    thickness=thickness,
-                    color=rule,
-                    spaceBefore=1,
-                    spaceAfter=4,
-                )
-            )
+            if design != "minimal" and not pal["dark"] and not pal["rail"]:
+                story.append(HRFlowable(width="100%", thickness=0.6, color=rule, spaceBefore=1, spaceAfter=4))
         elif t == "entry":
             story.append(Paragraph(text, styles["entry"]))
         elif t == "bullet":
@@ -333,7 +303,7 @@ def to_docx(
     photo: bytes | None = None,
 ) -> bytes:
     pal = _PALETTE.get(design, _PALETTE["modern"])
-    font_name = "Georgia" if pal["serif"] else "Calibri"
+    font_name = pal["font"]
     accent = pal["accent"].lstrip("#")
     muted = pal["muted"].lstrip("#")
     rule = pal["rule"].lstrip("#")

@@ -253,6 +253,7 @@ class ProjectRequest(BaseModel):
     job: Job
     documents: dict[str, str]
     language: str = Field("de", pattern="^(de|en|sq)$")
+    design: str = Field("modern", pattern="^(modern|classic|minimal|sapphire|cobalt|slate)$")
     notes: str = Field("", max_length=4000)
 
 

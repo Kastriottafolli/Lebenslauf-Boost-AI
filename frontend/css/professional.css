@@ -3,6 +3,10 @@
   src: url(/static/fonts/NotoSans-Regular.ttf) format("truetype");
   font-display: swap;
 }
+@font-face {font-family:"Noto Sans";src:url('/static/fonts/NotoSans-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face {font-family:"Noto Sans";src:url('/static/fonts/NotoSans-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
+@font-face {font-family:"Noto Serif";src:url('/static/fonts/NotoSerif-Regular.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face {font-family:"Noto Serif";src:url('/static/fonts/NotoSerif-Bold.ttf') format('truetype');font-weight:700;font-display:swap}
 :root {
   --ink:#22393a;
   --muted:#607271;
@@ -1274,3 +1278,32 @@ dialog .close {
 .boosty-pointer{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:44}.boosty-pointer line{stroke:#3a7469;stroke-width:3;stroke-dasharray:7 5}
 @media(max-width:700px){.boosty-guide{width:250px;padding:12px}.boosty-guide img{width:58px;height:65px}.boosty-guide p{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.boosty-guide{transition:none}.boosty-guide img{animation:none}}
+
+/* Shared document designs: the same local fonts and palette as downloads. */
+.design-hint {margin:0 0 16px;color:var(--muted);font-size:12px;line-height:1.6}
+.preview-heading strong {font-weight:600;color:var(--ink);letter-spacing:0}
+.document-preview {--doc-accent:#275d73;--doc-ink:#1d2b36;--doc-muted:#586774;--doc-rule:#cbd9e1;--doc-surface:#f0f5f7;--doc-font:"Noto Sans",Arial,sans-serif;--doc-name-size:25px;padding:28px 26px;color:var(--doc-ink);font-family:var(--doc-font);font-size:11px;line-height:1.65;border:1px solid #e2e6e8;border-radius:2px}
+.document-header {display:flow-root;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--doc-rule)}
+.document-preview .document-header h1 {font-family:var(--doc-font);font-size:var(--doc-name-size);line-height:1.25;font-weight:700;letter-spacing:-.5px;color:var(--doc-accent);margin:0 0 9px;overflow-wrap:anywhere}
+.document-header p {font-size:10px;line-height:1.6;color:var(--doc-muted);margin:3px 0}
+.document-header p:first-of-type {font-size:12px;color:var(--doc-ink);margin-bottom:7px}
+.document-preview h2 {font-family:var(--doc-font);font-size:11px;line-height:1.45;letter-spacing:.8px;font-weight:700;color:var(--doc-accent);border-bottom:1px solid var(--doc-rule);margin:22px 0 10px;padding:0 0 7px}
+.document-preview h3 {font-family:var(--doc-font);font-size:11px;line-height:1.5;color:var(--doc-ink);font-weight:700;margin:14px 0 5px}
+.document-preview p {margin:5px 0}
+.document-preview ul {margin:7px 0 14px;padding-left:17px}
+.document-preview li {padding-left:2px;margin:5px 0}
+.document-preview li::marker {color:var(--doc-accent)}
+.document-preview blockquote {font-size:9px;line-height:1.6;color:var(--doc-muted);background:var(--doc-surface);border-left:2px solid var(--doc-rule);padding:9px 11px;margin:16px 0}
+.document-preview .photo-preview {float:right;width:62px;height:78px;object-fit:cover;border-radius:3px;margin:0 0 12px 16px;border:1px solid var(--doc-rule)}
+.document-preview[data-design=modern],.document-preview[data-design=slate] {border-top:4px solid var(--doc-accent)}
+.document-preview:is([data-design=modern],[data-design=classic],[data-design=cobalt],[data-design=slate]) h2 {text-transform:uppercase}
+.document-preview[data-design=classic] .document-header {text-align:center;border-bottom:1px solid var(--doc-accent)}
+.document-preview[data-design=classic] .photo-preview {float:none;display:block;margin:0 auto 12px}
+.document-preview[data-design=classic] h2 {letter-spacing:1px}
+.document-preview[data-design=minimal] .document-header {padding-bottom:13px}
+.document-preview[data-design=minimal] h2 {letter-spacing:0;border-bottom:0;padding-bottom:2px;margin-top:18px}
+.document-preview[data-design=sapphire] .document-header h1 {display:flow-root;background:var(--doc-accent);color:white;padding:12px 14px;margin:0 0 13px}
+.document-preview[data-design=sapphire] h2,.document-preview[data-design=cobalt] h2 {background:var(--doc-surface);padding:7px 9px;border-bottom:0}
+.document-preview[data-design=cobalt] {border-left:7px solid var(--doc-accent)}
+.document-preview[data-design=slate] .document-header {padding-bottom:20px}
+@media(max-width:700px){.document-preview {padding:23px 20px}.document-preview .document-header h1 {font-size:24px}.document-preview h2 {font-size:11px}.document-preview h3 {font-size:11px}}

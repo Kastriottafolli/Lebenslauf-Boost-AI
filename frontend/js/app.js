@@ -1,3 +1,5 @@
+import { DESIGNS, designFor } from "./core/document-designs.js";
+import { parseLines } from "./browser/export.js";
 import { jobDetails } from "./core/job.js";
 import { LANGUAGES, translate } from "./core/locale.js";
 import { PROVIDERS, callProvider } from "./core/providers.js";
@@ -331,46 +333,42 @@ function renderTabs() {
   }));
 }
 function renderPreview() {
-  const root = $("#preview");
-  const position = root.scrollTop;
+  const root = $("#preview"), selected = $("#design").value;
+  const theme = designFor(selected), position = root.scrollTop;
+  root.dataset.design = selected;
+  for (const key of ["accent", "ink", "muted", "rule", "surface"]) root.style.setProperty("--doc-" + key, "#" + theme[key]);
+  root.style.setProperty("--doc-font", `"${theme.font}", ${theme.serif ? "Georgia, serif" : "Arial, sans-serif"}`);
+  root.style.setProperty("--doc-name-size", theme.nameSize + "px");
+  $("#previewDesign").textContent = selected.charAt(0).toUpperCase() + selected.slice(1);
+  $("#designHint").textContent = theme[state.language] + " · " + tr("Vorschau und Download verwenden dieses Design.", "Preview and download use this design.", "Parapamja dhe shkarkimi përdorin këtë dizajn.");
   root.replaceChildren();
+  const header = document.createElement("header"), body = document.createElement("div");
+  header.className = "document-header";
+  body.className = "document-body";
+  let inHeader = false, headerFinished = false, list;
+  for (const line of parseLines(state.documents?.[state.document] || "")) {
+    if (line.type === "blank") { list = null; continue; }
+    if (line.type === "h1" && !headerFinished && !header.querySelector("h1")) inHeader = true;
+    if (["h2", "h3", "bullet"].includes(line.type)) { inHeader = false; headerFinished = true; }
+    const container = inHeader && line.type !== "note" ? header : body;
+    let node;
+    if (line.type === "bullet") {
+      if (!list) { list = document.createElement("ul"); container.append(list); }
+      node = document.createElement("li"); node.textContent = line.text; list.append(node); continue;
+    }
+    node = document.createElement(line.type.startsWith("h") ? line.type : line.type === "note" ? "blockquote" : "p");
+    node.textContent = line.text;
+    list = null;
+    container.append(node);
+    if (line.type === "h1" && state.document !== "cv") { inHeader = false; headerFinished = true; }
+  }
   if (state.document === "cv" && state.photo) {
     const img = document.createElement("img");
-    img.src = state.photo;
-    img.alt = tr("Bewerbungsfoto", "Application photo");
-    img.className = "photo-preview";
-    root.append(img);
+    img.src = state.photo; img.alt = tr("Bewerbungsfoto", "Application photo", "Fotoja e aplikimit");
+    img.className = "photo-preview"; header.prepend(img);
   }
-  let list;
-  for (const raw of (state.documents?.[state.document] || "").split("\n")) {
-    const line = raw.trim();
-    if (!line) {
-      list = null;
-      continue;
-    }
-    const heading = /^(#{1,3})\s+(.+)$/.exec(line);
-    const bullet = /^[-*]\s+(.+)$/.exec(line);
-    let node;
-    if (heading) {
-      node = document.createElement(`h${heading[1].length}`);
-      node.textContent = heading[2];
-      list = null;
-    } else if (bullet) {
-      if (!list) {
-        list = document.createElement("ul");
-        root.append(list);
-      }
-      node = document.createElement("li");
-      node.textContent = bullet[1];
-      list.append(node);
-      continue;
-    } else {
-      node = document.createElement(line.startsWith("> ") ? "blockquote" : "p");
-      node.textContent = line.replace(/^> /, "");
-      list = null;
-    }
-    root.append(node);
-  }
+  root.append(header, body);
+  header.hidden = !header.childElementCount;
   root.scrollTop = position;
 }
 function renderDocument() {
@@ -500,7 +498,7 @@ async function refine() {
   });
 }
 function exportBody(id) {
-  return { content: state.documents[id], design: $("#design").value, format: $("#format").value, language: $("#outputLanguage").value, filename: $("#filename").value + "_" + id, photo: id === "cv" ? state.photo : null };
+  return { content: state.documents[id], document: id, design: $("#design").value, format: $("#format").value, language: $("#outputLanguage").value, filename: $("#filename").value + "_" + id, photo: id === "cv" ? state.photo : null };
 }
 async function documentBlob(id) {
   const { exportDocument } = await import("./browser/export.js");
@@ -552,7 +550,7 @@ async function download(all = false) {
   });
 }
 function projectData() {
-  return { session_id: getSession().session_id, title: $("#projectTitle").value.trim() || "Bewerbung", status: $("#projectStatus").value, profile: readProfile(), job: job(), documents: state.documents, language: $("#outputLanguage").value, notes: $("#projectNotes").value };
+  return { session_id: getSession().session_id, title: $("#projectTitle").value.trim() || "Bewerbung", status: $("#projectStatus").value, profile: readProfile(), job: job(), documents: state.documents, language: $("#outputLanguage").value, design: $("#design").value, notes: $("#projectNotes").value };
 }
 function validateProject(value) {
   if (!value || typeof value !== "object" || !value.profile || typeof value.profile.source_text !== "string" || value.profile.source_text.length > 6e4 || !value.job || typeof value.job.description !== "string" || value.job.description.length > 2e4) throw new Error("Ung\xFCltige Projektdatei / invalid project file");
@@ -578,6 +576,7 @@ function openProject(raw, id = null) {
   state.savedProject = true;
   state.versions = [];
   $("#outputLanguage").value = ["de","en","sq"].includes(value.language) ? value.language : "de";
+  $("#design").value = Object.hasOwn(DESIGNS, value.design) ? value.design : "modern";
   $("#projectTitle").value = value.title || "";
   $("#projectStatus").value = value.status || "draft";
   $("#projectNotes").value = value.notes || "";
@@ -853,6 +852,12 @@ async function init() {
     state.documents[state.document] = event.target.value;
     renderPreview();
     renderQuality();
+  });
+  $("#design").addEventListener("change", () => {
+    $("#preview").scrollTop = 0;
+    editorMode = false;
+    editorView();
+    renderPreview();
   });
   $("#download").addEventListener("click", action(() => download(false)));
   $("#downloadPackage").addEventListener("click", action(() => download(true)));
