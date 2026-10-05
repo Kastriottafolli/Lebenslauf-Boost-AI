@@ -1272,7 +1272,7 @@ dialog .close {
 }
 
 .legal-page { max-width:860px;line-height:1.8;overflow-wrap:anywhere; }
-.legal-page section {margin:32px 0}.legal-page h2{font-size:22px}.legal-page nav{background:#edf5ff;padding:16px 24px;border-radius:16px}.legal-draft{padding:16px;border:1px solid #dac7a3;border-radius:12px;background:#fff4df}
+.legal-page section {margin:32px 0}.legal-page h2{font-size:22px}.legal-page nav{background:#edf5ff;padding:16px 24px;border-radius:16px}
 .boosty-guide {position:fixed;left:20px;top:180px;width:290px;max-width:calc(100vw - 32px);display:flex;gap:12px;align-items:flex-start;padding:16px;background:#fff;border:2px solid #0878df;border-radius:22px;box-shadow:0 12px 34px #142c4925;z-index:45;transition:left .35s ease,top .35s ease;pointer-events:auto}
 .boosty-guide[hidden],.boosty-pointer[hidden]{display:none}.boosty-guide img{flex:none;animation:boosty-wave 4s ease-in-out infinite}.boosty-guide p{font-size:13px;line-height:1.65;margin:8px 0}.boosty-guide strong{font-size:12px}.guide-close{position:absolute;right:6px;top:2px;border:0;background:none;font-size:24px;cursor:pointer}.boosty-guide .text-button{font-size:12px;font-weight:700}
 .boosty-pointer{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:44}.boosty-pointer line{stroke:#0878df;stroke-width:3;stroke-dasharray:7 5}

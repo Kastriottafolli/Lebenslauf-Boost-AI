@@ -1,4 +1,4 @@
-"""Readable standalone notices, with explicit readiness gaps rather than invented facts."""
+"""Readable standalone legal notices without inventing missing operator facts."""
 
 import html
 import json
@@ -38,19 +38,16 @@ def render(
             "Impressum",
             "Datenschutz",
             "Zur Bewerbung",
-            "Entwurf: Betreiberangaben und Hosting müssen bestätigt und die Verträge geprüft werden.",
         ),
         "en": (
             "Legal notice",
             "Privacy",
             "Back to application",
-            "Draft: confirm operator/hosting details and review the contracts.",
         ),
         "sq": (
             "Të dhënat ligjore",
             "Privatësia",
             "Kthehu te aplikimi",
-            "Draft: konfirmo operatorin, hosting-un dhe kontratat.",
         ),
     }[language]
     title = labels[0 if kind == "legal" else 1]
@@ -104,9 +101,4 @@ def render(
         if site_url
         else ""
     )
-    notice = (
-        f'<p class="legal-draft" role="note">{labels[3]}</p>'
-        if not config["reviewed"] or not config["operator_details_confirmed"]
-        else ""
-    )
-    return f'''<!doctype html><html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} | {brand_name}</title>{canonical}<link rel="icon" href="{prefix}static/boosty-3d.png" type="image/png"><link rel="stylesheet" href="{prefix}assets/css/professional.css"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img src="{prefix}static/boosty-3d.png" width="44" height="48" alt="Boosty">{brand_name}</a><nav aria-label="Language">{links}</nav></header><main class="guide legal-page"><a href="{prefix}">{labels[2]} →</a><h1>{title}</h1>{notice}<nav aria-label="Contents"><ol>{toc}</ol></nav>{"".join(sections)}<p>Stand / Updated: {config["updated"]}</p></main><footer><a href="{prefix}impressum/">{labels[0]}</a><a href="{prefix}datenschutz/">{labels[1]}</a><a href="mailto:{html.escape(data["operator_email"], quote=True)}">{html.escape(data["operator_email"])}</a></footer></body></html>'''
+    return f'''<!doctype html><html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} | {brand_name}</title>{canonical}<link rel="icon" href="{prefix}static/boosty-3d.png" type="image/png"><link rel="stylesheet" href="{prefix}assets/css/professional.css"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img src="{prefix}static/boosty-3d.png" width="44" height="48" alt="Boosty">{brand_name}</a><nav aria-label="Language">{links}</nav></header><main class="guide legal-page"><a href="{prefix}">{labels[2]} →</a><h1>{title}</h1><nav aria-label="Contents"><ol>{toc}</ol></nav>{"".join(sections)}<p>Stand / Updated: {config["updated"]}</p></main><footer><a href="{prefix}impressum/">{labels[0]}</a><a href="{prefix}datenschutz/">{labels[1]}</a><a href="mailto:{html.escape(data["operator_email"], quote=True)}">{html.escape(data["operator_email"])}</a></footer></body></html>'''
