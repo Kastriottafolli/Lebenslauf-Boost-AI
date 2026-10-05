@@ -6,12 +6,24 @@
   "register": "",
   "vat_id": "",
   "phone": "",
-  "hosting_name": "",
-  "hosting_country": "",
-  "hosting_retention": "",
-  "backup_retention": "",
+  "hosting_name": "DreamHost, LLC",
+  "hosting_country": {
+    "de": "USA – Ashburn, Virginia",
+    "en": "USA – Ashburn, Virginia",
+    "sq": "SHBA – Ashburn, Virxhinia"
+  },
+  "hosting_retention": {
+    "de": "App und HTTPS-Proxy erzeugen keine HTTP-Zugriffsprotokolle. Technische Betriebs- und Fehlerprotokolle werden auf drei Dateien mit jeweils höchstens 10 MB pro Dienst begrenzt; daraus ergibt sich keine feste Tagesfrist. Sicherheits- und Verwaltungsprotokolle des Betriebssystems und Hosting-Anbieters werden davon getrennt verarbeitet.",
+    "en": "The app and HTTPS proxy do not create HTTP access logs. Technical service and error logs rotate across three files of at most 10 MB per service; this is a size limit, not a fixed number of days. Operating-system and hosting-provider security and administration logs are processed separately.",
+    "sq": "Aplikacioni dhe proxy HTTPS nuk krijojnë regjistra të aksesit HTTP. Regjistrat teknikë dhe të gabimeve kufizohen në tre skedarë deri në 10 MB për shërbim; ky është kufi madhësie, jo afat fiks në ditë. Regjistrat e sigurisë dhe administrimit të sistemit operativ dhe ofruesit përpunohen veçmas."
+  },
+  "backup_retention": {
+    "de": "Tägliche verschlüsselte Datenbanksicherungen auf dem VPS, die älter als 14 Tage sind, werden beim nächsten erfolgreichen Sicherungslauf entfernt. Ausgefallene oder gestoppte Läufe können die Aufbewahrung verlängern. Bei der Einrichtung wird die Wiederherstellbarkeit anhand einer verschlüsselten Kopie auf dem Rechner des Betreibers geprüft; diese Prüfkopie wird nach dem Test gelöscht. Ein laufender automatischer externer Sicherungsdienst ist nicht eingerichtet.",
+    "en": "Daily encrypted database backups on the VPS that are older than 14 days are removed during the next successful backup run. Failed or stopped runs can extend retention. During setup, recovery is checked with an encrypted copy on the operator’s computer; that verification copy is deleted after the check. No continuous automatic off-site backup service is configured.",
+    "sq": "Kopjet e përditshme të enkriptuara të bazës së të dhënave në VPS, që janë më të vjetra se 14 ditë, hiqen gjatë procesit të ardhshëm të suksesshëm të kopjimit rezervë. Proceset e dështuara ose të ndaluara mund ta zgjasin afatin e ruajtjes. Gjatë konfigurimit rikuperimi kontrollohet me një kopje të enkriptuar në kompjuterin e operatorit; kopja e kontrollit fshihet pas testit. Nuk është konfiguruar shërbim i vazhdueshëm automatik për kopje jashtë serverit."
+  },
   "dispute_resolution": "",
-  "updated": "2026-10-05",
+  "updated": "2026-10-06",
   "economic_id": "",
   "representative": "",
   "supervisory_authority": "",

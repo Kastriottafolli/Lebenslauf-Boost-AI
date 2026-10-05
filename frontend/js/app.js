@@ -1,7 +1,9 @@
 import { DESIGNS, designFor } from "./core/document-designs.js";
 import { parseLines } from "./browser/export.js";
-import { jobDetails } from "./core/job.js";
+import { jobDetails, validJobUrl, jobImportProblem } from "./core/job.js";
 import { LANGUAGES, translate } from "./core/locale.js";
+import { liveAccountUrl, accountModeFromSearch } from "./core/live-app.js";
+import { PLANNED_PRICING, readPricing, readBalance, checkoutProviders, safeCheckoutUrl, packageProject, PackageRequests } from "./core/billing.js";
 import { DOCUMENTS, parseProfile, profileSource, applicationPrompt, demoPackage, validatePackage, assessPackage } from "./core/application.js";
 import { API_BASE, BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core/client.js";
 import { SAMPLE } from "./browser/demo.js";
@@ -20,6 +22,129 @@ let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
 let chatEpoch = 0, chatPending = false;
 let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
+let pricing=PLANNED_PRICING, creditBalance=null, socialProviders=[], checkoutBusy=false, jobImportPending=false;
+const packageRequests=new PackageRequests(), checkoutRequests=new PackageRequests();
+
+function billingView() {
+  const available=creditBalance?.available;
+  const summary=!state.account ? tr("Konto erstellen: drei kostenlose Bewerbungen einmalig.","Create an account: three free applications, once.","Krijo llogari: tre aplikime falas, vetëm një herë.")
+    : available==null ? tr("Dein Guthaben wird geladen. Du kannst deine Angaben schon vorbereiten.","Loading your credits. You can already prepare your details.","Po ngarkohen kreditet. Mund t’i përgatitësh të dhënat ndërkohë.")
+    : (available===1 ? tr("1 Bewerbung verfügbar","1 application available","1 aplikim në dispozicion")
+    : tr(`${available} Bewerbungen verfügbar`,`${available} applications available`,`${available} aplikime në dispozicion`))
+      + (creditBalance.reserved ? tr(` · ${creditBalance.reserved} in Bearbeitung`,` · ${creditBalance.reserved} in progress`,` · ${creditBalance.reserved} në përpunim`) : "");
+  $("#creditBalance").textContent=summary;
+  $("#billingBalance").textContent=summary;
+  $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen einmalig pro Konto.`,`${pricing.free_packages} free applications once per account.`,`${pricing.free_packages} aplikime falas vetëm një herë për llogari.`);
+  $$('[data-free-count]').forEach(el=>el.textContent=pricing.free_packages);
+  $$('[data-free-action]').forEach(el=>el.hidden=!!state.account);
+  const enabled=checkoutProviders(pricing);
+  $$('[data-pricing-offer]').forEach(card=>{
+    const offer=pricing.offers.find(item=>item.id===card.dataset.pricingOffer);
+    if(!offer)return;
+    card.querySelector('[data-price]').textContent=new Intl.NumberFormat({de:'de-DE',en:'en-IE',sq:'sq-AL'}[state.language],{style:'currency',currency:pricing.currency}).format(offer.amount_cents/100);
+    card.querySelector('[data-offer-credits]').textContent=offer.credits;
+    card.querySelector('[data-offer-unit]').textContent=offer.credits===1?tr('Bewerbung','application','aplikim'):tr('Bewerbungen','applications','aplikime');
+    card.querySelector('[data-payment-state]').textContent=enabled.length
+      ? tr("Einmalzahlung · kein Abonnement","One-time payment · no subscription","Pagesë e vetme · pa abonim")
+      : tr("Geplant · Zahlung noch nicht verfügbar","Planned · payments not available yet","Planifikuar · pagesat ende të padisponueshme");
+    const actions=card.querySelector('[data-checkout-actions]');actions.hidden=!enabled.length;
+    actions.replaceChildren(...enabled.map(provider=>{
+      const button=document.createElement('button');button.type='button';button.className='button outline';
+      button.disabled=checkoutBusy;button.dataset.checkoutOffer=offer.id;button.dataset.checkoutProvider=provider;
+      button.textContent=provider==='paypal'?tr("Mit PayPal bezahlen","Pay with PayPal","Paguaj me PayPal"):tr("Sicher bezahlen","Pay securely","Paguaj në mënyrë të sigurt");
+      return button;
+    }));
+  });
+  $$('[data-pricing-intro]').forEach(el=>el.textContent=enabled.length
+    ? tr("Drei kostenlose Bewerbungen einmalig pro Konto. Danach entscheidest du, ob du weiteres Bewerbungsguthaben kaufen möchtest. Jede Bewerbung enthält alle vier Dokumente.","Three free applications once per account. Then choose whether to buy additional application credits. Each application includes all four documents.","Tre aplikime falas vetëm një herë për llogari. Më pas vendos nëse dëshiron të blesh kredite të tjera. Çdo aplikim përfshin katër dokumentet.")
+    : el.dataset[state.language]);
+}
+async function refreshBalance() {
+  if(BROWSER_ONLY||!state.account){creditBalance=null;billingView();return;}
+  try {
+    const result=readBalance(await api('/api/billing/balance',undefined,'GET',{timeoutMs:15000}));
+    if(result)creditBalance=result;
+  } catch { /* A missing balance never pretends to grant credits. Server enforces it. */ }
+  billingView();
+}
+async function loadPricing() {
+  if(!BROWSER_ONLY){try {const result=readPricing(await api('/api/billing/pricing',undefined,'GET',{timeoutMs:15000}));if(result)pricing=result;}catch{/* Planned offers stay non-purchasable. */}}
+  billingView();
+}
+function openPricing() {
+  $("#billingStatus").textContent='';$("#billingDialog").showModal();
+  refreshBalance();
+}
+async function checkout(offerId,provider) {
+  if(checkoutBusy||!checkoutProviders(pricing).includes(provider)||!pricing.offers.some(offer=>offer.id===offerId))return;
+  if(BROWSER_ONLY){openAccount('register');return;}
+  if(!state.account){$("#billingDialog").close();openAccount('login');return;}
+  checkoutBusy=true;billingView();
+  const body=checkoutRequests.start({offer_id:offerId,provider});
+  $("#billingStatus").textContent=tr("Sichere Zahlungsseite wird geöffnet …","Opening secure checkout …","Po hapet faqja e sigurt e pagesës …");
+  try {
+    const result=await api('/api/billing/checkout',body,'POST',{timeoutMs:20000});
+    const target=safeCheckoutUrl(result.checkout_url,provider);
+    if(!target||result.provider!==provider||result.status!=='pending')throw new Error('CHECKOUT_UNAVAILABLE');
+    checkoutRequests.succeeded(body.request_id);location.assign(target);
+  } catch(error) {
+    checkoutRequests.failed(error,body.request_id);
+    $("#billingStatus").textContent=tr("Die Zahlung konnte nicht geöffnet werden. Es wurde hier kein Guthaben gekauft. Bitte später erneut versuchen.","Checkout could not be opened. No credits were purchased here. Please try again later.","Faqja e pagesës nuk u hap. Nuk janë blerë kredite këtu. Provo përsëri më vonë.");
+  } finally {checkoutBusy=false;billingView();}
+}
+function renderSocialProviders() {
+  const order=['google','apple','facebook','x'];
+  $("#socialLogin").replaceChildren(...[...socialProviders].sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id)).map(provider=>{
+    const button=document.createElement('button');button.type='button';button.className='button outline social-provider'+(['google','apple'].includes(provider.id)?' social-priority':'');
+    button.disabled=!provider.enabled;
+    const name=document.createElement('strong');name.textContent=tr(`Mit ${provider.name} fortfahren`,`Continue with ${provider.name}`,`Vazhdo me ${provider.name}`);
+    const status=document.createElement('small');status.textContent=provider.enabled?tr("Schnell anmelden","Quick sign-in","Hyrje e shpejtë"):tr("Noch nicht eingerichtet · E-Mail nutzen","Not set up yet · use email","Ende i pakonfiguruar · përdor email-in");
+    button.append(name,status);
+    button.addEventListener('click',()=>{if(provider.enabled&&order.includes(provider.id))location.href=(API_BASE||location.origin).replace(/\/$/,'')+`/api/oauth/${provider.id}/start`;});
+    return button;
+  }));
+}
+async function importJobLink() {
+  if(jobImportPending)return;
+  if(BROWSER_ONLY){openAccount('login');return;}
+  const url=validJobUrl($("#jobUrl").value);
+  $("#jobImportFeedback").dataset.state='error';
+  $("#jobImportActions").hidden=true;
+  if(!url){
+    $("#jobUrl").setAttribute('aria-invalid','true');
+    $("#jobImportStatus").textContent=tr("Bitte füge den vollständigen Stellenlink ein, der mit https:// beginnt. Du kannst den Stellentext auch direkt unten einfügen.","Paste the complete job link starting with https://. You can also paste the job description directly below.","Ngjit linkun e plotë të punës që fillon me https://. Mund ta ngjitësh edhe përshkrimin drejtpërdrejt më poshtë.");
+    $("#jobImportActions").hidden=false;$("#jobUrl").focus();return;
+  }
+  $("#jobUrl").removeAttribute('aria-invalid');jobImportPending=true;
+  $("#importJob").disabled=true;$("#retryJobImport").disabled=true;
+  $("#jobImportFeedback").dataset.state='loading';$("#jobImportFeedback").setAttribute('aria-busy','true');
+  $("#importJob").textContent=tr("Wird eingelesen …","Importing …","Po importohet …");
+  $("#jobImportStatus").textContent=tr("Die Stellenanzeige wird geprüft und eingelesen. Du kannst den Beschreibungstext währenddessen auch selbst unten einfügen.","Checking and importing the job posting. You can also paste the description below while you wait.","Po kontrollohet dhe importohet shpallja. Mund ta ngjitësh vetë përshkrimin më poshtë ndërkohë.");
+  const previousDescription=$("#jobDescription").value;
+  try {
+    const result=await api('/api/job/import',{url},'POST',{timeoutMs:45000});
+    if($("#jobDescription").value!==previousDescription){
+      $("#jobImportStatus").textContent=tr("Dein selbst eingefügter Stellentext bleibt erhalten. Prüfe unten Position, Firma und Beschreibung.","Your pasted job text is kept. Review the role, company and description below.","Teksti që ngjite vetë ruhet. Kontrollo pozicionin, kompaninë dhe përshkrimin më poshtë.");
+    } else {
+      const found=jobDetails(result.description);
+      fillJob({...job(),...result,title:result.title||found.title||job().title,company:result.company||found.company||job().company,email:result.email||found.email||job().email});
+      $("#jobImportStatus").textContent=tr("✓ Stelle übernommen. Prüfe Position, Firma und Beschreibung – ergänze fehlende Angaben.","✓ Job imported. Review the role, company and description, and fill in missing details.","✓ Shpallja u importua. Kontrollo pozicionin, kompaninë dhe përshkrimin; plotëso çfarë mungon.")+(result.truncated?tr(" Der lange Text wurde auf 20.000 Zeichen gekürzt."," The long text was limited to 20,000 characters."," Teksti i gjatë u kufizua në 20.000 karaktere."):"");
+    }
+    $("#jobImportFeedback").dataset.state='success';scheduleSave();
+  } catch(error) {
+    const reason=jobImportProblem(error);
+    const intro=reason==='timeout'?tr("Das Portal braucht zu lange.","The job board is taking too long.","Portali po merr shumë kohë.")
+      :reason==='busy'?tr("Der Import ist gerade ausgelastet.","Job import is busy right now.","Importimi është i ngarkuar tani.")
+      :reason==='login'?tr("Bitte melde dich erneut an.","Please sign in again.","Hyr përsëri.")
+      :tr("Dieses Portal lässt die Anzeige gerade nicht automatisch einlesen.","This job board is not allowing an automatic import right now.","Ky portal nuk lejon importimin automatik të shpalljes tani.");
+    $("#jobImportStatus").textContent=intro+' '+tr("Versuche den Link erneut oder kopiere die Aufgaben und Anforderungen aus der Anzeige in das Feld „Stellenbeschreibung“. Deine bisherigen Angaben bleiben erhalten.","Retry the link or copy the tasks and requirements into Job description. Your existing inputs are kept.","Provo sërish linkun ose kopjo detyrat dhe kërkesat te Përshkrimi i punës. Të dhënat ekzistuese ruhen.");
+    $("#jobImportFeedback").dataset.state='error';$("#jobImportActions").hidden=false;
+    if(reason==='login')openAccount('login');
+  } finally {
+    jobImportPending=false;$("#importJob").disabled=false;$("#retryJobImport").disabled=false;
+    $("#importJob").textContent=tr("Link einlesen","Import link","Importo linkun");$("#jobImportFeedback").removeAttribute('aria-busy');
+  }
+}
 function usage(event) {
   if (!BROWSER_ONLY) api("/api/usage", { session_id: getSession().session_id, event }).catch(() => {});
 }
@@ -332,6 +457,8 @@ function applyLanguage() {
   accountView();
   setAccountMode(accountMode);
   boostyConnectionView();
+  billingView();
+  renderSocialProviders();
   boostyTip();
   if(tourActive)$("#guideText").textContent=$("#guideText").dataset.topic?helpForTopic($("#guideText").dataset.topic,state.language).content:TOUR[tourIndex][state.language];
   if (state.documents) {
@@ -518,6 +645,8 @@ async function generatePayload(body) {
   return api("/api/package",body);
 }
 function usePackage(result) {
+  const { projectStatus, ...metadata }=packageProject(result);
+  Object.assign(state,metadata);
   state.models.openai=result.model;
   state.documents = result.documents;
   state.savedProject = false;
@@ -526,7 +655,7 @@ function usePackage(result) {
   state.document = "cv";
   $("#generationInfo").textContent = result.is_demo ? tr("DEMO \xB7 Regelbasierte Vorlagen. Platzhalter selbst erg\xE4nzen.", "DEMO \xB7 Rule-based templates. Fill in placeholders yourself.") : `OpenAI · ${result.model}`;
   $("#projectTitle").value = [job().company,job().title].filter(Boolean).join(" · ").slice(0,200);
-  $("#projectStatus").value="draft";
+  $("#projectStatus").value=projectStatus;
   showStep(4);
   renderDocument();
   scheduleSave();
@@ -534,20 +663,45 @@ function usePackage(result) {
 async function generate() {
   const demo=false;
   if(generationPending)return;generationPending=true;
+  let request;
   try {
   validateInputs(true);
   await flushSave();
-  const existingPackage=!!state.documents;
+  $("#generationProblem").hidden=true;
+  $("#openGeneratedHistory").hidden=true;
+  const payload=requestBody(demo);
+  if(!state.documents&&state.projectId&&state.projectRevision){payload.project_id=state.projectId;payload.project_revision=state.projectRevision;}
+  request=packageRequests.start(payload);
   await busy(tr(demo ? "Demo-Mappe wird erstellt \u2026" : "Deine Bewerbungsmappe entsteht \u2026", demo ? "Creating demo package \u2026" : "Creating your application package \u2026"), async (report) => {
-    const result = await generatePayload(requestBody(demo));
+    const result = await generatePayload(request);
     report(50, tr("Antwort erhalten · Dokumente werden geprüft", "Response received · Checking documents"));
     result.documents = validatePackage(result.documents);
     report(75, tr("Dokumente geprüft · Vorschau wird aufgebaut", "Documents checked · Building preview"));
-    if(existingPackage){cancelSave();state.projectId=null;}
+    cancelSave();
     comparisonResults = [];
     $("#comparisonChoices").hidden = true;
     usePackage(result);
+    packageRequests.succeeded(request.request_id);
   }, true);
+  await refreshBalance();
+  } catch(error) {
+    if(request)packageRequests.failed(error,request.request_id);
+    let message;
+    if(error.code==='PACKAGE_REPLAY_UNAVAILABLE') {
+      message=tr("Diese Antwort ist bereits gelöscht oder abgelaufen. Bereits gespeicherte Bewerbungsmappen findest du in deinem Verlauf. Öffne die vorhandene Mappe dort, statt erneut eine Bewerbung aus deinem Guthaben zu verwenden.","This response was deleted or has expired. Saved application packages are in your history. Open the existing package there instead of spending another application credit.","Kjo përgjigje është fshirë ose ka skaduar. Dosjet e ruajtura i gjen në historik. Hap dosjen ekzistuese atje në vend që të përdorësh një kredit tjetër.");
+      $("#retryGeneration").hidden=true;$("#openGeneratedHistory").hidden=false;
+    } else if(error.status===402||error.code==='CREDITS_EXHAUSTED') {
+      message=tr("Dein Bewerbungsguthaben ist aufgebraucht. Deine vorhandenen Mappen bleiben gespeichert und können weiter bearbeitet werden. Unter „Preise & Guthaben“ siehst du die weiteren Optionen.","Your application credits are used up. Existing documents stay saved and editable. Open Pricing & credits to see your options.","Kreditet e aplikimit janë përdorur. Dokumentet ekzistuese mbeten të ruajtura dhe mund të redaktohen. Hap Çmimet & kreditet për mundësitë e tjera.");
+      $("#retryGeneration").hidden=true;
+    } else if(error.code==='PACKAGE_IN_PROGRESS') {
+      message=tr("Deine Mappe wird noch erstellt. Warte kurz und prüfe dann erneut. Diese Wiederholung verwendet dieselbe Anfrage und bucht keine zweite Bewerbung ab.","Your application is still being created. Wait a moment, then check again. This retry uses the same request and does not spend a second application credit.","Dosja jote është ende duke u krijuar. Prit pak dhe kontrollo sërish. Kjo përsëritje përdor të njëjtën kërkesë dhe nuk shpenzon një kredit të dytë.");
+      $("#retryGeneration").hidden=false;
+    } else if(request&&(!error.status||error.status>=500)) {
+      message=tr("Die Erstellung konnte noch nicht bestätigt werden. Deine Angaben bleiben erhalten. Prüfe die Erstellung erneut; bei unveränderten Angaben verwenden wir dieselbe Anfrage.","Generation could not be confirmed yet. Your inputs are still here. Check again; unchanged inputs reuse the same request.","Krijimi nuk është konfirmuar ende. Të dhënat e tua mbeten këtu. Kontrollo sërish; të dhënat e pandryshuara përdorin të njëjtën kërkesë.");
+      $("#retryGeneration").hidden=false;
+    } else throw error;
+    $("#generationProblemText").textContent=message;$("#generationProblem").hidden=false;
+    await refreshBalance();
   } finally {generationPending=false;}
 }
 async function refine() {
@@ -703,21 +857,30 @@ function accountView() {
   $("#welcomeActions").hidden=!!state.account;
   $("#signedInWelcome").hidden=!state.account;
   $("#welcomeNote").hidden=!!state.account;
-  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Die öffentliche Vorschau ist noch nicht mit dem App-Server verbunden. Deshalb kannst du hier noch kein Konto erstellen. Die Anmeldung ist im Serverbetrieb bereits verfügbar.", "This public preview is not connected to the application server yet, so accounts cannot be created here. Sign-in is already available in server mode.", "Pamja paraprake nuk është lidhur ende me serverin e aplikacionit. Prandaj nuk mund të krijosh llogari këtu. Hyrja është e disponueshme në versionin me server.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
+  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konto und KI nutzt du in der vollständigen App auf tafolliboost.com. Die Startseite hier ist eine Vorschau.", "Use accounts and AI in the complete app on tafolliboost.com. This landing page is a preview.", "Llogarinë dhe IA i përdor në aplikacionin e plotë në tafolliboost.com. Kjo faqe hyrëse është pamje paraprake.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
   $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
   $("#signedInActions").hidden = !state.account;
   $("#socialLogin").hidden=BROWSER_ONLY || !!state.account;
   $("#socialLoginNotice").hidden=BROWSER_ONLY || !!state.account;
   $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
+  billingView();
 }
 function setAccountMode(mode) {
   accountMode=mode;
-  $("#loginMode").setAttribute("aria-pressed",String(mode==="login"));
+  $("#loginMode").setAttribute("aria-pressed",String(mode!=="register"));
   $("#register").setAttribute("aria-pressed",String(mode==="register"));
-  $("#accountPassword").autocomplete=mode==="register"?"new-password":"current-password";
-  $("#accountSubmit").textContent=mode==="register"?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
+  $("#accountPassword").autocomplete=mode==="login"?"current-password":"new-password";
+  $("#recoveryField").hidden=mode!=="recover";$("#recoveryCode").required=mode==="recover";
+  $("#recover").hidden=mode==="register"||mode==="recover";
+  $("#accountSubmit").textContent=mode==="recover"?tr("Passwort zurücksetzen","Reset password","Rivendos fjalëkalimin"):mode==="register"?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
 }
 function openAccount(mode="login") {
+  if (BROWSER_ONLY) {
+    const target = liveAccountUrl(branding.live_app_url, state.language, mode);
+    if (target) { location.assign(target); return; }
+    notify(tr("Der Link zur App ist nicht verfügbar. Bitte öffne https://tafolliboost.com direkt.", "The app link is unavailable. Please open https://tafolliboost.com directly.", "Linku i aplikacionit nuk është i disponueshëm. Hap drejtpërdrejt https://tafolliboost.com."), true);
+    return;
+  }
   setAccountMode(mode); accountView();
   $("#accountError").hidden=true; $("#accountError").textContent="";
   $("#accountDialog").showModal();
@@ -746,6 +909,7 @@ async function credentials(mode) {
     await newSession(state.language, {timeoutMs:15000});
     accountView();
     enterStudio();
+    await refreshBalance();
     if(hasDraft())scheduleSave();
     if(mode!=="register"){$("#accountDialog").close();if(!hasDraft())await showProjects();}
     else $("#workspace").scrollIntoView({behavior:"instant",block:"start"});
@@ -808,6 +972,8 @@ async function showProjects() {
 }
 function clearPersonalMemory() {
   cancelSave();chatEpoch++;chatPending=false;$("#boostyForm button").disabled=false;
+  packageRequests.clear();creditBalance=null;
+  $("#generationProblem").hidden=true;$("#jobImportActions").hidden=true;
   stopGuide();
   $("#boostyAnswer").textContent = "";
   $("#boostyQuestion").value = "";
@@ -867,6 +1033,7 @@ async function init() {
   document.title = branding.name + " \u2013 " + tr("Lebenslauf und Bewerbung mit KI", "AI resume and application builder");
   $("#brandName").textContent = branding.name;
   $(".brand-footer").textContent = branding.name;
+  $("#billingOptions").replaceChildren(...[...$("#landingPlans").children].map(card=>card.cloneNode(true)));
   for (const [key, value] of Object.entries(labels)) {
     const label = document.createElement("label");
     label.className = "field" + (["experience", "education", "skills", "languages"].includes(key) ? " wide" : "");
@@ -900,14 +1067,17 @@ async function init() {
   });
   $("#workspace").addEventListener("input",event=>{if(!["aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
   $("#workspace").addEventListener("change",event=>{if(!["aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
-  $("#workspace").addEventListener("click",()=>queueMicrotask(scheduleSave));
+  $("#workspace").addEventListener("click",event=>{if(!event.target.closest('#generate,#retryGeneration'))queueMicrotask(scheduleSave);});
   $("#followBoosty").addEventListener("change",()=>$("#followBoosty").checked?followStep():stopGuide());
   $("#newApplication").addEventListener("click",action(async()=>{if(!await leaveCurrent())return;if(!state.account&&hasDraft()&&!confirm(tr("Gastdaten verwerfen und neu beginnen? Sichere vorher deine Projektdatei.","Discard guest data and start again? Download your project first.","Fshi të dhënat e vizitorit dhe fillo sërish? Ruaj fillimisht projektin.")))return;clearPersonalMemory();accountView();followStep();}));
   $("#infoBtn").addEventListener("click",()=>$("#infoDialog").showModal());
   $$("a.brand").forEach(link=>link.addEventListener("click",event=>{event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});}));
   $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
   $("#welcomeLogin").addEventListener("click",()=>openAccount());
-  $$("[data-open-account]").forEach(button => button.addEventListener("click", () => openAccount(button.dataset.openAccount)));
+  $$("[data-open-account]").forEach(button => button.addEventListener("click", () => {if($("#billingDialog").open)$("#billingDialog").close();openAccount(button.dataset.openAccount);}));
+  $("#openPricing").addEventListener('click',openPricing);
+  $$('[data-open-pricing]').forEach(button=>button.addEventListener('click',openPricing));
+  for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-checkout-offer]');if(button)checkout(button.dataset.checkoutOffer,button.dataset.checkoutProvider);});
   $("#welcomeHistory").addEventListener("click",action(showProjects));
   $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});
   $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());
@@ -953,15 +1123,12 @@ async function init() {
     const found = jobDetails($("#jobDescription").value);
     for (const [key,id] of Object.entries({title:"jobTitle",company:"jobCompany",email:"jobEmail"})) if (!$("#"+id).value && found[key]) $("#"+id).value = found[key];
   });
-  $("#importJob").addEventListener("click", action(async () => {
-    if (BROWSER_ONLY) throw new Error(tr("Stellenlink-Import ben\xF6tigt den Server. Kopiere die Beschreibung in das Textfeld.", "Job URL import requires server mode. Paste the description into the text field."));
-    const result = await busy(tr("Stellenanzeige wird gelesen \u2026", "Reading job posting \u2026"), () => api("/api/job/import", { url: $("#jobUrl").value.trim() }));
-    const found = jobDetails(result.description);
-    fillJob({ ...job(), ...result, title:result.title || found.title || job().title, company:result.company || found.company || job().company, email:result.email || found.email || job().email });
-    scheduleSave();
-    $("#jobImportStatus").textContent = tr("Importiert. Pr\xFCfe Position, Firma und Stellentext.", "Imported. Verify role, company and job text.") + (result.truncated ? tr(" Text wurde auf 20.000 Zeichen begrenzt.", " Text was limited to 20,000 characters.") : "");
-  }));
+  $("#importJob").addEventListener("click",importJobLink);
+  $("#retryJobImport").addEventListener("click",importJobLink);
+  $("#pasteJobText").addEventListener("click",()=>{$("#jobDescription").scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});$("#jobDescription").focus({preventScroll:true});});
   $("#generate").addEventListener("click", action(() => generate(false)));
+  $("#retryGeneration").addEventListener("click",action(generate));
+  $("#openGeneratedHistory").addEventListener("click",action(showProjects));
   $("#refine").addEventListener("click", action(refine));
   $("#undo").addEventListener("click", () => {
     if (state.versions.length) {
@@ -1059,7 +1226,7 @@ async function init() {
   }));
   $("#register").addEventListener("click",()=>setAccountMode("register"));
   $("#loginMode").addEventListener("click",()=>setAccountMode("login"));
-  $("#recover").addEventListener("click", action(() => credentials("recover")));
+  $("#recover").addEventListener("click",()=>{setAccountMode('recover');$("#recoveryCode").focus();});
   $("#logout").addEventListener("click", action(async () => {
     if(!await leaveCurrent())return;
     await api("/api/account/logout", {});
@@ -1177,14 +1344,22 @@ async function init() {
     state.account = result.email;
     accountView();
     if(state.account)enterStudio();
+    const requestedAccount = accountModeFromSearch(location.search);
+    if (requestedAccount) {
+      const url = new URL(location.href);
+      url.searchParams.delete("account");
+      history.replaceState(null, "", url);
+      if (!state.account) openAccount(requestedAccount);
+    }
   }
   if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config", undefined, "GET", {timeoutMs:15000});} catch { /* Local help remains available. */ }}
   if(!BROWSER_ONLY){
     const config=await api("/api/hosted-config", undefined, "GET", {timeoutMs:15000});
-    $("#aiCapacity").textContent=tr(`Bis zu ${config.daily_packages} Bewerbungs­mappen pro Tag. Deine Eingaben kannst du jederzeit bearbeiten.`,`Up to ${config.daily_packages} application packages per day. Edit your inputs anytime.`,`Deri në ${config.daily_packages} dosje aplikimi në ditë. Të dhënat mund t'i ndryshosh kurdo.`);
+    if(!config.ready)$("#aiCapacity").textContent=tr("Die KI-Erstellung wird gerade vorbereitet. Deine Angaben kannst du bereits speichern.","AI generation is being prepared. You can already save your inputs.","Krijimi me IA po përgatitet. Mund t’i ruash të dhënat ndërkohë.");
     const providers=await api("/api/oauth/providers", undefined, "GET", {timeoutMs:15000});
-    $("#socialLogin").replaceChildren(...providers.map(provider=>{const button=document.createElement("button");button.type="button";button.className="button outline";button.disabled=!provider.enabled;for(const [lang,suffix] of Object.entries({de:" · derzeit nicht verfügbar",en:" · currently unavailable",sq:" · aktualisht i padisponueshëm"}))button.dataset[lang]=provider.name+(provider.enabled?"":suffix);button.textContent=button.dataset[state.language];button.addEventListener("click",()=>{location.href=(API_BASE || location.origin).replace(/\/$/,"")+`/api/oauth/${provider.id}/start`;});return button;}));
+    socialProviders=providers.filter(provider=>['google','apple','facebook','x'].includes(provider.id));renderSocialProviders();
   }
+  await loadPricing();await refreshBalance();
   boostyConnectionView();
   const params = new URLSearchParams(location.search);
   if(params.get("auth")==="failed")notify(tr("Die Anmeldung konnte nicht abgeschlossen werden. Nutze deine E-Mail-Anmeldung oder versuche es erneut.","Sign-in could not be completed. Use email sign-in or try again.","Hyrja nuk u përfundua. Përdor email-in ose provo sërish."),true);

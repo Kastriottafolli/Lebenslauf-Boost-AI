@@ -31,7 +31,7 @@ ROOT_FILES = {
     "README.md",
     "LICENSE",
 }
-NEW_REVIEWED_FILES = {"scripts/package_release.py", "docs/deploy/DREAMHOST.md"}
+NEW_REVIEWED_FILES = {"scripts/package_release.py", "docs/deploy/DREAMHOST.md", "docs/deploy/BACKUPS.md"}
 BLOCKED_PARTS = {
     ".git",
     "data",
@@ -61,6 +61,7 @@ TEXT_SUFFIXES = {
 }
 SECRET_PATTERNS = (
     re.compile(rb"\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{20,}"),
+    re.compile(rb"\b(?:[sr]k_(?:live|test)_|whsec_)[A-Za-z0-9]{20,}"),
     re.compile(rb"\bgh[pousr]_[A-Za-z0-9]{20,}"),
     re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----"),
 )
@@ -99,7 +100,7 @@ def allowed_source(name: str) -> bool:
         return path.name in {"build_pages.py", "bundle_pages.mjs", "package_release.py"}
     if path.parts[0] == "deploy":
         return name == "deploy/Caddyfile"
-    return name in {"docs/product/HOSTED-OPENAI.md", "docs/product/ADMIN.md"}
+    return name in {"docs/product/HOSTED-OPENAI.md", "docs/product/ADMIN.md", "docs/product/BILLING.md"}
 
 
 def check_content(name: str, data: bytes) -> None:
@@ -113,7 +114,7 @@ def check_content(name: str, data: bytes) -> None:
                 continue
             key, value = assignment.groups()
             if key.endswith(
-                ("_API_KEY", "_CLIENT_SECRET", "_PASSWORD", "_TOKEN")
+                ("_API_KEY", "_CLIENT_SECRET", "_SECRET_KEY", "_WEBHOOK_SECRET", "_PASSWORD", "_TOKEN")
             ) and value.strip().strip("\"'"):
                 raise ValueError(
                     "Release aborted: an environment example has a nonempty secret field."

@@ -16,6 +16,11 @@ services:
     volumes:
       - app-data:/app/data
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/status', timeout=5)"]
       interval: 30s
@@ -36,6 +41,32 @@ services:
       app:
         condition: service_healthy
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  backup:
+    image: tafolliboost-app
+    profiles:
+      - maintenance
+    entrypoint: ["python", "-m", "backend.backup"]
+    command: ["create", "--database", "/app/data/tafolli.db", "--admin-key", "/app/data/admin-secrets.key", "--key-file", "/run/backup/encryption.key", "--directory", "/app/backups", "--retention-days", "14"]
+    network_mode: none
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - app-data:/app/data:ro
+      - /opt/tafolliboost/private/backup.key:/run/backup/encryption.key:ro
+      - /opt/tafolliboost/private/backups:/app/backups
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 volumes:
   app-data:
   caddy-data:

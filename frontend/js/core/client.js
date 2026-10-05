@@ -37,8 +37,9 @@ export async function api(path, body, method = body ? "POST" : "GET", options = 
     if (!response.ok) {
       let detail;
       try { detail = (await response.json()).detail; } catch { /* Preserve HTTP status even without JSON. */ }
-      const error = new Error(typeof detail === "string" ? detail : `${response.status}: Eingaben pr\xFCfen / check input.`);
+      const error = new Error(typeof detail === "string" ? detail : typeof detail?.message === "string" ? detail.message : `${response.status}: Eingaben pr\xFCfen / check input.`);
       error.status = response.status;
+      if (typeof detail?.code === "string" && /^[A-Z_]{1,64}$/.test(detail.code)) error.code = detail.code;
       throw error;
     }
     try { return await response.json(); }

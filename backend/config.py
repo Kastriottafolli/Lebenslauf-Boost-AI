@@ -63,6 +63,18 @@ class Settings(BaseSettings):
     ai_daily_budget_usd: float = Field(5.0, gt=0, le=1000)
     ai_input_usd_per_million: float = Field(0.4, ge=0)
     ai_output_usd_per_million: float = Field(1.6, ge=0)
+    # Package credits apply independently of daily anti-abuse and spending limits.
+    billing_free_packages: int = Field(3, ge=1, le=10)
+    billing_single_cents: int = Field(199, ge=1, le=100000)
+    billing_bundle10_cents: int = Field(999, ge=1, le=100000)
+    billing_payments_enabled: bool = False
+    billing_environment: str = Field("sandbox", pattern="^(sandbox|live)$")
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    paypal_client_id: str = ""
+    paypal_client_secret: str = ""
+    paypal_webhook_id: str = ""
+    paypal_merchant_id: str = ""
     oauth_base_url: str = ""
     oauth_google_client_id: str = ""
     oauth_google_client_secret: str = ""

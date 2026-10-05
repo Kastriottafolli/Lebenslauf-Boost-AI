@@ -2,6 +2,7 @@
 
 import math
 from datetime import UTC, datetime
+from uuid import uuid4
 
 import httpx
 from fastapi import HTTPException
@@ -27,6 +28,61 @@ def authenticated_session(db, request, session):
 
 def configured():
     return bool(get_settings().openai_api_key.strip())
+
+
+def generate_package(db, account, req):
+    from backend.services import application_service, billing_service
+
+    if not req.profile.confirmed:
+        raise HTTPException(422, "Profilangaben zuerst bestätigen / confirm profile first")
+    if not configured():
+        raise HTTPException(503, "KI derzeit nicht eingerichtet / AI currently unavailable")
+    # New clients keep this UUID across technical retries. Older clients retain
+    # their behavior, but cannot replay a lost response without a request ID.
+    request_id = req.request_id or uuid4()
+    lease, cached = billing_service.reserve_package(
+        db,
+        account.id,
+        request_id,
+        req.model_dump(mode="json", exclude={"request_id"}),
+        session_id=req.session_id,
+        project_id=req.project_id,
+        project_revision=req.project_revision,
+    )
+    if cached is not None:
+        return cached
+    try:
+        response = application_service.build_package(req, Provider(db, account, "package"))
+        response["package_request_id"] = str(request_id)
+        billing_service.complete_package(
+            db,
+            account.id,
+            lease,
+            response,
+            session_id=req.session_id,
+            project_id=req.project_id,
+            project_revision=req.project_revision,
+            project_data={
+                "session_id": req.session_id,
+                "title": (
+                    " · ".join(value for value in (req.job.company, req.job.title) if value)
+                    or "Neue Bewerbung"
+                )[:200],
+                "status": "ready",
+                "profile": req.profile.model_dump(),
+                "job": req.job.model_dump(),
+                "documents": response["documents"],
+                "language": req.language,
+                "wishes": req.wishes,
+                "step": 4,
+                "provider": "openai",
+                "model": response["model"],
+            },
+        )
+        return response
+    except Exception:
+        billing_service.refund_package(db, account.id, lease)
+        raise
 
 
 def reserve(db, account, kind, model, input_bytes, max_output):
