@@ -866,6 +866,9 @@ async function init() {
   }
   $("#outputLanguage").value = state.language;
   applyLanguage();
+  $("#pagesPreview").hidden = !BROWSER_ONLY;
+  $("#welcomeRegister").disabled = BROWSER_ONLY;
+  $("#welcomeLogin").disabled = BROWSER_ONLY;
   window.addEventListener("sharedJob", (event) => {
     if (typeof event.detail?.url === "string") {
       $("#jobUrl").value = event.detail.url;
