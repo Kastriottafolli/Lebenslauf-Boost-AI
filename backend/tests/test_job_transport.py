@@ -71,3 +71,63 @@ def test_public_redirect_cannot_fetch_internal_address(monkeypatch):
     assert "Private/interne" in caught.value.detail
     create.assert_called_once()
     connection.close.assert_called_once()
+
+
+def test_portal_response_timeout_offers_retry_or_paste_without_socket_details(monkeypatch):
+    monkeypatch.setattr(
+        job_service, "public_address", lambda url: ("www.stepstone.de", "93.184.216.34", "/job")
+    )
+    connection = Mock()
+    connection.getresponse.side_effect = TimeoutError("synthetic internal socket details")
+    create = Mock(return_value=connection)
+    monkeypatch.setattr(job_service, "PinnedHTTPSConnection", create)
+    with pytest.raises(HTTPException) as caught:
+        job_service.fetch_page("https://www.stepstone.de/job")
+    assert caught.value.status_code == 422
+    assert "StepStone antwortet nicht rechtzeitig" in caught.value.detail
+    assert "erneut" in caught.value.detail and "Stellentext" in caught.value.detail
+    assert "synthetic internal" not in caught.value.detail
+    create.assert_called_once()
+    connection.close.assert_called_once()
+
+
+def test_body_socket_timeout_is_reported_as_timeout_without_retries(monkeypatch):
+    monkeypatch.setattr(
+        job_service, "public_address", lambda url: ("join.com", "93.184.216.34", "/job")
+    )
+    response = Mock(status=200)
+    response.getheader.side_effect = lambda name, default="": {
+        "Content-Type": "text/html; charset=utf-8",
+        "Content-Encoding": "identity",
+    }.get(name, default)
+    response.read1.side_effect = TimeoutError("synthetic private timeout details")
+    connection = Mock()
+    connection.getresponse.return_value = response
+    create = Mock(return_value=connection)
+    monkeypatch.setattr(job_service, "PinnedHTTPSConnection", create)
+    with pytest.raises(HTTPException) as caught:
+        job_service.fetch_page("https://join.com/job")
+    assert caught.value.status_code == 422
+    assert "JOIN antwortet nicht rechtzeitig" in caught.value.detail
+    assert "paste the job text" in caught.value.detail
+    assert "synthetic private" not in caught.value.detail
+    create.assert_called_once()
+    connection.close.assert_called_once()
+
+
+def test_transport_failure_names_portal_and_hides_internal_error(monkeypatch):
+    monkeypatch.setattr(
+        job_service, "public_address", lambda url: ("www.stepstone.de", "93.184.216.34", "/job")
+    )
+    connection = Mock()
+    connection.getresponse.side_effect = OSError("synthetic private transport details")
+    create = Mock(return_value=connection)
+    monkeypatch.setattr(job_service, "PinnedHTTPSConnection", create)
+    with pytest.raises(HTTPException) as caught:
+        job_service.fetch_page("https://www.stepstone.de/job")
+    assert caught.value.status_code == 422
+    assert "StepStone: Die Verbindung" in caught.value.detail
+    assert "erneut" in caught.value.detail and "paste the job text" in caught.value.detail
+    assert "synthetic private" not in caught.value.detail
+    create.assert_called_once()
+    connection.close.assert_called_once()

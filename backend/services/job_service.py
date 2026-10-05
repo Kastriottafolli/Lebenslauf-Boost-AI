@@ -414,10 +414,20 @@ def fetch_page(url):
                 "Bitte die Adresse prüfen oder den Stellentext einfügen / "
                 "could not verify the job website's HTTPS certificate.",
             ) from None
+        except TimeoutError:
+            # socket.timeout is an alias of TimeoutError; never expose socket details.
+            raise HTTPException(
+                422,
+                f"{portal_name(url)} antwortet nicht rechtzeitig. Versuche den Link erneut "
+                "oder öffne die Anzeige im Browser und kopiere ihren Stellentext / "
+                "portal timed out; retry the link or paste the job text.",
+            ) from None
         except (OSError, http.client.HTTPException, zlib.error):
             raise HTTPException(
                 422,
-                "Import fehlgeschlagen. Bitte Stellenbeschreibung kopieren / paste the job text.",
+                f"{portal_name(url)}: Die Verbindung zur Stellenanzeige konnte nicht "
+                "abgeschlossen werden. Versuche den Link erneut oder kopiere den "
+                "Stellentext aus dem Browser / connection failed; retry the link or paste the job text.",
             ) from None
         finally:
             connection.close()
