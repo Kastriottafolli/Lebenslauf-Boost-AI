@@ -6,7 +6,8 @@ import secrets
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
@@ -245,16 +246,50 @@ def delete_account(request: Request, response: Response, db: DBSession = Depends
     return {"deleted": True}
 
 
+class DraftProfile(Profile):
+    source_text: str = Field("", max_length=60000)
+    model_config = ConfigDict(extra="forbid")
+
+
+class DraftJob(Job):
+    description: str = Field("", max_length=20000)
+    model_config = ConfigDict(extra="forbid")
+
+
 class ProjectRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     session_id: str
     title: str = Field(..., min_length=1, max_length=200)
     status: str = Field("draft", pattern="^(draft|ready|sent|interview|offer|rejected)$")
-    profile: Profile
-    job: Job
-    documents: dict[str, str]
+    profile: DraftProfile
+    job: DraftJob
+    documents: dict[str, str] | None = None
     language: str = Field("de", pattern="^(de|en|sq)$")
     design: str = Field("modern", pattern="^(modern|classic|minimal|sapphire|cobalt|slate)$")
     notes: str = Field("", max_length=4000)
+    wishes: str = Field("", max_length=4000)
+    step: int = Field(1, ge=1, le=4)
+    provider: str = Field("openai", pattern="^(openai|claude|gemini|grok|azure)$")
+    model: str = Field("", max_length=100)
+    photo: str | None = Field(
+        None, max_length=7000000, pattern=r"^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$"
+    )
+    revision: int | None = Field(None, ge=1)
+
+
+def project_json(req, previous=None):
+    previous = previous or {}
+    if req.documents is not None and (
+        set(req.documents) != set(applications.DOCUMENTS)
+        or any(len(v) > 60000 for v in req.documents.values())
+    ):
+        raise HTTPException(422, "Ungültige Dokumente / invalid documents")
+    now = datetime.now(UTC).isoformat()
+    data = req.model_dump(exclude={"revision"})
+    data["_created_at"] = previous.get("_created_at", now)
+    data["_generated_at"] = previous.get("_generated_at") or (now if req.documents else None)
+    data["_revision"] = previous.get("_revision", 0) + 1
+    return data
 
 
 @router.post("/api/projects")
@@ -268,20 +303,21 @@ def save_project(
     sess = session_service.get_session(db, req.session_id, x_session_token)
     if sess.owner_id and sess.owner_id != account.id:
         raise HTTPException(403, "Zugriff verweigert / access denied")
-    if set(req.documents) != set(applications.DOCUMENTS) or any(
-        len(v) > 60000 for v in req.documents.values()
-    ):
-        raise HTTPException(422, "Ungültige Dokumente / invalid documents")
+    data = project_json(req)
     sess.owner_id = account.id
     project = Application(
         session_id=sess.id,
         title=req.title,
         status=req.status,
-        data_json=req.model_dump_json(),
+        data_json=json.dumps(data),
     )
     db.add(project)
     db.commit()
-    return {"id": project.id}
+    return {
+        "id": project.id,
+        "revision": data["_revision"],
+        "saved_at": project.updated_at.isoformat(),
+    }
 
 
 def owned_project(db, account, project_id):
@@ -306,15 +342,24 @@ def list_projects(request: Request, db: DBSession = Depends(get_db)):
         .order_by(Application.updated_at.desc())
         .all()
     )
-    return [
-        {
-            "id": p.id,
-            "title": p.title,
-            "status": p.status,
-            "updated_at": p.updated_at.isoformat(),
-        }
-        for p in projects
-    ]
+    result = []
+    for p in projects:
+        data = json.loads(p.data_json)
+        result.append(
+            {
+                "id": p.id,
+                "title": p.title,
+                "status": p.status,
+                "updated_at": p.updated_at.isoformat() + "Z",
+                "created_at": data.get("_created_at"),
+                "generated_at": data.get("_generated_at"),
+                "company": data.get("job", {}).get("company", ""),
+                "role": data.get("job", {}).get("title", ""),
+                "url": data.get("job", {}).get("url", ""),
+                "has_documents": bool(data.get("documents")),
+            }
+        )
+    return result
 
 
 @router.get("/api/projects/{project_id}")
@@ -330,16 +375,25 @@ def update_project(
     request: Request,
     db: DBSession = Depends(get_db),
 ):
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("BEGIN IMMEDIATE"))
     project = owned_project(db, accounts.current_account(db, request, True), project_id)
-    if set(req.documents) != set(applications.DOCUMENTS) or any(
-        len(v) > 60000 for v in req.documents.values()
-    ):
-        raise HTTPException(422, "Ungültige Dokumente / invalid documents")
-    project.data_json = req.model_dump_json()
+    previous = json.loads(project.data_json)
+    if "_revision" in previous and req.revision != previous["_revision"]:
+        raise HTTPException(
+            409,
+            "Diese Bewerbung wurde in einem anderen Tab geändert. Bitte im Verlauf erneut öffnen / reopen this application from history",
+        )
+    data = project_json(req, previous)
+    project.data_json = json.dumps(data)
     project.title, project.status = req.title, req.status
     project.updated_at = datetime.now(UTC)
     db.commit()
-    return {"id": project.id}
+    return {
+        "id": project.id,
+        "revision": data["_revision"],
+        "saved_at": project.updated_at.isoformat(),
+    }
 
 
 @router.delete("/api/projects/{project_id}")

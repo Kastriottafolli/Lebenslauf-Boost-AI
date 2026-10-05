@@ -8,23 +8,41 @@ import { BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core
 import { SAMPLE } from "./browser/demo.js";
 import { readDocument } from "./browser/import.js";
 import branding from "../../static/branding.json" with { type: "json" };
-import { TOUR, GUIDES, helpForTopic, boostyAnswer } from "./core/boosty.js";
+import { TOUR, GUIDES, helpForTopic, boostyAnswer, questionContainsSecret } from "./core/boosty.js";
 import { mountAdmin } from "./admin.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
 const state = { language: LANGUAGES.includes(new URLSearchParams(location.search).get("lang")) ? new URLSearchParams(location.search).get("lang") : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
 const tr = (de, en, sq) => translate(state.language, de, en, sq);
-let toastTimer, installPrompt, editorMode = false;
+let toastTimer, installPrompt, editorMode = false, accountMode="login", accountBusy=false;
 let comparisonResults = [];
 let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
+let chatEpoch = 0, chatPending = false;
+let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
 function usage(event) {
   if (!BROWSER_ONLY) api("/api/usage", { session_id: getSession().session_id, event }).catch(() => {});
 }
 function boostyTip() {
   const tip = TOUR[tourIndex];
+  $("#launcherTip").textContent = tr(...[labelsForStep(state.step)[0],labelsForStep(state.step)[1],labelsForStep(state.step)[2]]);
   $("#boostyTip").textContent = tip[state.language];
+}
+function labelsForStep(step) {
+  return ({1:["Dein Profil","Your profile","Profili yt"],2:["Deine Stelle","Your opportunity","Vendi yt i punës"],3:["Deine KI","Your AI","IA jote"],4:["Deine Mappe","Your application","Dosja jote"]})[step];
+}
+function followStep() {
+  if (!$("#followBoosty").checked) return;
+  const tip=TOUR[[0,0,3,5,7][state.step]];
+  tourIndex=TOUR.indexOf(tip);tourTarget?.classList.remove("boosty-tour-target");
+  tourTarget=$(tip.target);tourActive=true;
+  delete $("#guideText").dataset.topic;
+  $("#guideText").textContent=tip[state.language];
+  $("#boostyGuide").hidden=false;
+  $("#boostyGuide").classList.remove("arriving");
+  requestAnimationFrame(()=>$("#boostyGuide").classList.add("arriving"));
+  boostyTip();scheduleGuide();
 }
 function guideTo(index) {
   tourTarget?.classList.remove("boosty-tour-target");
@@ -40,32 +58,57 @@ function guideTo(index) {
   tourTarget?.classList.add("boosty-tour-target");
   tourTarget?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
   boostyTip();
+  delete $("#guideText").dataset.topic;
   $("#guideText").textContent = tip[state.language];
   $("#boostyGuide").hidden = false;
   scheduleGuide();
 }
-function setBoostyAnswer(value) {
-  boostyTopic = value.topic;
-  $("#boostyAnswer").textContent = value.content;
-  $("#boostyShow").hidden = GUIDES[value.topic] === undefined && !["admin","privacy"].includes(value.topic);
+function chatMessage(role, content) {
+  const root = $("#boostyAnswer"), message = document.createElement("article");
+  message.className = "chat-message " + role;
+  const label = document.createElement("strong");
+  label.textContent = role === "user" ? tr("Du", "You", "Ti") : "Boosty";
+  const text = document.createElement("p"); text.textContent = content;
+  message.append(label,text); root.append(message);
+  while (root.children.length > 60) root.firstElementChild.remove();
+  root.scrollTop = root.scrollHeight;
+  return {message,text};
 }
+function setBoostyAnswer(value, target = null) {
+  boostyTopic = value.topic;
+  const bubble = target || chatMessage("assistant", "");
+  bubble.message.classList.remove("pending");
+  bubble.text.textContent = value.content;
+  if (GUIDES[value.topic] !== undefined || ["admin","privacy"].includes(value.topic)) {
+    const button = document.createElement("button"); button.type="button"; button.className="text-button";
+    button.textContent=tr("Zeig mir die Stelle →","Show me where →","Më trego ku →");
+    button.addEventListener("click",()=>{boostyTopic=value.topic;showBoostyTarget();});
+    bubble.message.append(button);
+  }
+  $("#boostyShow").hidden = true;
+  $("#chatAnnouncement").textContent=value.content;
+  $("#boostyAnswer").scrollTop=$("#boostyAnswer").scrollHeight;
+}
+
 function showBoostyTarget() {
   $("#boostyDialog").close();
-  if (boostyTopic === "admin" || boostyTopic === "privacy" || (boostyTopic === "save" && !state.documents)) {
+  if (boostyTopic === "admin" || boostyTopic === "privacy" || boostyTopic === "save") {
     stopGuide();
-    tourTarget = $(boostyTopic === "admin" ? "#adminLink" : boostyTopic === "save" ? "#accountBtn" : "#privacyBtn");
+    tourTarget = $(boostyTopic === "admin" ? "#adminLink" : boostyTopic === "save" ? (state.account?"#projectsBtn":"#accountBtn") : "#privacyBtn");
     tourTarget.classList.add("boosty-tour-target");
     tourActive = true;
+    $("#guideText").dataset.topic=boostyTopic;
     $("#guideText").textContent = helpForTopic(boostyTopic,state.language).content;
     $("#boostyGuide").hidden = false;
     tourTarget.scrollIntoView({behavior:"smooth",block:"center"});
     scheduleGuide();
   } else {
     guideTo(GUIDES[boostyTopic]);
-    if (state.documents && ["quality","documents"].includes(boostyTopic)) {
+    if (boostyTopic==="language" || (state.documents && ["quality","documents"].includes(boostyTopic))) {
       tourTarget?.classList.remove("boosty-tour-target");
-      tourTarget=$(boostyTopic==="quality"?"#quality":"#documentTabs");
+      tourTarget=$(boostyTopic==="language"?"#outputLanguage":boostyTopic==="quality"?"#quality":"#documentTabs");
       tourTarget?.classList.add("boosty-tour-target");
+      $("#guideText").dataset.topic=boostyTopic;
       $("#guideText").textContent=helpForTopic(boostyTopic,state.language).content;
       tourTarget?.scrollIntoView({behavior:"smooth",block:"center"});
       scheduleGuide();
@@ -75,50 +118,96 @@ function showBoostyTarget() {
 async function askBoosty(event) {
   event.preventDefault();
   const question = $("#boostyQuestion").value.trim();
-  if (!question) return;
-  const answer = $("#boostyAnswer"), submit = $("#boostyForm button");
-  submit.disabled = true;
+  if (!question || chatPending) return;
+  if (question.length > 2000) return;
+  chatPending = true;
+  const epoch = chatEpoch, language = state.language;
+  const submit = $("#boostyForm button"); submit.disabled = true;
+  chatMessage("user",question); $("#boostyQuestion").value="";
+  const bubble=chatMessage("assistant",tr("Ich schaue nach …","Let me check …","Po kontrolloj …"));
+  bubble.message.classList.add("pending");
   try {
-    if (!$("#boostyAi").checked || !boostyConfig.enabled) {
-      setBoostyAnswer(boostyAnswer(question,state.language));
-      return;
+    let value=boostyAnswer(question,language);
+    // Credentials never belong in a help request, including accidental pastes.
+    if (questionContainsSecret(question)) {
+      value=helpForTopic("privacy",language);
+    } else if ($("#boostyAi").checked && boostyConfig.enabled) {
+      try {
+        const result=await api("/api/assistant",{session_id:getSession().session_id,question,language,consent:true});
+        value=helpForTopic(result.topic,language);
+      } catch {
+        value={...value,content:tr("Die KI-Hilfe ist gerade nicht erreichbar. Hier ist meine lokale Hilfe:\n\n","AI help is currently unavailable. Here is my local help:\n\n","Ndihma IA nuk është e arritshme. Ja ndihma lokale:\n\n")+value.content};
+      }
     }
-    answer.textContent = tr("Boosty denkt nach …", "Boosty is thinking …");
-    const result = await api("/api/assistant", {session_id:getSession().session_id,question,language:state.language,consent:true});
-    setBoostyAnswer(helpForTopic(result.topic,state.language));
-  } catch (error) {
-    setBoostyAnswer(boostyAnswer(question,state.language));
-    answer.textContent = error.message + "\n\n" + answer.textContent;
+    if (epoch !== chatEpoch) return;
+    setBoostyAnswer(value,bubble);
   } finally {
-    submit.disabled = false;
+    if (epoch === chatEpoch) {chatPending=false;submit.disabled=false;$("#boostyQuestion").focus();}
   }
 }
+
 function stopGuide() {
   tourTarget?.classList.remove("boosty-tour-target");
   tourActive = false;
   $("#boostyGuide").hidden = true;
   $("#boostyPointer").setAttribute("hidden","");
 }
+function placeLauncher() {
+  const launcher=$("#boostyLauncher"),workspace=$("#workspace").getBoundingClientRect(),compact=workspace.top<220;
+  launcher.classList.toggle("compact",compact);
+  launcher.hidden=false;
+  if(!compact){launcher.style.top="";launcher.style.left="";launcher.style.bottom="";launcher.style.right="";return;}
+  const size=64,gap=8,preferred=innerHeight-size-16;
+  const controls=$$("input,textarea,select,button,a,.field,#preview,#quality,h1,h2,h3,.boosty-guide").filter(el=>el!==launcher&&!launcher.contains(el)).map(el=>el.getBoundingClientRect()).filter(r=>r.width&&r.height);
+  for(const x of [innerWidth-size-gap,gap])for(const y of [preferred,...Array.from({length:Math.max(0,Math.floor((innerHeight-size-gap)/24))},(_,i)=>gap+i*24)]) {
+    if(controls.some(r=>x<r.right+4&&x+size>r.left-4&&y<r.bottom+4&&y+size>r.top-4))continue;
+    launcher.style.left=x+"px";launcher.style.top=y+"px";launcher.style.right="auto";launcher.style.bottom="auto";return;
+  }
+  // On very small screens the inline companion still offers a chat button.
+  launcher.hidden=true;
+}
+
 function scheduleGuide() {
+  placeLauncher();
   placeGuide();
   cancelAnimationFrame(guideFrame);
   guideFrame = requestAnimationFrame(placeGuide);
 }
 function placeGuide() {
   if (!tourActive || !tourTarget) return;
-  const r=tourTarget.getBoundingClientRect(), guide=$("#boostyGuide");
+  const guide=$("#boostyGuide"), gap=16;
+  let r=tourTarget.getBoundingClientRect();
+  const area=tourTarget.closest(".studio-content")?.getBoundingClientRect() || r;
+  const width=290,height=Math.max(260,guide.offsetHeight || 180);
+  const positions=[];
+  const right=area.right+gap,left=area.left-width-gap;
+  for(const x of [right,left]) {
+    if(x<gap || x+width>innerWidth-gap)continue;
+    const desired=Math.max(gap,Math.min(innerHeight-height-gap,r.top));
+    const controls=$$("button,input,textarea,select,a,#preview").filter(el=>!guide.contains(el) && !el.hidden).map(el=>el.getBoundingClientRect()).filter(rect=>rect.width && rect.height);
+    for(const y of [desired,...Array.from({length:Math.max(0,Math.floor((innerHeight-height-gap)/24))},(_,i)=>gap+i*24)]) {
+      if(!controls.some(rect=>x<rect.right+4 && x+width>rect.left-4 && y<rect.bottom+4 && y+height>rect.top-4)){positions.push({x,y,distance:Math.abs(y-desired)});break;}
+    }
+  }
+  const panel=tourTarget.closest("[data-panel]");
+  if((innerWidth<900 || !positions.length) && panel) {
+    let anchor=tourTarget;
+    while(anchor.parentElement!==panel)anchor=anchor.parentElement;
+    guide.classList.add("inline-guide");
+    if(guide.parentElement!==panel || guide.nextElementSibling!==anchor)panel.insertBefore(guide,anchor);
+    guide.style.left="";guide.style.top="";
+    $("#boostyPointer").setAttribute("hidden","");return;
+  }
+  guide.classList.remove("inline-guide");
+  if(guide.parentElement!==document.body)document.body.append(guide);
+  r=tourTarget.getBoundingClientRect();
   if (!r.width || !r.height) {stopGuide();return;}
-  const width=guide.offsetWidth, height=guide.offsetHeight, gap=16;
-  let x=r.right+gap;
-  if (x+width > innerWidth-gap) x=r.left-width-gap;
-  if (x<gap) x=Math.max(gap,Math.min(innerWidth-width-gap,r.right-width));
-  let y=r.top;
-  if (r.width > innerWidth*.7) y=r.bottom+gap;
-  y=Math.max(gap,Math.min(innerHeight-height-gap,y));
-  guide.style.left=x+"px"; guide.style.top=y+"px";
-  const line=$("#boostyLine"), endX=Math.max(gap,Math.min(innerWidth-gap,r.left+(tourTarget.id==="dropzone"?r.width/2:Math.min(r.width/2,70)))), endY=Math.max(gap,Math.min(innerHeight-gap,tourTarget.id==="dropzone"?r.bottom-35:r.top+Math.min(r.height/2,36)));
-  line.setAttribute("x1",String(x+42));line.setAttribute("y1",String(y+54));line.setAttribute("x2",String(endX));line.setAttribute("y2",String(endY));
+  const position=positions.sort((a,b)=>a.distance-b.distance)[0] || {x:gap,y:gap};
+  guide.style.left=position.x+"px";guide.style.top=position.y+"px";
+  const line=$("#boostyLine"),endX=Math.max(gap,Math.min(innerWidth-gap,r.left+(tourTarget.id==="dropzone"?r.width/2:Math.min(r.width/2,70)))),endY=Math.max(gap,Math.min(innerHeight-gap,r.top+Math.min(r.height/2,36)));
+  line.setAttribute("x1",String(position.x+42));line.setAttribute("y1",String(position.y+54));line.setAttribute("x2",String(endX));line.setAttribute("y2",String(endY));
   $("#boostyPointer").removeAttribute("hidden");
+
 }
 function notify(message, error = false) {
   $("#status").textContent = message;
@@ -135,6 +224,7 @@ const waitingFacts = [
  ["Keyword-Abdeckung misst Wortüberschneidungen. Sie garantiert keine Einladung.", "Keyword coverage measures word overlap. It does not guarantee an interview."]
 ];
 async function busy(label, work, stages = false) {
+  const previousPause=savePaused;savePaused=true;clearTimeout(saveTimer);
   $("#busyTitle").textContent = label;
   $("#busy").hidden = false;
   $("#workspace").setAttribute("aria-busy", "true");
@@ -168,6 +258,7 @@ async function busy(label, work, stages = false) {
     blocked.forEach(([el, previous]) => el.inert = previous);
     $("#busy").hidden = true;
     $("#workspace").removeAttribute("aria-busy");
+    savePaused=previousPause;if(!savePaused&&saveDirty)scheduleSave();
   }
 }
 
@@ -184,6 +275,10 @@ function editorView() {
   $(".editor-grid").classList.toggle("editor-mode",editorMode);
   $("#toggleEditor").textContent = editorMode ? tr("Vorschau zeigen", "Show preview", "Shfaq parapamjen") : tr("Text bearbeiten", "Edit text", "Redakto tekstin");
   $("#toggleEditor").setAttribute("aria-pressed", String(editorMode));
+}
+function boostyConnectionView() {
+  $("#boostyAi").disabled=!boostyConfig.enabled;
+  $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit · Separat vom Lebenslauf", "OpenAI software help ready · Separate from resume AI", "Ndihma OpenAI gati · Veç IA-së për CV") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
 }
 function applyLanguage() {
   document.documentElement.lang = state.language;
@@ -205,10 +300,13 @@ function applyLanguage() {
   editorView();
   providerView(false);
   $("#runtimeNotice").textContent = BROWSER_ONLY ? tr("Browserbetrieb: Import, Demo und Export laufen lokal. KI-Anfragen gehen direkt an den Anbieter. Stellenlink-Import und Konten ben\xF6tigen den Server.", "Browser mode: import, demo and export run locally. AI requests go directly to your provider. Job URL import and accounts require the server.") : tr("Serverbetrieb: Datei-Import und Stellenlinks werden auf diesem Server verarbeitet. API-Keys werden nicht gespeichert.", "Server mode: file imports and job links are processed on this server. API keys are not stored.");
-  $("#privacyExplanation").textContent = BROWSER_ONLY ? tr("Ohne Konto bleiben die Angaben bis zum Neuladen im Arbeitsspeicher des Browsers. Beim Export entstehen pers\xF6nliche Dateien auf deinem Ger\xE4t. Mit API-Key werden Profil und Stellenbeschreibung an den gew\xE4hlten KI-Anbieter gesendet. Dessen Regeln zur Speicherung gelten zus\xE4tzlich.", "Without an account, details remain in browser memory until reload. Exports create personal files on your device. With an API key, your profile and posting are sent to that provider; their retention rules also apply.") : tr("Datei-Uploads werden auf diesem Server verarbeitet und in deiner gesch\xFCtzten Sitzung gespeichert. Bewerbungen werden nur auf deinen Wunsch im Konto gespeichert. Du kannst Sitzung und Konto l\xF6schen. F\xFCr KI-Anfragen gelten zus\xE4tzlich die Datenschutzregeln des gew\xE4hlten Anbieters.", "Uploads are processed on this server and stored in your protected session. Applications are saved to your account only when you choose. You can delete your session or account. AI provider privacy rules additionally apply.");
+  $("#privacyExplanation").textContent = BROWSER_ONLY ? tr("Ohne Konto bleiben die Angaben bis zum Neuladen im Arbeitsspeicher des Browsers. Beim Export entstehen pers\xF6nliche Dateien auf deinem Ger\xE4t. Mit API-Key werden Profil und Stellenbeschreibung an den gew\xE4hlten KI-Anbieter gesendet. Dessen Regeln zur Speicherung gelten zus\xE4tzlich.", "Without an account, details remain in browser memory until reload. Exports create personal files on your device. With an API key, your profile and posting are sent to that provider; their retention rules also apply.") : tr("Datei-Uploads werden auf diesem Server verarbeitet und in deiner gesch\xFCtzten Sitzung gespeichert. Nach der Anmeldung werden Eingaben, Entwürfe und Bewerbungen automatisch im Konto gespeichert. Fotos werden mitgespeichert. API-Keys und der Boosty-Chat bleiben im Arbeitsspeicher. Du kannst Sitzung und Konto l\xF6schen. F\xFCr KI-Anfragen gelten zus\xE4tzlich die Datenschutzregeln des gew\xE4hlten Anbieters.", "Uploads are processed on this server and stored in your protected session. After signing in, inputs, drafts and applications are automatically saved to your account, including photos. API keys and the Boosty chat stay in memory. You can delete your session or account. AI provider privacy rules additionally apply.");
   $("#guideLink").href = new URL(({de:"de/lebenslauf-mit-ki/",en:"en/ai-resume-builder/",sq:"sq/cv-me-ia/"}[state.language]), baseURL()).href;
   accountView();
+  setAccountMode(accountMode);
+  boostyConnectionView();
   boostyTip();
+  if(tourActive)$("#guideText").textContent=$("#guideText").dataset.topic?helpForTopic($("#guideText").dataset.topic,state.language).content:TOUR[tourIndex][state.language];
   if (state.documents) {
     if (state.savedProject) $("#generationInfo").textContent = tr("Gespeicherte Bewerbung · alle Angaben erneut prüfen.", "Saved application · verify all details again.");
     else if (state.isDemo) $("#generationInfo").textContent = tr("DEMO · Regelbasierte Vorlagen. Platzhalter selbst ergänzen.", "DEMO · Rule-based templates. Fill in placeholders yourself.");
@@ -273,6 +371,8 @@ function showStep(step) {
     else el.removeAttribute("aria-current");
   });
   $(".studio-content").scrollIntoView({behavior:"instant",block:"start"});
+  followStep();
+  scheduleSave();
 }
 function providerView(reset = true) {
   const provider = PROVIDERS.find((p) => p.id === state.provider);
@@ -431,34 +531,45 @@ function usePackage(result) {
   state.versions = [];
   state.document = "cv";
   $("#generationInfo").textContent = result.is_demo ? tr("DEMO \xB7 Regelbasierte Vorlagen. Platzhalter selbst erg\xE4nzen.", "DEMO \xB7 Rule-based templates. Fill in placeholders yourself.") : `${PROVIDERS.find((p) => p.id === result.provider).name} \xB7 ${result.model}`;
-  $("#projectTitle").value = job().company + " \xB7 " + job().title;
+  $("#projectTitle").value = [job().company,job().title].filter(Boolean).join(" · ").slice(0,200);
+  $("#projectStatus").value="draft";
   showStep(4);
   renderDocument();
+  scheduleSave();
 }
 async function generate(demo) {
+  if(generationPending)return;generationPending=true;
+  try {
   validateInputs(!demo);
+  await flushSave();
+  const existingPackage=!!state.documents;
   await busy(tr(demo ? "Demo-Mappe wird erstellt \u2026" : "Deine Bewerbungsmappe entsteht \u2026", demo ? "Creating demo package \u2026" : "Creating your application package \u2026"), async (report) => {
     const result = await generatePayload(requestBody(demo));
     report(50, tr("Antwort erhalten · Dokumente werden geprüft", "Response received · Checking documents"));
     result.documents = validatePackage(result.documents);
     report(75, tr("Dokumente geprüft · Vorschau wird aufgebaut", "Documents checked · Building preview"));
-    state.projectId = null;
+    if(existingPackage){cancelSave();state.projectId=null;}
     comparisonResults = [];
     $("#comparisonChoices").hidden = true;
     usePackage(result);
   }, true);
+  } finally {generationPending=false;}
 }
 async function comparePackages() {
+  if(generationPending)return;generationPending=true;
+  try {
   validateInputs(true);
+  await flushSave();
   const second = $("#compareProvider").value;
   if (second === state.provider) throw new Error(tr("Zwei unterschiedliche Anbieter w\xE4hlen.", "Choose two different providers."));
   if (!state.keys[second]) throw new Error(tr("Bitte auch beim zweiten Anbieter einen API-Key hinterlegen.", "Enter an API key for the second provider too."));
+  const existingPackage=!!state.documents;
   const body = requestBody(false);
   await busy(tr("Zwei Bewerbungsentw\xFCrfe entstehen \u2026", "Creating two application drafts \u2026"), async () => {
     const outcomes = await Promise.allSettled([generatePayload(body), generatePayload({ ...body, provider: second, model: state.models[second] || PROVIDERS.find((p) => p.id === second).default_model })]);
     comparisonResults = outcomes.filter((r) => r.status === "fulfilled").map((r) => r.value);
     if (!comparisonResults.length) throw new Error(outcomes.map((r) => r.reason.message).join(" "));
-    state.projectId = null;
+    if(existingPackage){cancelSave();state.projectId=null;}
     const root = $("#comparisonChoices");
     root.replaceChildren();
     root.hidden = false;
@@ -477,6 +588,7 @@ async function comparePackages() {
     if (warnings.length) notify(warnings.join(" "), true);
     else notify(tr("Vergleiche Stil und Fakten. Es gibt keinen automatisch gew\xE4hlten Gewinner.", "Compare wording and facts. No winner is chosen automatically."));
   });
+  } finally {generationPending=false;}
 }
 async function refine() {
   validateInputs(true);
@@ -494,6 +606,7 @@ async function refine() {
     state.documents[state.document] = content;
     state.isDemo = false;
     renderDocument();
+    scheduleSave();
     $("#revision").value = "";
   });
 }
@@ -550,8 +663,47 @@ async function download(all = false) {
   });
 }
 function projectData() {
-  return { session_id: getSession().session_id, title: $("#projectTitle").value.trim() || "Bewerbung", status: $("#projectStatus").value, profile: readProfile(), job: job(), documents: state.documents, language: $("#outputLanguage").value, design: $("#design").value, notes: $("#projectNotes").value };
+  return { session_id:getSession().session_id, title:($("#projectTitle").value.trim() || [job().company,job().title].filter(Boolean).join(" · ") || tr("Neue Bewerbung","New application","Aplikim i ri")).slice(0,200), status:$("#projectStatus").value, profile:readProfile(), job:job(), documents:state.documents, language:$("#outputLanguage").value, design:$("#design").value, notes:$("#projectNotes").value, wishes:$("#wishes").value, step:state.step, provider:state.provider, model:$("#model").value, photo:state.photo && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(state.photo) ? state.photo : null, revision:state.projectRevision || null };
 }
+function hasDraft() {return !!(readProfile().source_text || Object.keys(labels).some(k=>state.profile[k]) || Object.values(job()).some(Boolean) || state.documents || $("#wishes").value || $("#projectNotes").value || state.photo);}
+function saveNotice(kind) {
+  const texts={guest:["Gastmodus · Kein Kontoverlauf. Projektdateien kannst du herunterladen.","Guest mode · No account history. You can download project files.","Modalitet vizitori · Pa historik në llogari. Mund të shkarkosh skedarët."],ready:["Automatisches Speichern aktiv · API-Keys bleiben nur im Arbeitsspeicher.","Autosave active · API keys stay only in memory.","Ruajtja automatike aktive · Çelësat API mbeten vetëm në memorie."],pending:["Änderungen werden gespeichert …","Saving changes …","Po ruhen ndryshimet …"],saved:["✓ In deinem Konto gespeichert","✓ Saved to your account","✓ Ruajtur në llogarinë tënde"],error:["Speichern fehlgeschlagen. Daten bleiben im offenen Tab. Erneut speichern oder Projektdatei sichern.","Save failed. Data remains in this open tab. Retry saving or download a project file.","Ruajtja dështoi. Të dhënat mbeten në skedën e hapur. Provo përsëri ose shkarko projektin."]};
+  $("#saveStatus").textContent=tr(...texts[kind]);
+}
+function scheduleSave() {
+  if (!state.account || BROWSER_ONLY || !hasDraft()) return;
+  saveDirty=true;clearTimeout(saveTimer);saveNotice("pending");
+  if(savePaused)return;
+  saveTimer=setTimeout(()=>saveCurrent().catch(()=>{}),900);
+}
+function saveCurrent() {
+  clearTimeout(saveTimer);
+  const epoch=saveEpoch,account=state.account;
+  const pending=saveChain.catch(()=>{}).then(async()=>{
+    if (epoch!==saveEpoch || !account || account!==state.account || BROWSER_ONLY || savePaused || !hasDraft()) return;
+    saveDirty=false;saveNotice("pending");
+    const data=projectData(), id=state.projectId;
+    try {
+      const result=await api(id?"/api/projects/"+id:"/api/projects",data,id?"PUT":"POST");
+      if(epoch!==saveEpoch || account!==state.account) return;
+      state.projectId=result.id;state.projectRevision=result.revision;
+      saveNotice(saveDirty?"pending":"saved");
+    } catch(error) {
+      if(epoch===saveEpoch){saveDirty=true;saveNotice("error");if(/anderen Tab|reopen/.test(error.message))$("#saveStatus").textContent+= " " + error.message;}
+      throw error;
+    }
+  });
+  saveChain=pending;return pending;
+}
+async function flushSave() {clearTimeout(saveTimer);await saveChain.catch(()=>{});if(saveDirty)await saveCurrent();}
+async function leaveCurrent() {
+  try {await flushSave();return true;}catch(error){
+    notify(error.message,true);
+    return confirm(tr("Die Änderungen konnten nicht gespeichert werden. Sichere bei Bedarf zuerst eine Projektdatei. Trotzdem fortfahren und ungespeicherte Änderungen verwerfen?","Changes could not be saved. Download a project backup first if needed. Continue and discard unsaved changes?","Ndryshimet nuk u ruajtën. Shkarko fillimisht projektin nëse duhet. Vazhdo dhe hiq ndryshimet e paruajtura?"));
+  }
+}
+function cancelSave() {clearTimeout(saveTimer);saveEpoch++;saveDirty=false;}
+
 function validateProject(value) {
   if (!value || typeof value !== "object" || !value.profile || typeof value.profile.source_text !== "string" || value.profile.source_text.length > 6e4 || !value.job || typeof value.job.description !== "string" || value.job.description.length > 2e4) throw new Error("Ung\xFCltige Projektdatei / invalid project file");
   const profile = { ...parseProfile("") };
@@ -564,15 +716,20 @@ function validateProject(value) {
   }
   const jobValue = {};
   for (const key of ["title", "company", "recipient", "email", "url", "description"]) jobValue[key] = typeof value.job[key] === "string" ? value.job[key].slice(0, key === "description" ? 2e4 : 2e3) : "";
-  return { ...value, profile, job: jobValue, documents: validatePackage(value.documents) };
+  return { ...value, profile, job: jobValue, documents: value.documents == null ? null : validatePackage(value.documents) };
 }
 function openProject(raw, id = null) {
   const value = validateProject(raw);
+  cancelSave();
   fillProfile(value.profile);
   fillJob(value.job);
   state.documents = value.documents;
   state.document = "cv";
   state.projectId = id;
+  state.projectRevision = value._revision || null;
+  state.photo = typeof value.photo === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value.photo) ? value.photo : null;
+  $("#wishes").value = value.wishes || "";
+  if(PROVIDERS.some(p=>p.id===value.provider)){state.provider=value.provider;state.models[value.provider]=value.model || PROVIDERS.find(p=>p.id===value.provider).default_model;$("#provider").value=value.provider;providerView();}
   state.savedProject = true;
   state.versions = [];
   $("#outputLanguage").value = ["de","en","sq"].includes(value.language) ? value.language : "de";
@@ -581,17 +738,33 @@ function openProject(raw, id = null) {
   $("#projectStatus").value = value.status || "draft";
   $("#projectNotes").value = value.notes || "";
   $("#generationInfo").textContent = tr("Gespeicherte Bewerbung \xB7 alle Angaben erneut pr\xFCfen.", "Saved application \xB7 verify all details again.");
-  showStep(4);
-  renderDocument();
+  showStep(state.documents ? 4 : Math.min(3,value.step || 1));
+  if(state.documents)renderDocument();
+  clearTimeout(saveTimer);saveDirty=false;
+  saveNotice(state.account?"saved":"guest");
 }
 function accountView() {
+  saveNotice(state.account?"ready":"guest");
+  $("#welcomeActions").hidden=!!state.account;
+  $("#signedInWelcome").hidden=!state.account;
+  $("#welcomeNote").hidden=!!state.account;
   $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konten und Cloud-Speicherung ben\xF6tigen den Server. Du kannst eine Projektdatei lokal herunterladen.", "Accounts and cloud storage require the server. You can download a local project file.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
   $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
   $("#signedInActions").hidden = !state.account;
   $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
 }
+function setAccountMode(mode) {
+  accountMode=mode;
+  $("#loginMode").setAttribute("aria-pressed",String(mode==="login"));
+  $("#register").setAttribute("aria-pressed",String(mode==="register"));
+  $("#accountPassword").autocomplete=mode==="register"?"new-password":"current-password";
+  $("#accountSubmit").textContent=mode==="register"?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
+}
+function openAccount(mode="login") {setAccountMode(mode);$("#accountDialog").showModal();if(!state.account)$("#accountEmail").focus();}
 async function credentials(mode) {
-  if (!$("#accountForm").reportValidity()) return;
+  if (accountBusy || !$("#accountForm").reportValidity()) return;
+  accountBusy=true;$("#accountForm").inert=true;
+  try {
   const body = { email: $("#accountEmail").value, password: $("#accountPassword").value };
   if (mode === "recover") body.recovery_code = $("#recoveryCode").value;
   const result = await api("/api/account/" + mode, body);
@@ -605,15 +778,24 @@ async function credentials(mode) {
     setLoginToken(result.access_token);
     await newSession(state.language);
     accountView();
+    if(hasDraft())scheduleSave();
+    if(mode!=="register"){$("#accountDialog").close();if(!hasDraft())await showProjects();}
+    else $("#workspace").scrollIntoView({behavior:"instant",block:"start"});
   }
+  } finally {accountBusy=false;$("#accountForm").inert=false;}
 }
 async function showProjects() {
   if (BROWSER_ONLY || !state.account) {
     $("#accountDialog").showModal();
     return;
   }
+  await flushSave().catch(error=>notify(error.message,true));
   const projects = await api("/api/projects");
   const root = $("#projectList");
+  const statuses={draft:tr("Entwurf","Draft","Draft"),ready:tr("Bereit","Ready","Gati"),sent:tr("Versendet","Sent","Dërguar"),interview:tr("Gespräch","Interview","Intervistë"),offer:tr("Angebot","Offer","Ofertë"),rejected:tr("Absage","Rejected","Refuzuar")};
+  $("#historySummary").replaceChildren(...[[projects.length,tr("Bewerbungen","Applications","Aplikime")],[projects.filter(p=>p.has_documents).length,tr("Mappen erstellt","Packages generated","Dosje të krijuara")],[projects.filter(p=>p.status==="sent").length,tr("Als versendet markiert","Marked as sent","Shënuar si të dërguara")]].map(([n,label])=>{const el=document.createElement("span");el.textContent=n+" · "+label;return el;}));
+  $("#historySearch").value="";
+  $("#historySearch").oninput=()=>{const q=$("#historySearch").value.toLocaleLowerCase();[...root.children].forEach(el=>el.hidden=!el.textContent.toLocaleLowerCase().includes(q));};
   root.replaceChildren();
   if (!projects.length) root.textContent = tr("Noch keine gespeicherten Bewerbungen.", "No saved applications yet.");
   for (const project of projects) {
@@ -622,7 +804,7 @@ async function showProjects() {
     const title = document.createElement("strong");
     title.textContent = project.title;
     const info = document.createElement("small");
-    info.textContent = project.status + " \xB7 " + new Date(project.updated_at).toLocaleDateString();
+    info.textContent = [project.company,project.role].filter(Boolean).join(" · ") + "\n" + (statuses[project.status] || project.status) + " · " + tr("Zuletzt gespeichert: ","Last saved: ","Ruajtur së fundi: ") + new Date(project.updated_at).toLocaleString(state.language) + (project.generated_at?"\n"+tr("Mappe erstellt: ","Package generated: ","Dosja e krijuar: ")+new Date(project.generated_at).toLocaleString(state.language):"");
     const row = document.createElement("div");
     row.className = "row";
     for (const type of ["open", "delete"]) {
@@ -631,21 +813,26 @@ async function showProjects() {
       button.textContent = type === "open" ? tr("\xD6ffnen", "Open") : tr("L\xF6schen", "Delete");
       button.addEventListener("click", action(async () => {
         if (type === "open") {
+          if(!await leaveCurrent())return;
           openProject(await api("/api/projects/" + project.id), project.id);
           $("#projectsDialog").close();
         } else if (confirm(tr("Diese Bewerbung endg\xFCltig l\xF6schen?", "Permanently delete this application?"))) {
+          if(state.projectId===project.id){clearPersonalMemory();accountView();}
           await api("/api/projects/" + project.id, null, "DELETE");
           item.remove();
         }
       }));
       row.append(button);
     }
-    item.append(title, info, row);
+    item.append(title, info);
+    if(/^https:\/\//i.test(project.url || "")) {const link=document.createElement("a");link.href=project.url;link.textContent=tr("Stellenanzeige öffnen ↗","Open job posting ↗","Hap shpalljen ↗");link.target="_blank";link.rel="noopener noreferrer";item.append(link);}
+    item.append(row);
     root.append(item);
   }
   $("#projectsDialog").showModal();
 }
 function clearPersonalMemory() {
+  cancelSave();chatEpoch++;chatPending=false;$("#boostyForm button").disabled=false;
   stopGuide();
   $("#boostyAnswer").textContent = "";
   $("#boostyQuestion").value = "";
@@ -655,11 +842,15 @@ function clearPersonalMemory() {
   state.documents = null;
   state.photo = null;
   state.projectId = null;
+  state.projectRevision = null;
   state.versions = [];
   state.savedProject = false;
   comparisonResults = [];
   fillProfile(parseProfile(""));
   fillJob({});
+  $("#projectStatus").value="draft";
+  for(const id of ["cvFile","photo","projectFile","scanInput","accountPassword","recoveryCode","accountEmail"])if($("#"+id))$("#"+id).value="";
+  $("#generationInfo").textContent="";$("#quality").replaceChildren();
   for (const id of ["apiKey", "documentEditor", "wishes", "projectNotes", "projectTitle", "fileStatus", "jobImportStatus"]) {
     const field = $("#" + id);
     if ("value" in field) field.value = "";
@@ -673,17 +864,11 @@ function clearPersonalMemory() {
 }
 async function deleteData() {
   if (!confirm(tr("Diese Sitzung und die aktuell ge\xF6ffneten Daten l\xF6schen? Gespeicherte Bewerbungen dieser Sitzung werden ebenfalls gel\xF6scht.", "Delete this session and its open data? Saved applications in this session will also be deleted."))) return;
+  cancelSave();
+  await saveChain.catch(()=>{});
   if (!BROWSER_ONLY && getSession().session_id) await api("/api/session/" + getSession().session_id, null, "DELETE");
-  state.keys = {};
-  state.models = {};
-  state.documents = null;
-  state.photo = null;
-  state.projectId = null;
-  state.versions = [];
-  fillProfile(parseProfile(""));
-  fillJob({});
-  $("#apiKey").value = "";
-  $("#aiConsent").checked = false;
+  clearPersonalMemory();
+  accountView();
   await newSession(state.language);
   showStep(1);
   notify(tr("Sitzungsdaten gel\xF6scht.", "Session data deleted."));
@@ -716,7 +901,7 @@ async function init() {
     span.textContent = value[0];
     const input = document.createElement(["experience", "education", "skills", "languages"].includes(key) ? "textarea" : "input");
     input.id = "profile-" + key;
-    input.maxLength = key === "experience" ? 6e4 : ["education", "skills"].includes(key) ? 6e3 : key === "languages" ? 1e3 : 300;
+    input.maxLength = ({experience:60000,education:6000,skills:6000,languages:1000,name:200,email:254,phone:100,location:300,headline:300})[key];
     if (input.tagName === "TEXTAREA") input.rows = 3;
     else input.type = key === "email" ? "email" : "text";
     input.addEventListener("input", () => $("#confirmed").checked = false);
@@ -746,6 +931,17 @@ async function init() {
     const url = new URL(location.href); url.searchParams.set("lang",state.language); history.replaceState(null,"",url);
     applyLanguage();
   });
+  $("#workspace").addEventListener("input",event=>{if(!["apiKey","aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
+  $("#workspace").addEventListener("change",event=>{if(!["apiKey","aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
+  $("#workspace").addEventListener("click",()=>queueMicrotask(scheduleSave));
+  $("#followBoosty").addEventListener("change",()=>$("#followBoosty").checked?followStep():stopGuide());
+  $("#newApplication").addEventListener("click",action(async()=>{if(!await leaveCurrent())return;if(!state.account&&hasDraft()&&!confirm(tr("Gastdaten verwerfen und neu beginnen? Sichere vorher deine Projektdatei.","Discard guest data and start again? Download your project first.","Fshi të dhënat e vizitorit dhe fillo sërish? Ruaj fillimisht projektin.")))return;clearPersonalMemory();accountView();followStep();}));
+  const enterStudio=()=>{$("#workspace").scrollIntoView({behavior:"smooth",block:"start"});followStep();};
+  $("#welcomeGuest").addEventListener("click",enterStudio);
+  $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
+  $("#welcomeLogin").addEventListener("click",()=>openAccount());
+  $("#welcomeHistory").addEventListener("click",action(showProjects));
+  $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});
   $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());
   $("#toggleEditor").addEventListener("click", () => { editorMode = !editorMode; editorView(); });
   $("#copyDocument").addEventListener("click", action(async () => {
@@ -809,6 +1005,7 @@ async function init() {
     const result = await busy(tr("Stellenanzeige wird gelesen \u2026", "Reading job posting \u2026"), () => api("/api/job/import", { url: $("#jobUrl").value.trim() }));
     const found = jobDetails(result.description);
     fillJob({ ...job(), ...result, title:result.title || found.title || job().title, company:result.company || found.company || job().company, email:result.email || found.email || job().email });
+    scheduleSave();
     $("#jobImportStatus").textContent = tr("Importiert. Pr\xFCfe Position, Firma und Stellentext.", "Imported. Verify role, company and job text.") + (result.truncated ? tr(" Text wurde auf 20.000 Zeichen begrenzt.", " Text was limited to 20,000 characters.") : "");
   }));
   $("#checkKey").addEventListener("click", action(async () => {
@@ -872,6 +1069,7 @@ async function init() {
       reader.readAsDataURL(file);
     });
     renderPreview();
+    scheduleSave();
   }));
   $("#removePhoto").addEventListener("click", () => {
     state.photo = null;
@@ -893,7 +1091,7 @@ async function init() {
   $("#backupProject").addEventListener("click", action(() => saveBlob(new Blob([JSON.stringify(projectData(), null, 2)], { type: "application/json" }), "Bewerbung.project.json")));
   $("#projectFile").addEventListener("change", action(async (event) => {
     const file = event.target.files[0];
-    if (file.size > 5e5) throw new Error("Projektdatei zu gro\xDF / project file too large");
+    if (file.size > 8e6) throw new Error("Projektdatei zu gro\xDF / project file too large");
     let value;
     try {
       value = JSON.parse(await file.text());
@@ -908,19 +1106,20 @@ async function init() {
       $("#accountDialog").showModal();
       return;
     }
-    const result = await api(state.projectId ? "/api/projects/" + state.projectId : "/api/projects", projectData(), state.projectId ? "PUT" : "POST");
-    state.projectId = result.id;
+    await saveCurrent();
     notify(tr("Bewerbung gespeichert.", "Application saved."));
   }));
   $("#projectsBtn").addEventListener("click", action(showProjects));
-  $("#accountBtn").addEventListener("click", () => $("#accountDialog").showModal());
+  $("#accountBtn").addEventListener("click",()=>openAccount());
   $("#accountForm").addEventListener("submit", action((event) => {
     event.preventDefault();
-    return credentials("login");
+    return credentials(accountMode);
   }));
-  $("#register").addEventListener("click", action(() => credentials("register")));
+  $("#register").addEventListener("click",()=>setAccountMode("register"));
+  $("#loginMode").addEventListener("click",()=>setAccountMode("login"));
   $("#recover").addEventListener("click", action(() => credentials("recover")));
   $("#logout").addEventListener("click", action(async () => {
+    if(!await leaveCurrent())return;
     await api("/api/account/logout", {});
     setLoginToken("");
     state.account = null;
@@ -932,6 +1131,8 @@ async function init() {
   }));
   $("#deleteAccount").addEventListener("click", action(async () => {
     if (!confirm(tr("Konto und alle Bewerbungen endg\xFCltig l\xF6schen?", "Permanently delete your account and every application?"))) return;
+    cancelSave();
+    await saveChain.catch(()=>{});
     await api("/api/account", null, "DELETE");
     setLoginToken("");
     state.account = null;
@@ -944,12 +1145,13 @@ async function init() {
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   $("#clearData").addEventListener("click", action(deleteData));
   $("#helpBtn").addEventListener("click", () => {
-    setBoostyAnswer(boostyAnswer("start", state.language));
+    if(!$("#boostyAnswer").children.length)setBoostyAnswer(boostyAnswer("start", state.language));
     $("#boostyDialog").showModal();
   });
   $("#boostyShow").addEventListener("click",showBoostyTarget);
-  $("#guideClose").addEventListener("click",stopGuide);
+  $("#guideClose").addEventListener("click",()=>{$("#followBoosty").checked=false;stopGuide();});
   $("#guideNext").addEventListener("click",()=>guideTo((tourIndex+1)%TOUR.length));
+  $("#guideChat").addEventListener("click",()=>$("#helpBtn").click());
   window.addEventListener("resize",scheduleGuide);
   document.addEventListener("scroll",scheduleGuide,true);
   $("#boostyNext").addEventListener("click", () => guideTo((tourIndex + 1) % TOUR.length));
@@ -965,7 +1167,7 @@ async function init() {
   });
   $("#adminDialog").addEventListener("close", () => embeddedAdmin?.clear());
   window.addEventListener("beforeunload", (event) => {
-    if (readProfile().source_text || state.documents) {
+    if (saveDirty || (!state.account && (readProfile().source_text || state.documents))) {
       event.preventDefault();
       event.returnValue = "";
     }
@@ -1032,8 +1234,7 @@ async function init() {
     accountView();
   }
   if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config");} catch { /* Local help remains available. */ }}
-  $("#boostyAi").disabled=!boostyConfig.enabled;
-  $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit · Separat vom Lebenslauf", "OpenAI software help ready · Separate from resume AI", "Ndihma OpenAI gati · Veç IA-së për CV") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
+  boostyConnectionView();
   const params = new URLSearchParams(location.search);
   if (params.has("jobUrl")) {
     $("#jobUrl").value = params.get("jobUrl");

@@ -21,3 +21,7 @@ Standardlimits: 500 KI-Fragen pro UTC-Tag für den gesamten Dienst und 20 pro Ar
 „Zeig mir die Stelle“ und die acht Tourhinweise verwenden ausschließlich feste Ziele der App. Boosty scrollt, hebt Felder hervor und bewegt seine erklärende Karte mit Zeiger. Er trägt nichts ein, bestätigt keine Angaben, exportiert oder versendet nichts und erteilt keine Adminrechte. Die Begleitung kann geschlossen werden; reduzierte Bewegung wird berücksichtigt.
 
 Offizielle Grundlagen: [Responses Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna), [API-Datenkontrollen](https://developers.openai.com/api/docs/guides/your-data).
+
+## Neue Chatoberfläche
+
+Boosty zeigt Gesprächsblasen und einzelne Navigationsaktionen. Die Konversation bleibt nur im Arbeitsspeicher des Tabs und wird bei Abmeldung gelöscht. Die separate OpenAI-Schnittstelle verarbeitet weiterhin nur die aktuelle, ausdrücklich erlaubte Frage und liefert ein geprüftes Hilfethema. Eine sichtbare Antwortstatusanzeige begleitet den Anbieteraufruf. Registrierung, automatisches Speichern und Verlauf sind in der DE/EN/SQ-Hilfe berücksichtigt. Erkennbare versehentlich eingefügte API-Keys oder explizite Passwortwerte werden vor dem Anbieteraufruf blockiert.

@@ -79,3 +79,7 @@ Domain-Prüfung: Server-HTML und Browser-Build liefern die neue Canonical-/Open-
 - Langer Test-CV in der Oberfläche: 401 px Vorschauhöhe bei 5.814 px Inhalt; mobil 378 px. Vorschau bleibt intern scrollbar. Änderungen im Text werden als Textknoten dargestellt, keine Interpretation von HTML.
 - Gewählte Designkennung wird mit Projektdateien/Kontobewerbungen gespeichert und bei alten Projekten auf Modern zurückgesetzt. Konto-Tests prüfen Speicherung und Wechsel von Classic zu Sapphire sowie Besitzrechte.
 - 58 Backend- und 21 Frontend-Tests bestanden; nach der Änderung am Projektfeld erneut die betroffenen Backend-Tests bestanden. Ruff, Diff-Prüfung, Build und Capacitor-Sync bestanden. Keine Live-KI-Anfrage, öffentliche Veröffentlichung oder Änderung persönlicher Nutzertabs.
+
+## Boosty-Neugestaltung und Kontoverlauf
+
+Die neue 3D-Illustration, ihre CSS-Animationen, Startoptionen, Gesprächsblasen und automatische Kontospeicherung sind in [BOOSTY-REDESIGN.md](BOOSTY-REDESIGN.md) dokumentiert. Aktueller Prüfstand: 62 Backend- und 22 Frontendtests. Browserprüfung mit separater Testdatenbank: Entwurf → Generierung → Design → Abmeldung → erneuter Login → Wiederherstellung, zusätzlich mobile albanische Hilfe bei 390 × 844 Pixeln. Keine echte Betreiber-KI oder private Nutzerdaten eingesetzt.

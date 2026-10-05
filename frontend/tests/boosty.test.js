@@ -7,6 +7,8 @@ test('Boosty gives bilingual help without keys and does not pretend to perform a
   assert.match(boostyAnswer('How do I save?', 'en').content,/Save application/);
   assert.match(boostyAnswer('privacy','en').content,/admin access is audited/);
   assert.match(boostyAnswer('admin').content,/keine Adminrechte/);
+  assert.equal(boostyAnswer('Wie ändere ich die Sprache?').topic,'language');
+  assert.equal(boostyAnswer('Si ta provoj demonstrimin?','sq').topic,'demo');
   assert.equal(boostyAnswer('Purple rain tomorrow').topic,'unknown');
   assert.match(boostyAnswer('Purple rain tomorrow').content,/weder sehen noch ändern/);
 });
@@ -31,4 +33,10 @@ test('Boosty refuses coding/injection and only offers fixed software navigation 
  assert.equal(boostyAnswer('Wo kann ich das Design wechseln?').topic,'design');
  assert.equal(boostyAnswer('Wie kontrolliere ich meine Kontaktdaten?').topic,'profile');
  assert.ok(Object.values(GUIDES).every(v=>Number.isInteger(v)&&v>=0&&v<TOUR.length));
+});
+
+test('accidental API keys and explicit passwords are detected before sending help requests',async()=>{
+ const {questionContainsSecret}=await import('../js/core/boosty.js');
+ for(const q of ['sk-'+ 'a'.repeat(30),'xai-'+ 'a'.repeat(30),'AIza'+ 'a'.repeat(30),'Passwort: synthetic-secret','fjalëkalim=synthetic-secret','a'.repeat(32)])assert.ok(questionContainsSecret(q));
+ for(const q of ['Wo bekomme ich meinen API-Key?','How do I reset my password?','Si ta ruaj aplikimin?'])assert.equal(questionContainsSecret(q),false);
 });

@@ -1,4 +1,5 @@
 """Readable standalone notices, with explicit readiness gaps rather than invented facts."""
+
 import html
 import json
 from pathlib import Path
@@ -6,36 +7,105 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def render(kind='legal', language='de', operator=None, site_url='', prefix='/', retention_days=30, static_routes=False):
-    language = language if language in ('de', 'en', 'sq') else 'de'
-    brand = json.loads((ROOT / 'static/branding.json').read_text())
-    config = json.loads((ROOT / 'static/legal-config.json').read_text())
-    data = {**brand['operator'], **(operator or {}), **config, 'retention_days':str(retention_days)}
-    pending = {'de':'Noch nicht festgelegt – vor öffentlichem Betrieb ergänzen','en':'Not yet set — complete before public launch','sq':'Ende pa vendosur — plotëso përpara publikimit'}[language]
-    for name in ('hosting_name','hosting_country','hosting_retention','backup_retention'):
+def render(
+    kind="legal",
+    language="de",
+    operator=None,
+    site_url="",
+    prefix="/",
+    retention_days=30,
+    static_routes=False,
+):
+    language = language if language in ("de", "en", "sq") else "de"
+    brand = json.loads((ROOT / "static/branding.json").read_text())
+    config = json.loads((ROOT / "static/legal-config.json").read_text())
+    data = {
+        **brand["operator"],
+        **(operator or {}),
+        **config,
+        "retention_days": str(retention_days),
+    }
+    pending = {
+        "de": "Noch nicht festgelegt – vor öffentlichem Betrieb ergänzen",
+        "en": "Not yet set — complete before public launch",
+        "sq": "Ende pa vendosur — plotëso përpara publikimit",
+    }[language]
+    for name in ("hosting_name", "hosting_country", "hosting_retention", "backup_retention"):
         data[name] = data.get(name) or pending
-    labels = {'de':('Impressum','Datenschutz','Zur Bewerbung','Entwurf: Betreiberangaben und Hosting müssen bestätigt und die Verträge geprüft werden.'),'en':('Legal notice','Privacy','Back to application','Draft: confirm operator/hosting details and review the contracts.'),'sq':('Të dhënat ligjore','Privatësia','Kthehu te aplikimi','Draft: konfirmo operatorin, hosting-un dhe kontratat.')}[language]
-    title=labels[0 if kind=='legal' else 1]
-    rows=json.loads((ROOT / 'static/legal-texts.json').read_text())[language][kind]
-    sections=[]
-    if kind=='legal':
-        extra=[]
-        for field,label in [('business_name','Firma / Company'),('legal_form','Rechtsform / Legal form'),('phone','Telefon / Phone'),('register','Register'),('vat_id','USt-ID / VAT ID'),('economic_id','Wirtschafts-ID'),('representative','Vertretung / Representative'),('supervisory_authority','Aufsichtsbehörde / Supervisory authority'),('professional_rules','Berufsrechtliche Angaben / Professional rules'),('editorial_responsible','Redaktionell verantwortlich / Editorial contact'),('dispute_resolution','Verbraucherstreitbeilegung / Dispute resolution')]:
+    labels = {
+        "de": (
+            "Impressum",
+            "Datenschutz",
+            "Zur Bewerbung",
+            "Entwurf: Betreiberangaben und Hosting müssen bestätigt und die Verträge geprüft werden.",
+        ),
+        "en": (
+            "Legal notice",
+            "Privacy",
+            "Back to application",
+            "Draft: confirm operator/hosting details and review the contracts.",
+        ),
+        "sq": (
+            "Të dhënat ligjore",
+            "Privatësia",
+            "Kthehu te aplikimi",
+            "Draft: konfirmo operatorin, hosting-un dhe kontratat.",
+        ),
+    }[language]
+    title = labels[0 if kind == "legal" else 1]
+    rows = json.loads((ROOT / "static/legal-texts.json").read_text())[language][kind]
+    sections = []
+    if kind == "legal":
+        extra = []
+        for field, label in [
+            ("business_name", "Firma / Company"),
+            ("legal_form", "Rechtsform / Legal form"),
+            ("phone", "Telefon / Phone"),
+            ("register", "Register"),
+            ("vat_id", "USt-ID / VAT ID"),
+            ("economic_id", "Wirtschafts-ID"),
+            ("representative", "Vertretung / Representative"),
+            ("supervisory_authority", "Aufsichtsbehörde / Supervisory authority"),
+            ("professional_rules", "Berufsrechtliche Angaben / Professional rules"),
+            ("editorial_responsible", "Redaktionell verantwortlich / Editorial contact"),
+            ("dispute_resolution", "Verbraucherstreitbeilegung / Dispute resolution"),
+        ]:
             if config[field]:
-                extra.append(f'{label}: {config[field]}')
+                extra.append(f"{label}: {config[field]}")
         if extra:
-            rows = [*rows,('Weitere Anbieterangaben / Additional information','\n'.join(extra))]
-    for index,(heading,content) in enumerate(rows):
-        value = html.escape(content.format_map(data)).replace('\n','<br>')
+            rows = [*rows, ("Weitere Anbieterangaben / Additional information", "\n".join(extra))]
+    for index, (heading, content) in enumerate(rows):
+        value = html.escape(content.format_map(data)).replace("\n", "<br>")
         # Only fixed, reviewed references are linked; no user HTML is accepted.
-        value=value.replace('https://www.datenschutz-mv.de/', '<a href="https://www.datenschutz-mv.de/" rel="noopener noreferrer">www.datenschutz-mv.de</a>')
-        sections.append(f'<section id="section-{index}"><h2>{html.escape(heading)}</h2><p>{value}</p></section>')
-    route='impressum' if kind=='legal' else 'datenschutz'
-    links=' '.join(f'<a href="{prefix+route+"/"+(lang+"/" if lang!="de" else "") if static_routes else "?lang="+lang}">{name}</a>' for lang,name in [('de','Deutsch'),('en','English'),('sq','Shqip')])
-    if kind=='privacy' and language!='de':
-        summary={'en':'English summary. The detailed German notice is available via Deutsch.','sq':'Përmbledhje shqip. Teksti i detajuar gjerman gjendet te Deutsch.'}[language]
-        sections.insert(0,f'<p>{summary}</p>')
-    toc=''.join(f'<li><a href="#section-{i}">{html.escape(row[0])}</a></li>' for i,row in enumerate(rows))
-    canonical=f'<link rel="canonical" href="{html.escape(site_url.rstrip("/"), quote=True)}/{route}/">' if site_url else ''
-    notice=f'<p class="legal-draft" role="note">{labels[3]}</p>' if not config['reviewed'] or not config['operator_details_confirmed'] else ''
-    return f'''<!doctype html><html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} | Boosty AI</title>{canonical}<link rel="icon" href="{prefix}static/boosti.svg" type="image/svg+xml"><link rel="stylesheet" href="{prefix}assets/css/professional.css"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img src="{prefix}static/boosti.svg" width="44" height="48" alt="Boosty">Boosty AI</a><nav aria-label="Language">{links}</nav></header><main class="guide legal-page"><a href="{prefix}">{labels[2]} →</a><h1>{title}</h1>{notice}<nav aria-label="Contents"><ol>{toc}</ol></nav>{''.join(sections)}<p>Stand / Updated: {config['updated']}</p></main><footer><a href="{prefix}impressum/">{labels[0]}</a><a href="{prefix}datenschutz/">{labels[1]}</a><a href="mailto:{html.escape(data['operator_email'], quote=True)}">{html.escape(data['operator_email'])}</a></footer></body></html>'''
+        value = value.replace(
+            "https://www.datenschutz-mv.de/",
+            '<a href="https://www.datenschutz-mv.de/" rel="noopener noreferrer">www.datenschutz-mv.de</a>',
+        )
+        sections.append(
+            f'<section id="section-{index}"><h2>{html.escape(heading)}</h2><p>{value}</p></section>'
+        )
+    route = "impressum" if kind == "legal" else "datenschutz"
+    links = " ".join(
+        f'<a href="{prefix + route + "/" + (lang + "/" if lang != "de" else "") if static_routes else "?lang=" + lang}">{name}</a>'
+        for lang, name in [("de", "Deutsch"), ("en", "English"), ("sq", "Shqip")]
+    )
+    if kind == "privacy" and language != "de":
+        summary = {
+            "en": "English summary. The detailed German notice is available via Deutsch.",
+            "sq": "Përmbledhje shqip. Teksti i detajuar gjerman gjendet te Deutsch.",
+        }[language]
+        sections.insert(0, f"<p>{summary}</p>")
+    toc = "".join(
+        f'<li><a href="#section-{i}">{html.escape(row[0])}</a></li>' for i, row in enumerate(rows)
+    )
+    canonical = (
+        f'<link rel="canonical" href="{html.escape(site_url.rstrip("/"), quote=True)}/{route}/">'
+        if site_url
+        else ""
+    )
+    notice = (
+        f'<p class="legal-draft" role="note">{labels[3]}</p>'
+        if not config["reviewed"] or not config["operator_details_confirmed"]
+        else ""
+    )
+    return f'''<!doctype html><html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} | Boosty AI</title>{canonical}<link rel="icon" href="{prefix}static/boosty-3d.png" type="image/png"><link rel="stylesheet" href="{prefix}assets/css/professional.css"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img src="{prefix}static/boosty-3d.png" width="44" height="48" alt="Boosty">Boosty AI</a><nav aria-label="Language">{links}</nav></header><main class="guide legal-page"><a href="{prefix}">{labels[2]} →</a><h1>{title}</h1>{notice}<nav aria-label="Contents"><ol>{toc}</ol></nav>{"".join(sections)}<p>Stand / Updated: {config["updated"]}</p></main><footer><a href="{prefix}impressum/">{labels[0]}</a><a href="{prefix}datenschutz/">{labels[1]}</a><a href="mailto:{html.escape(data["operator_email"], quote=True)}">{html.escape(data["operator_email"])}</a></footer></body></html>'''

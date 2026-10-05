@@ -15,7 +15,7 @@
       ],
       [
         "Nutzerkonto und gespeicherte Bewerbungen",
-        "Für ein Konto verarbeiten wir E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes, Anmeldezeitpunkte sowie ablaufende Sitzungstoken. Wenn du eine Bewerbung speicherst, gehören Profil, Dokumente, Stellenanzeige, Status und Notizen dazu. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO zur Bereitstellung der von dir angeforderten Kontofunktionen. Die normale Anmeldung läuft nach sieben Tagen ab. Du kannst gespeicherte Bewerbungen und dein Konto selbst löschen. Ohne Konto bleiben serverseitige Arbeitssitzungen nicht dauerhaft unbegrenzt gespeichert."
+        "Für ein Konto verarbeiten wir E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes, Anmeldezeitpunkte sowie ablaufende Sitzungstoken. Nach deiner Anmeldung speichern wir Eingaben und Bewerbungen automatisch in deinem Konto: Profil, Stellenanzeige, Wünsche, Dokumente, gewähltes Design, optionales Foto, Bearbeitungsschritt, Status, Notizen sowie Erstellungs- und Änderungszeitpunkte. Angefangene Entwürfe und generierte Bewerbungen erscheinen im Kontoverlauf. API-Keys und Boosty-Chattexte werden nicht im Konto gespeichert. Im Gastmodus gibt es keinen dauerhaften Kontoverlauf. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO zur Bereitstellung der von dir angeforderten Kontofunktionen. Die normale Anmeldung läuft nach sieben Tagen ab. Du kannst gespeicherte Bewerbungen und dein Konto selbst löschen. Ohne Konto bleiben serverseitige Arbeitssitzungen nicht dauerhaft unbegrenzt gespeichert."
       ],
       [
         "Lebensläufe, Stellenanzeigen und Dokumenterstellung",
@@ -31,7 +31,7 @@
       ],
       [
         "Boosty: Softwarehilfe mit separatem OpenAI-Zugang",
-        "Boosty erklärt ausschließlich die Bedienung der Software und kann freigegebene Felder hervorheben und zu ihnen scrollen. Die lokale Hilfe benötigt keine externe KI. Wird die KI-Hilfe vom Betreiber aktiviert und von dir ausdrücklich erlaubt, werden ausschließlich deine aktuelle Frage und eine feste Themenbeschreibung an OpenAI übertragen; kein Profil, Lebenslauf, Dokument, Kontodatensatz oder früherer Chat wird automatisch beigefügt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Bitte schreibe keine Passwörter, API-Keys oder personenbezogenen Lebenslaufdaten in die Frage. Der Betreiber verwendet hierfür einen separaten serverseitigen Key; dieser wird dem Browser nicht offengelegt. Fragen werden nicht in der App-Datenbank gespeichert. Antworten im Browser verschwinden beim Neuladen bzw. Löschen der Sitzung. Zur Kostenbegrenzung werden Tageszähler mit Sitzungskennung bis zu 30 Tage gespeichert (Art. 6 Abs. 1 lit. f DSGVO; Missbrauchs- und Kostenschutz)."
+        "Boosty erklärt ausschließlich die Bedienung der Software und kann freigegebene Felder hervorheben und zu ihnen scrollen. Die lokale Hilfe benötigt keine externe KI. Wird die KI-Hilfe vom Betreiber aktiviert und von dir ausdrücklich erlaubt, werden ausschließlich deine aktuelle Frage und eine feste Themenbeschreibung an OpenAI übertragen; kein Profil, Lebenslauf, Dokument, Kontodatensatz oder früherer Chat wird automatisch beigefügt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Bitte schreibe keine Passwörter, API-Keys oder personenbezogenen Lebenslaufdaten in die Frage. Der Betreiber verwendet hierfür einen separaten serverseitigen Key; dieser wird dem Browser nicht offengelegt. Fragen werden nicht in der App-Datenbank gespeichert. Antworten im Browser verschwinden beim Neuladen bzw. Löschen der Sitzung. Zur Kostenbegrenzung werden Tageszähler mit Sitzungskennung bis zu 30 Tage gespeichert (Art. 6 Abs. 1 lit. f DSGVO; Missbrauchs- und Kostenschutz). Der Chatverlauf wird ausschließlich im Arbeitsspeicher des geöffneten Tabs angezeigt und bei Abmeldung geleert."
       ],
       [
         "KI-Datenschutz und mögliche Drittlandverarbeitung",
@@ -101,7 +101,7 @@
       ],
       [
         "Website and account",
-        "The server receives IP address and technical connection details to deliver and secure the service (GDPR Art. 6(1)(f)). Hosting: {hosting_name}; country: {hosting_country}; logs: {hosting_retention}. Accounts store email, hashed passwords/recovery codes, expiring tokens and applications you explicitly save (Art. 6(1)(b)). Login expires after seven days. Delete accounts and projects in the app."
+        "The server receives IP address and technical connection details to deliver and secure the service (GDPR Art. 6(1)(f)). Hosting: {hosting_name}; country: {hosting_country}; logs: {hosting_retention}. Accounts store email, hashed passwords/recovery codes, expiring tokens and automatically saved drafts and applications after sign-in, including profile, job details, preferences, optional photo, design, documents, status, notes and creation/update timestamps. API keys and Boosty chat messages are never saved to the account (Art. 6(1)(b)). Login expires after seven days. Delete accounts and projects in the app."
       ],
       [
         "Documents, AI and Boosty",
@@ -143,7 +143,7 @@
       ],
       [
         "Faqja dhe llogaria",
-        "Serveri merr IP-në dhe të dhëna teknike për ofrimin dhe sigurinë e shërbimit (neni 6(1)(f) GDPR). Hosting: {hosting_name}; vendi: {hosting_country}; afati i protokolleve: {hosting_retention}. Llogaritë ruajnë email-in, hash-et e fjalëkalimit dhe rikuperimit, token-at dhe aplikimet që ruan vetë (neni 6(1)(b)). Hyrja skadon pas shtatë ditësh. Llogaritë dhe projektet mund t’i fshish në aplikacion."
+        "Serveri merr IP-në dhe të dhëna teknike për ofrimin dhe sigurinë e shërbimit (neni 6(1)(f) GDPR). Hosting: {hosting_name}; vendi: {hosting_country}; afati i protokolleve: {hosting_retention}. Llogaritë ruajnë email-in, hash-et e fjalëkalimit dhe rikuperimit, token-at dhe draftet/aplikimet që ruhen automatikisht pas hyrjes (neni 6(1)(b)). Hyrja skadon pas shtatë ditësh. Llogaritë dhe projektet mund t’i fshish në aplikacion. Pas hyrjes, draftet dhe aplikimet ruhen automatikisht: profili, shpallja, dëshirat, fotoja opsionale, dizajni, dokumentet, statusi, shënimet dhe datat e krijimit/ndryshimit. Çelësat API dhe biseda me Boosty nuk ruhen në llogari."
       ],
       [
         "Dokumentet, IA dhe Boosty",
