@@ -1,12 +1,11 @@
 """Lebenslauf-Upload: Text/Foto extrahieren und RAG-Index aufbauen."""
 
 import base64
-from typing import Optional
 
 from sqlalchemy.orm import Session as DBSession
 
 from backend.models import CVDocument, Session
-from backend.services import extraction_service, rag_service
+from backend.services import extraction_service, rag_service, safe_extraction
 
 
 def store_cv(
@@ -21,9 +20,8 @@ def store_cv(
 
     Wirft ValueError bei nicht lesbaren/nicht unterstützten Dateien.
     """
-    text = extraction_service.extract_text(filename, data)
-    index = rag_service.build_index(text, openai_key=openai_key)
-    photo_data_url = _extract_photo_data_url(filename, data)
+    text, photo_data_url = safe_extraction.extract(filename, data)
+    index = {"chunks": rag_service.chunk_text(text), "embeddings": None}
 
     # Vorhandenen CV ersetzen (1:1-Beziehung pro Sitzung).
     if sess.cv:
@@ -45,11 +43,13 @@ def store_cv(
         "chunks": len(index["chunks"]),
         "rag_mode": rag_service.index_mode(index),
         "preview": text[:400],
+        "source_text": text,
+        "profile": {},
         "photo": photo_data_url,
     }
 
 
-def _extract_photo_data_url(filename: str, data: bytes) -> Optional[str]:
+def _extract_photo_data_url(filename: str, data: bytes) -> str | None:
     try:
         photo_bytes = extraction_service.extract_photo(filename, data)
         if photo_bytes:

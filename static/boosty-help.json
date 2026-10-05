@@ -1,0 +1,77 @@
+{
+  "key": {
+    "de": "Du brauchst keinen eigenen API-Key und kein ChatGPT-Abo. OpenAI wird vom Betreiber bereitgestellt. Tageslimits begrenzen die Nutzung; bei erreichtem Limit kannst du deine Texte weiterhin direkt bearbeiten.",
+    "en": "You do not need an API key or ChatGPT subscription. The operator provides OpenAI. Daily limits apply; you can still edit your texts directly after reaching the limit.",
+    "sq": "Nuk të duhet çelës API apo abonim ChatGPT. Operatori siguron OpenAI. Ka kufij ditorë; mund t’i redaktosh tekstet edhe pasi arrin kufirin."
+  },
+  "save": {
+    "de": "Deine Eingaben, Entwürfe und Bewerbungen werden automatisch gespeichert. Unter „Meine Bewerbungen“ findest du Firma, Stelle, Datum und Status. Nach dem nächsten Einloggen kannst du sie öffnen. Boosty-Chatfragen werden nicht gespeichert.",
+    "en": "Your account automatically saves inputs, drafts and applications. My applications shows company, role, date and status. Open them after your next login. Boosty questions are not stored.",
+    "sq": "Llogaria ruan automatikisht të dhënat, draftet dhe aplikimet. Aplikimet e mia tregon kompaninë, pozitën, datën dhe statusin. Hapi pas hyrjes së ardhshme. Pyetjet për Boosty nuk ruhen."
+  },
+  "privacy": {
+    "de": "Dein Profil und deine Bewerbungen werden in deinem Konto gespeichert. Nach deiner Freigabe werden Angaben und Stellenbeschreibung zur Erstellung an OpenAI gesendet. Boosty übermittelt nur deine aktuelle Frage; niemals Passwörter oder Zugangsschlüssel eingeben. Du kannst Sitzung und Konto löschen. Details stehen unter Datenschutz.",
+    "en": "Your profile and applications are stored in your account. After permission, profile and job details are sent to OpenAI for generation. Boosty sends only your current question; never enter passwords or credentials. You can delete your session and account. Read Privacy for details.",
+    "sq": "Profili dhe aplikimet ruhen në llogari. Pas miratimit dërgohen te OpenAI për krijim. Boosty dërgon vetëm pyetjen aktuale; mos shkruaj fjalëkalime ose kredenciale. Mund të fshish seancën dhe llogarinë. Lexo Privatësinë për hollësi."
+  },
+  "export": {
+    "de": "In Schritt 4 bearbeitest du die vier Dokumente. Wähle ein Design und PDF oder Word. Mit dem Mappe-Export erhältst du die Unterlagen als ZIP. Die E-Mail wird vorbereitet; du prüfst Empfänger, Anhänge und Inhalt und versendest sie selbst.",
+    "en": "Edit all four documents in step 4. Choose a design and PDF or Word. Export the application as a ZIP. The email is prepared for you; review recipients, attachments and wording, then send it yourself.",
+    "sq": "Në hapin 4 kontrollon katër dokumentet. Zgjidh dizajnin dhe PDF ose Word. Eksporto dosjen si ZIP. Për çdo dokument mund të kopjosh tekstin. Email-i përgatitet; kontrollo marrësin, bashkëngjitjet dhe tekstin, pastaj dërgoje vetë."
+  },
+  "job": {
+    "de": "In Schritt 2 fügst du den vollständigen HTTPS-Link zur Stellenanzeige ein und klickst „Link einlesen“. Bei blockierten Portalen kopierst du den Stellentext selbst. Prüfe danach Beschreibung, Firma und Position.",
+    "en": "Paste the full HTTPS job posting URL in step 2 and click “Import link”. If the portal blocks access, paste its text manually. Then verify the description, company and role.",
+    "sq": "Në hapin 2 ngjit linkun e plotë HTTPS dhe kliko “Importo linkun”. Nëse portali bllokon aksesin, kopjo tekstin e shpalljes. Kontrollo përshkrimin, kompaninë dhe pozicionin. Letrat përdorin detyrat e shpalljes dhe përvojën e dokumentuar në CV."
+  },
+  "import": {
+    "de": "Lade in Schritt 1 PDF, DOCX oder TXT hoch oder füge Text ein. Für Scans nutzt du die lokale Texterkennung. Prüfe alle Profilfelder und bestätige die Angaben. Die KI soll deine belegbaren Erfahrungen nutzen und fehlende Fakten offenlassen.",
+    "en": "Upload PDF, DOCX or TXT in step 1, or paste text. For scans use local OCR. Verify every profile field and confirm the details. AI should use your verifiable experience and leave missing facts blank.",
+    "sq": "Ngarko PDF, DOCX ose TXT në hapin 1, ose ngjit tekstin. Për dokumente të skanuara përdor njohjen lokale të tekstit. Kontrollo fushat e profilit dhe konfirmo të dhënat. IA duhet të përdorë përvojën tënde të verifikueshme dhe t’i lërë të hapura faktet që mungojnë."
+  },
+  "quality": {
+    "de": "Die Keyword-Abdeckung zeigt Wortüberschneidungen mit der Stellenanzeige. Sie ist keine Einstellungswahrscheinlichkeit. Prüfe neue Kennzahlen und Qualifikationen. Ergänze nur Fähigkeiten, die du tatsächlich belegen kannst.",
+    "en": "Keyword coverage measures word overlap with the job posting, not hiring probability. Check new metrics and qualifications. Add only skills you can substantiate.",
+    "sq": "Përqindja tregon sa fjalë kyçe të shpalljes gjenden në CV. Nuk është probabilitet punësimi. Hap “Fjalët e analizuara” për të parë fjalët e gjetura dhe ato që mungojnë. Shto vetëm aftësi që mund t’i vërtetosh."
+  },
+  "admin": {
+    "de": "Unter /admin nutzt der Betreiber seine separate Anmeldung mit Passwort und Authenticator-Code. Ein normales Konto erhält keine Adminrechte. Die private Ersteinrichtung wird nur über den Server vorbereitet.",
+    "en": "At /admin the operator uses a separate password and authenticator sign-in. A normal account never grants admin access. Private setup is prepared only on the server.",
+    "sq": "Te /admin operatori përdor hyrjen e veçantë me fjalëkalim dhe kod Authenticator. Llogaritë normale nuk japin të drejta administratori. Konfigurimi privat përgatitet vetëm përmes serverit."
+  },
+  "start": {
+    "de": "Registriere dich oder logge dich ein. In vier Schritten erstellst du deine Bewerbung: Lebenslauf hochladen und Angaben prüfen, Stellenlink einfügen, Sprache und OpenAI-Freigabe bestätigen, Dokumente prüfen und herunterladen.",
+    "en": "Create an account or sign in. Four steps: upload your resume and verify the profile; paste the job link; confirm language and OpenAI data sharing; review and download your documents.",
+    "sq": "Krijo llogari ose hyr. Katër hapa: ngarko CV-në dhe kontrollo profilin; ngjit linkun e punës; konfirmo gjuhën dhe dërgimin te OpenAI; kontrollo dhe shkarko dokumentet."
+  },
+  "unknown": {
+    "de": "Ich helfe ausschließlich bei der Bedienung von tafolliboost.com: Profil, Stellenanzeige, KI-Auswahl, Dokumente, Export und Konto. Programmieraufträge oder andere Themen übernehme ich nicht. Ich kann deine Daten weder sehen noch ändern.",
+    "en": "I only help you use tafolliboost.com: profile, job posting, AI selection, documents, export and account. I cannot take programming assignments or answer unrelated questions, see or change your data.",
+    "sq": "Ndihmoj vetëm me përdorimin e tafolliboost.com: profilin, shpalljen, IA-në, dokumentet, eksportin dhe llogarinë. Nuk kryej programim ose kërkesa jashtë aplikacionit dhe nuk shoh ose ndryshoj të dhënat e tua."
+  },
+  "profile": {
+    "de": "Kontrolliere in Schritt 1 Name, Kontaktdaten, Berufserfahrung, Ausbildung und Kenntnisse. OCR kann Zeichen verwechseln. Korrigiere die Angaben und bestätige sie erst danach. Ergänze keine Erfahrungen, die du nicht belegen kannst.",
+    "en": "In step 1, check your name, contacts, experience, education and skills. OCR may misread characters. Correct the fields before confirming them. Do not add experience you cannot substantiate.",
+    "sq": "Në hapin 1 kontrollo emrin, kontaktet, përvojën, arsimin dhe aftësitë. OCR mund të ngatërrojë shkronjat. Korrigjo të dhënat përpara konfirmimit. Shto vetëm përvojë të verifikueshme."
+  },
+  "design": {
+    "de": "In Schritt 4 findest du Design und Format oberhalb der Vorschau. Du scrollst innerhalb der Vorschau. Auf dem Handy wechselst du mit „Text bearbeiten“ und „Vorschau zeigen“ zwischen beiden Ansichten. Kontrolliere den Seitenumbruch im heruntergeladenen Dokument.",
+    "en": "Design and format are above the step 4 preview. Scroll inside the preview. On mobile, switch using “Edit text” and “Show preview”. Check pagination in the downloaded file.",
+    "sq": "Dizajni dhe formati janë sipër parapamjes në hapin 4. Lëviz brenda parapamjes. Në celular përdor “Redakto tekstin” dhe “Shfaq parapamjen”. Kontrollo faqosjen në skedarin e shkarkuar."
+  },
+  "documents": {
+    "de": "Wähle in Schritt 4 Lebenslauf, Anschreiben, Motivation oder E-Mail. Bearbeite den Text und kopiere ihn mit „Text kopieren“. Gute Briefe benötigen echte Erfahrungen und konkrete Aufgaben aus der Anzeige. Ergänze in Schritt 2 deine persönliche Motivation und erstelle die Mappe erneut, wenn wichtige Angaben fehlen.",
+    "en": "In step 4 choose Resume, Cover letter, Motivation or Email. Edit and copy the text. Good letters need real experience and specific duties from the posting. Add your personal motivation in step 2 and regenerate if important details are missing.",
+    "sq": "Në hapin 4 zgjidh CV, letër aplikimi, motivim ose email. Redakto dhe kopjo tekstin. Letrat kërkojnë përvojë reale dhe detyra konkrete nga shpallja. Shto motivimin personal në hapin 2 dhe krijo dosjen përsëri kur mungojnë të dhëna të rëndësishme."
+  },
+  "language": {
+    "de": "Mit DE, EN oder SQ oben in der Navigation wechselst du die Sprache der Oberfläche. In Schritt 3 wählst du unter „Sprache der Dokumente“ Deutsch, Englisch oder Albanisch. Die Demo lässt den Originaltext deines Lebenslaufs in seiner Sprache. Für eine Übersetzung deiner Bewerbung wählst du die Ausgabesprache und nutzt deinen KI-Anbieter. Prüfe danach Namen, Daten und Fachbegriffe.",
+    "en": "Use DE, EN or SQ in the top navigation to change the interface language. In step 3, choose German, English or Albanian under “Document language”. The demo preserves your resume’s original language. To translate an application, choose the output language and use your AI provider, then verify names, dates and professional terms.",
+    "sq": "Me DE, EN ose SQ sipër në navigim ndryshon gjuhën e ndërfaqes. Në hapin 3, te “Gjuha e dokumenteve”, zgjidh gjermanisht, anglisht ose shqip. Demonstrimi ruan gjuhën origjinale të CV-së. Për ta përkthyer aplikimin, zgjidh gjuhën dhe përdor ofruesin IA. Më pas kontrollo emrat, datat dhe termat profesionalë."
+  },
+  "demo": {
+    "de": "Mit „Mit Beispiel ausprobieren“ im angemeldeten Editor lädst du fiktive Eingaben. Die KI-Erstellung erfolgt über OpenAI und zählt zum Tageslimit. Prüfe Beispielangaben und ersetze sie vor deiner Bewerbung.",
+    "en": "The signed-in editor offers fictional sample inputs. AI generation uses OpenAI and counts towards your daily limit. Replace sample facts before applying.",
+    "sq": "Redaktori pas hyrjes ofron të dhëna shembull fiktive. Krijimi me IA përdor OpenAI dhe numërohet në kufirin ditor. Zëvendëso faktet para aplikimit."
+  }
+}

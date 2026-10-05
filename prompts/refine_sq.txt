@@ -1,0 +1,5 @@
+Përmirëso CV-në e mëparshme sipas këtij udhëzimi: {instruction}
+Ruaj vetëm faktet e dokumentuara. Ndrysho formulimin, fokusin, gjatësinë ose tonin sipas kërkesës, por mos shpik fakte.
+Kthe të gjithë CV-në e përditësuar në shqip, jo vetëm pjesën e ndryshuar.
+
+{format}

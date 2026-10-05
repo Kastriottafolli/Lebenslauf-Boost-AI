@@ -1,0 +1,33 @@
+{
+  "route": "de/anschreiben-mit-ki",
+  "language": "de",
+  "title": "Anschreiben mit KI: persönlich und nachvollziehbar bewerben",
+  "description": "Ein überzeugendes Anschreiben verbindet echte Erfahrungen mit den Anforderungen der Stelle. So nutzt du KI für einen überprüfbaren Entwurf.",
+  "eyebrow": "BEWERBUNGSWISSEN",
+  "heading": "Ein Anschreiben mit einem konkreten Grund.",
+  "cta": "Bewerbungsmappe erstellen →",
+  "back": "Zur Bewerbungswerkstatt",
+  "alternates": {
+    "de": "de/anschreiben-mit-ki",
+    "en": "en/ai-cover-letter",
+    "sq": "sq/leter-aplikimi-me-ia"
+  },
+  "sections": [
+    {
+      "heading": "Drei Fragen vor dem Schreiben",
+      "html": "<p>Warum diese Aufgabe? Warum diese Firma? Welche nachgewiesene Erfahrung passt dazu? Schreibe diese Antworten in deinen eigenen Worten auf. Damit vermeidest du eine Bewerbung, die bei jeder Firma gleich klingt.</p>"
+    },
+    {
+      "heading": "Ein klarer Aufbau",
+      "html": "<p>Nenne die Position im Betreff. Beginne mit einem konkreten Bezug zur Stelle, zeige passende Erfahrungen anhand eines belegbaren Beispiels und schließe mit einem Gesprächswunsch. Ergänze keine geschätzten Zahlen und keine unbekannten Kontaktnamen.</p>"
+    },
+    {
+      "heading": "Anschreiben oder Motivationsschreiben?",
+      "html": "<p>Das Anschreiben zeigt vor allem deine Eignung für die Stelle. Ein separates Motivationsschreiben kann stärker auf persönliche Gründe, Ziele oder einen beruflichen Wechsel eingehen. Reiche beide nur ein, wenn es zur Ausschreibung passt.</p>"
+    },
+    {
+      "heading": "Vor dem Versand prüfen",
+      "html": "<ul><li>Stimmen Firmennamen, Position und Anrede?</li><li>Ist jede Erfahrung im Lebenslauf oder bestätigten Profil belegt?</li><li>Sind alle Platzhalter ersetzt?</li><li>Sind Lebenslauf und Anschreiben angehängt?</li><li>Ist die Empfängeradresse richtig?</li></ul><p>tafolliboost.com bereitet die E-Mail vor. Du prüfst und verschickst selbst.</p>"
+    }
+  ]
+}

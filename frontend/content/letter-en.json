@@ -1,0 +1,33 @@
+{
+  "route": "en/ai-cover-letter",
+  "language": "en",
+  "title": "AI cover letter: personal reasons and verified experience",
+  "description": "Connect your real experience with the job requirements. Use AI to draft a clear cover letter you can review and edit before sending.",
+  "eyebrow": "APPLICATION GUIDES",
+  "heading": "A cover letter with a specific reason.",
+  "cta": "Create your application →",
+  "back": "Back to the application studio",
+  "alternates": {
+    "de": "de/anschreiben-mit-ki",
+    "en": "en/ai-cover-letter",
+    "sq": "sq/leter-aplikimi-me-ia"
+  },
+  "sections": [
+    {
+      "heading": "Answer three questions first",
+      "html": "<p>Why this role? Why this company? Which verified experience makes you a good match? Write these answers in your own words to avoid a letter that could be sent to any employer.</p>"
+    },
+    {
+      "heading": "Use a clear structure",
+      "html": "<p>Name the role in the subject. Start with a specific connection to the opportunity, support your fit with a verifiable example, and end with an invitation to discuss your application. Do not estimate metrics or invent contact names.</p>"
+    },
+    {
+      "heading": "Cover letter or motivation letter?",
+      "html": "<p>A cover letter focuses on suitability for the role. A separate motivation letter can give more space to personal reasons, career goals or a change of direction. Submit both only when appropriate for the employer’s instructions.</p>"
+    },
+    {
+      "heading": "Check before sending",
+      "html": "<ul><li>Verify the company, position and greeting.</li><li>Check every experience against your resume or confirmed profile.</li><li>Replace all placeholders.</li><li>Attach the correct resume and cover letter.</li><li>Verify the recipient address.</li></ul><p>tafolliboost.com prepares an email draft. You review and send it yourself.</p>"
+    }
+  ]
+}

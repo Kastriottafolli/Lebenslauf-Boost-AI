@@ -12,52 +12,307 @@ import json
 import math
 import re
 from collections import Counter
-from typing import List, Optional
 
 from backend.config import get_settings
 
 settings = get_settings()
 
 # Slash NICHT erlaubt -> "m/w/d" / "eine/n" zerfallen in einzelne Tokens.
-_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9+#.-]*")
+_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüßËëÇç][A-Za-zÄÖÜäöüßËëÇç0-9+#.-]*")
 
 # Häufige Stoppwörter (DE + EN) + Stellenanzeigen-Floskeln,
 # damit die Keyword-/ATS-Analyse nur sinnvolle Begriffe zeigt.
-_STOPWORDS = set(
-    """
-    der die das und oder aber mit für von zu im in den dem des ein eine einen einem einer
-    ist sind war waren sein wird werden auf als auch nach bei aus an am vom zum zur durch
-    über unter wir sie ihr ich du er es man sich dass weil wenn dann noch nur sehr mehr
-    deine deinem deiner dein eng sowie bzw etc plus pluspunkt idealerweise wünschenswert
-    zusammen gemeinsam jeweils sowohl ausserdem außerdem zudem dabei hierbei darüber
-    suchen suchst gesucht bieten bietest fuehrst führst arbeitest optimierst übernimmst
-    kleines kleine kleiner großes große fundierter fundierte fundiertes fundiert
-    modernen moderne modernes erfahrung erfahrungen kenntnisse kenntnis aufgaben profil
-    the a an and or but with for of to in on at as by from is are was were be been being
-    this that these those you your we our they their it its he she his her i me my will shall
-    can could should would have has had do does did not no yes new used using use within across
-    you'll your role responsibilities requirements nice strong good experience experiences
-    """.split()
+_STOPWORDS = set("dhe ose me për nga në një të ti ju ne është janë kjo ky kërkojmë detyrat duhet do tek që si edhe".split()) | set(
+    [
+        "der",
+        "die",
+        "das",
+        "und",
+        "oder",
+        "aber",
+        "mit",
+        "für",
+        "von",
+        "zu",
+        "im",
+        "in",
+        "den",
+        "dem",
+        "des",
+        "ein",
+        "eine",
+        "einen",
+        "einem",
+        "einer",
+        "ist",
+        "sind",
+        "war",
+        "waren",
+        "sein",
+        "wird",
+        "werden",
+        "auf",
+        "als",
+        "auch",
+        "nach",
+        "bei",
+        "aus",
+        "an",
+        "am",
+        "vom",
+        "zum",
+        "zur",
+        "durch",
+        "über",
+        "unter",
+        "wir",
+        "sie",
+        "ihr",
+        "ich",
+        "du",
+        "er",
+        "es",
+        "man",
+        "sich",
+        "dass",
+        "weil",
+        "wenn",
+        "dann",
+        "noch",
+        "nur",
+        "sehr",
+        "mehr",
+        "deine",
+        "deinem",
+        "deiner",
+        "dein",
+        "eng",
+        "sowie",
+        "bzw",
+        "etc",
+        "plus",
+        "pluspunkt",
+        "idealerweise",
+        "wünschenswert",
+        "zusammen",
+        "gemeinsam",
+        "jeweils",
+        "sowohl",
+        "ausserdem",
+        "außerdem",
+        "zudem",
+        "dabei",
+        "hierbei",
+        "darüber",
+        "suchen",
+        "suchst",
+        "gesucht",
+        "bieten",
+        "bietest",
+        "fuehrst",
+        "führst",
+        "arbeitest",
+        "optimierst",
+        "übernimmst",
+        "kleines",
+        "kleine",
+        "kleiner",
+        "großes",
+        "große",
+        "fundierter",
+        "fundierte",
+        "fundiertes",
+        "fundiert",
+        "modernen",
+        "moderne",
+        "modernes",
+        "erfahrung",
+        "erfahrungen",
+        "kenntnisse",
+        "kenntnis",
+        "aufgaben",
+        "profil",
+        "the",
+        "a",
+        "an",
+        "and",
+        "or",
+        "but",
+        "with",
+        "for",
+        "of",
+        "to",
+        "in",
+        "on",
+        "at",
+        "as",
+        "by",
+        "from",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "this",
+        "that",
+        "these",
+        "those",
+        "you",
+        "your",
+        "we",
+        "our",
+        "they",
+        "their",
+        "it",
+        "its",
+        "he",
+        "she",
+        "his",
+        "her",
+        "i",
+        "me",
+        "my",
+        "will",
+        "shall",
+        "can",
+        "could",
+        "should",
+        "would",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "not",
+        "no",
+        "yes",
+        "new",
+        "used",
+        "using",
+        "use",
+        "within",
+        "across",
+        "you'll",
+        "your",
+        "role",
+        "responsibilities",
+        "requirements",
+        "nice",
+        "strong",
+        "good",
+        "experience",
+        "experiences",
+    ]
 )
 
 # Kurze, aber echte Fachbegriffe, die trotz Kürze als Keyword zählen.
 _TECH_SHORT = {
-    "sql", "git", "api", "css", "html", "php", "aws", "gcp", "ci", "cd", "qa", "ux",
-    "ui", "seo", "c++", "c#", "go", "erp", "crm", "kfz", "haccp", "ihk", "sap", "tüv",
-    "b2b", "b2c", "hr", "ki", "ml", "ai", "vr", "ar", "saas", "rest", "npm",
+    "sql",
+    "git",
+    "api",
+    "css",
+    "html",
+    "php",
+    "aws",
+    "gcp",
+    "ci",
+    "cd",
+    "qa",
+    "ux",
+    "ui",
+    "seo",
+    "c++",
+    "c#",
+    "go",
+    "erp",
+    "crm",
+    "kfz",
+    "haccp",
+    "ihk",
+    "sap",
+    "tüv",
+    "b2b",
+    "b2c",
+    "hr",
+    "ki",
+    "ml",
+    "ai",
+    "vr",
+    "ar",
+    "saas",
+    "rest",
+    "npm",
 }
 
 # Generische Stellenanzeigen-Wörter, die KEINE echten Keywords sind.
 _GENERIC = set(
-    """
-    stelle stellen position mitarbeiter mitarbeiterin mitarbeitende kollegen kolleginnen
-    team teams kunde kunden kundinnen unternehmen firma bereich abteilung standort
-    aufgabe aufgaben anforderung anforderungen voraussetzung voraussetzungen umfeld
-    rahmen monat monate jahr jahre woche tag tage zeit gehören gehört bringst bietest
-    freuen freust abgeschlossene abgeschlossenes erfolgreich gerne ideale idealer
-    umgang chance chancen möglichkeit möglichkeiten weiterbildung vollzeit teilzeit
-    festanstellung einsatz einstieg beginn person personen bewerbung bewerber
-    """.split()
+    [
+        "stelle",
+        "stellen",
+        "position",
+        "mitarbeiter",
+        "mitarbeiterin",
+        "mitarbeitende",
+        "kollegen",
+        "kolleginnen",
+        "team",
+        "teams",
+        "kunde",
+        "kunden",
+        "kundinnen",
+        "unternehmen",
+        "firma",
+        "bereich",
+        "abteilung",
+        "standort",
+        "aufgabe",
+        "aufgaben",
+        "anforderung",
+        "anforderungen",
+        "voraussetzung",
+        "voraussetzungen",
+        "umfeld",
+        "rahmen",
+        "monat",
+        "monate",
+        "jahr",
+        "jahre",
+        "woche",
+        "tag",
+        "tage",
+        "zeit",
+        "gehören",
+        "gehört",
+        "bringst",
+        "bietest",
+        "freuen",
+        "freust",
+        "abgeschlossene",
+        "abgeschlossenes",
+        "erfolgreich",
+        "gerne",
+        "ideale",
+        "idealer",
+        "umgang",
+        "chance",
+        "chancen",
+        "möglichkeit",
+        "möglichkeiten",
+        "weiterbildung",
+        "vollzeit",
+        "teilzeit",
+        "festanstellung",
+        "einsatz",
+        "einstieg",
+        "beginn",
+        "person",
+        "personen",
+        "bewerbung",
+        "bewerber",
+    ]
 )
 
 
@@ -65,8 +320,8 @@ def _is_tech_token(low: str) -> bool:
     return low in _TECH_SHORT or "+" in low or "#" in low or any(c.isdigit() for c in low)
 
 
-def tokenize(text: str) -> List[str]:
-    out: List[str] = []
+def tokenize(text: str) -> list[str]:
+    out: list[str] = []
     for w in _WORD_RE.findall(text or ""):
         w = w.strip(".-+#").lower()  # Satzzeichen am Rand entfernen
         if w:
@@ -79,14 +334,14 @@ def tokenize(text: str) -> List[str]:
 # ──────────────────────────────────────────────────────────────────────────
 def chunk_text(
     text: str,
-    chunk_size: Optional[int] = None,
-    overlap: Optional[int] = None,
-) -> List[str]:
+    chunk_size: int | None = None,
+    overlap: int | None = None,
+) -> list[str]:
     chunk_size = chunk_size or settings.rag_chunk_size
     overlap = overlap or settings.rag_chunk_overlap
 
     paragraphs = [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-    chunks: List[str] = []
+    chunks: list[str] = []
     current = ""
 
     for para in paragraphs:
@@ -111,7 +366,7 @@ def chunk_text(
 # ──────────────────────────────────────────────────────────────────────────
 # Index aufbauen (Embeddings, sonst TF-IDF)
 # ──────────────────────────────────────────────────────────────────────────
-def build_index(text: str, openai_key: Optional[str] = None) -> dict:
+def build_index(text: str, openai_key: str | None = None) -> dict:
     chunks = chunk_text(text)
     embeddings = None
     key = (openai_key or "").strip() or settings.openai_api_key
@@ -135,11 +390,11 @@ def index_mode(index: dict) -> str:
 def retrieve(
     index: dict,
     query: str,
-    top_k: Optional[int] = None,
-    openai_key: Optional[str] = None,
-) -> List[str]:
+    top_k: int | None = None,
+    openai_key: str | None = None,
+) -> list[str]:
     top_k = top_k or settings.rag_top_k
-    chunks: List[str] = index.get("chunks", [])
+    chunks: list[str] = index.get("chunks", [])
     if not chunks:
         return []
 
@@ -152,7 +407,7 @@ def retrieve(
             query_vec = OpenAIProvider(api_key=key).embed([query])[0]
             scored = [
                 (_cosine(query_vec, emb), chunk)
-                for chunk, emb in zip(chunks, embeddings)
+                for chunk, emb in zip(chunks, embeddings, strict=False)
             ]
             scored.sort(key=lambda x: x[0], reverse=True)
             return [c for _, c in scored[:top_k]]
@@ -162,7 +417,7 @@ def retrieve(
     return _tfidf_retrieve(chunks, query, top_k)
 
 
-def _tfidf_retrieve(chunks: List[str], query: str, top_k: int) -> List[str]:
+def _tfidf_retrieve(chunks: list[str], query: str, top_k: int) -> list[str]:
     docs_tokens = [tokenize(c) for c in chunks]
     df: Counter = Counter()
     for toks in docs_tokens:
@@ -171,7 +426,7 @@ def _tfidf_retrieve(chunks: List[str], query: str, top_k: int) -> List[str]:
     n_docs = len(chunks)
     idf = {t: math.log((n_docs + 1) / (c + 1)) + 1 for t, c in df.items()}
 
-    def vec(tokens: List[str]) -> dict:
+    def vec(tokens: list[str]) -> dict:
         if not tokens:
             return {}
         tf = Counter(tokens)
@@ -188,7 +443,7 @@ def _tfidf_retrieve(chunks: List[str], query: str, top_k: int) -> List[str]:
 # ──────────────────────────────────────────────────────────────────────────
 # Use-Case-spezifische Keyword-/ATS-Analyse
 # ──────────────────────────────────────────────────────────────────────────
-def extract_keywords(job_description: str, limit: int = 12) -> List[str]:
+def extract_keywords(job_description: str, limit: int = 12) -> list[str]:
     """Die wichtigsten, aussagekräftigen Begriffe der Stellenanzeige.
 
     Bevorzugt echte Fach-/Kompetenzbegriffe statt Füllwörter. Signale:
@@ -203,15 +458,15 @@ def extract_keywords(job_description: str, limit: int = 12) -> List[str]:
         if len(low) < 4 and not tech:  # kurze Wörter nur, wenn Fachbegriff
             continue
         score = 1.0
-        if tok[:1].isupper():           # großgeschrieben -> meist Nomen/Skill
+        if tok[:1].isupper():  # großgeschrieben -> meist Nomen/Skill
             score += 1.5
-        if tech:                        # Technologie/Zertifikat
+        if tech:  # Technologie/Zertifikat
             score += 1.5
         score += min(len(low), 12) / 12.0  # längere Begriffe leicht bevorzugen
         scores[low] = scores.get(low, 0.0) + score
 
     ranked = sorted(scores, key=lambda k: scores[k], reverse=True)
-    result: List[str] = []
+    result: list[str] = []
     for low in ranked:
         # Zusammengesetzte Dubletten vermeiden ("haccp" vs "haccp-standards").
         hit = next((i for i, a in enumerate(result) if a in low or low in a), None)
@@ -239,8 +494,8 @@ def analyze(job_description: str, cv_text: str) -> dict:
 # ──────────────────────────────────────────────────────────────────────────
 # Helfer
 # ──────────────────────────────────────────────────────────────────────────
-def _cosine(a: List[float], b: List[float]) -> float:
-    dot = sum(x * y for x, y in zip(a, b))
+def _cosine(a: list[float], b: list[float]) -> float:
+    dot = sum(x * y for x, y in zip(a, b, strict=False))
     na = math.sqrt(sum(x * x for x in a))
     nb = math.sqrt(sum(y * y for y in b))
     return dot / (na * nb) if na and nb else 0.0
@@ -260,7 +515,7 @@ def dumps(index: dict) -> str:
     return json.dumps(index, ensure_ascii=False)
 
 
-def loads(raw: Optional[str]) -> dict:
+def loads(raw: str | None) -> dict:
     if not raw:
         return {"chunks": [], "embeddings": None}
     return json.loads(raw)

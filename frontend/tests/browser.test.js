@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { analyze, demoCv, demoRefine, SAMPLE } from '../js/browser/demo.js';
 import { uploadCv, generateCv, refineCv, requestAI } from '../js/browser/api.js';
 import { createPdf, createDocx, exportDocument } from '../js/browser/export.js';
+import { designFor, fontFiles } from '../js/core/document-designs.js';
 import { PDFDocument } from 'pdf-lib';
 import mammoth from 'mammoth';
 const body={content:SAMPLE.de.cv,design:'modern',format:'pdf',filename:'Lebenslauf',photo:null};
@@ -52,21 +53,23 @@ test('provider adapters send the proper payload; failures never silently become 
         assert.equal(options.credentials,'omit');
         if(provider==='claude') {assert.match(url,/api.anthropic.com/);assert.equal(options.headers['x-api-key'],'test-only');assert.ok(payload.system);}
         else {assert.match(url,/api.openai.com/);assert.equal(options.headers.Authorization,'Bearer test-only');assert.equal(payload.store,false);}
-        return Response.json(provider==='claude'?{content:[{type:'text',text:'# Alex'}]}:{choices:[{message:{content:'# Alex'},finish_reason:'stop'}]});
+        return Response.json(provider==='claude'?{content:[{type:'text',text:'# Alex'}]}:{output:[{type:'message',content:[{type:'output_text',text:'# Alex'}]}]});
       };
       assert.equal((await requestAI(provider,'test-only',[{role:'user',content:'Test'}],'de','auto')).content,'# Alex');
     }
     globalThis.fetch=async()=>new Response('{}',{status:401});
-    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/Invalid API key/);
-    await assert.rejects(generateCv({job_description:SAMPLE.de.job,provider:'openai',language:'en',keys:{openai:'test-only'}}),/Invalid API key/);
-    globalThis.fetch=async()=>Response.json({choices:[{message:{content:'truncated'},finish_reason:'length'}]});
-    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/too long/);
+    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/401/g);
+    await assert.rejects(generateCv({job_description:SAMPLE.de.job,provider:'openai',language:'en',keys:{openai:'test-only'}}),/401/g);
+    globalThis.fetch=async()=>Response.json({status:'incomplete'});
+    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/incomplete/);
   } finally {globalThis.fetch=original;}
 });
 test('all six PDF designs export valid paginated documents with Unicode',async()=>{
   const font=await readFile('static/fonts/NotoSans-Regular.ttf');
   for(const design of ['modern','classic','minimal','sapphire','cobalt','slate']) {
-    const bytes=await createPdf({...body,design,content:body.content+'\n\n## Über mich\nGrüße — Fähigkeiten'},font);
+    const files=fontFiles(designFor(design));
+    const fonts={regular:await readFile('static/fonts/'+files.regular),bold:await readFile('static/fonts/'+files.bold)};
+    const bytes=await createPdf({...body,design,content:body.content+'\n\n## Über mich\nGrüße — Fähigkeiten'},fonts);
     assert.equal((await PDFDocument.load(bytes)).getPageCount(),1);
   }
   const long=await createPdf({...body,content:body.content+'\n'+('- Long résumé bullet with Grüße and experience.\n'.repeat(160))},font);
@@ -77,10 +80,21 @@ test('Word is a real readable DOCX that preserves resume text',async()=>{
   const result=await mammoth.extractRawText({buffer:Buffer.from(await blob.arrayBuffer())});
   assert.match(result.value,/Alex Beispiel/);
   assert.match(result.value,/25 %/);
-  assert.match(result.value,/Kenntnisse/);
+  assert.match(result.value,/Kenntnisse/i);
 });
 test('export validates formats and produces a safe filename',async()=>{
   await assert.rejects(exportDocument({...body,format:'exe'}),/Format/);
   const result=await exportDocument({...body,format:'docx',filename:'../../my:CV.docx'});
   assert.equal(result.filename,'.._.._my_CV.docx');
+});
+
+test('all six Word designs retain long Unicode content and literal markup',async()=>{
+  const content=body.content+'\n\n## Überblick / Përvoja\n'+Array.from({length:120},(_,i)=>`- Projekt ${i+1}: Grüße, aftësi dhe përvojë. <script>literal source</script>`).join('\n');
+  for(const design of ['modern','classic','minimal','sapphire','cobalt','slate']) {
+    const blob=await createDocx({...body,design,content});
+    const result=await mammoth.extractRawText({buffer:Buffer.from(await blob.arrayBuffer())});
+    assert.match(result.value,/Alex Beispiel/);
+    assert.match(result.value,/Projekt 120: Grüße, aftësi dhe përvojë/);
+    assert.match(result.value,/<script>literal source<\/script>/);
+  }
 });

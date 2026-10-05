@@ -34,4 +34,43 @@ jobs:
           pip install -r requirements.txt
           pip install pytest httpx
       - name: Run tests
+        env:
+          DATABASE_URL: sqlite:///./data/ci-test.db
+          ALLOW_SERVER_KEYS: "false"
         run: pytest backend/tests -v
+      - name: Audit Python runtime dependencies
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
+  web:
+    name: Browser tests and production build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run build
+        env:
+          SITE_URL: https://tafolliboost.com
+          PUBLIC_BASE_PATH: /
+      - run: npm audit --omit=dev
+
+  deployment_config:
+    name: Deployment configuration (Compose and Caddy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate production Compose configuration
+        run: |
+          cp .env.production.example .env.production
+          docker compose --env-file .env.production -f compose.production.yml config --quiet
+      - name: Validate Caddy configuration without starting a server
+        run: docker run --rm -e APP_DOMAIN=tafolliboost.com -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy adapt --config /etc/caddy/Caddyfile --validate > /dev/null

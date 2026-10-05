@@ -1,0 +1,33 @@
+{
+  "route": "sq/leter-aplikimi-me-ia",
+  "language": "sq",
+  "title": "Letër aplikimi me IA: motivim personal dhe përvojë e verifikuar",
+  "description": "Lidh përvojën tënde reale me kërkesat e punës. Krijo një letër të qartë që mund ta kontrollosh dhe redaktosh përpara dërgimit.",
+  "eyebrow": "UDHËZUES PËR APLIKIME",
+  "heading": "Një letër me një arsye konkrete.",
+  "cta": "Krijo aplikimin →",
+  "back": "Kthehu në studion e aplikimeve",
+  "alternates": {
+    "de": "de/anschreiben-mit-ki",
+    "en": "en/ai-cover-letter",
+    "sq": "sq/leter-aplikimi-me-ia"
+  },
+  "sections": [
+    {
+      "heading": "Përgjigju fillimisht tri pyetjeve",
+      "html": "<p>Pse ky pozicion? Pse kjo kompani? Cila përvojë e verifikuar të bën të përshtatshëm? Shkruaji përgjigjet me fjalët e tua që letra të lidhet me këtë mundësi konkrete.</p>"
+    },
+    {
+      "heading": "Përdor një strukturë të qartë",
+      "html": "<p>Përmend pozicionin në subjekt. Fillo me një lidhje konkrete me mundësinë, shpjego përshtatshmërinë me një shembull të verifikueshëm dhe përfundo me gatishmërinë për një bisedë. Mos shpik tregues ose emra kontakti.</p>"
+    },
+    {
+      "heading": "Letër aplikimi apo letër motivimi?",
+      "html": "<p>Letra e aplikimit fokusohet te përshtatshmëria për rolin. Një letër motivimi e veçantë jep më shumë hapësirë për arsyet personale dhe synimet profesionale. Dërgo të dyja vetëm kur përputhet me udhëzimet e punëdhënësit.</p>"
+    },
+    {
+      "heading": "Kontrollo përpara dërgimit",
+      "html": "<ul><li>Kontrollo kompaninë, pozicionin dhe përshëndetjen.</li><li>Krahaso çdo përvojë me CV-në dhe profilin e konfirmuar.</li><li>Plotëso të dhënat që mungojnë.</li><li>Bashkëngjit CV-në dhe letrën e duhur.</li><li>Kontrollo adresën e marrësit.</li></ul><p>tafolliboost.com përgatit draftin e email-it. Ti e kontrollon dhe e dërgon vetë.</p>"
+    }
+  ]
+}

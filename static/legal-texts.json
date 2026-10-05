@@ -1,0 +1,188 @@
+{
+  "de": {
+    "privacy": [
+      [
+        "Verantwortlicher und Kontakt",
+        "Verantwortlich für tafolliboost.com ist {operator_name}, {operator_address}. Fragen zum Datenschutz und Anträge zur Ausübung deiner Rechte kannst du an {operator_email} senden."
+      ],
+      [
+        "Welche Funktionen diese Erklärung umfasst",
+        "Diese Erklärung beschreibt Website, Bewerbungseditor, Nutzerkonten, Server-Import, interne Statistiken, Administration, lokale OCR und Boosty-Hilfe. Die Browser-Demo ohne Server verarbeitet Eingaben lokal. Im Serverbetrieb werden Uploads und Bewerbungsdaten auf dem App-Server verarbeitet. Die App veröffentlicht keine Bewerbungen und versendet keine Bewerbungs-E-Mails selbstständig."
+      ],
+      [
+        "Website, Hosting und technische Verbindungen",
+        "Beim Aufruf werden technisch unter anderem IP-Adresse, Zeitpunkt, angeforderte Adresse, Browserdaten und Verbindungsstatus an den Server übertragen. Das ist für Auslieferung und Sicherheit erforderlich (Art. 6 Abs. 1 lit. f DSGVO; Interesse an einem sicheren, verfügbaren Dienst). Die App schreibt keine IP-Adressen in ihre Nutzungsstatistik; Reverse-Proxy, Hostinganbieter und vorgelagerte Dienste können eigene technische Protokolle führen. Hostinganbieter: {hosting_name}. Serverland: {hosting_country}. Technische Protokollfristen: {hosting_retention}. Diese Angaben und der Auftragsverarbeitungsvertrag sind vor dem öffentlichen Betrieb festzulegen."
+      ],
+      [
+        "Nutzerkonto und gespeicherte Bewerbungen",
+        "Für die App ist ein Konto erforderlich. Wir verarbeiten E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes sowie ablaufende Anmeldetoken. Nach der Anmeldung speichern wir Profil, Stellenbeschreibung, Wünsche, Dokumente, Design, optionales Foto, Status, Notizen und Zeitpunkte automatisch. Boosty-Chattexte werden nicht gespeichert. Bei optionaler Anmeldung über Google, Apple, Facebook oder X verarbeiten wir die Anbieterkennung, eine stabile Nutzerkennung und, soweit übermittelt, deine E-Mail-Adresse. Ohne E-Mail verwenden wir bei X/Facebook eine interne Kontokennung; sie ist keine erreichbare E-Mail-Adresse. Zugangstoken der Anmeldedienste werden nur vorübergehend zur Prüfung verarbeitet. Anmeldevorgänge speichern einen einmaligen Prüfzustand für höchstens zehn Minuten. Rechtsgrundlage für Kontofunktionen ist Art. 6 Abs. 1 lit. b DSGVO. Anmeldung läuft nach sieben Tagen ab. Gespeicherte Bewerbungen und das Konto können gelöscht werden."
+      ],
+      [
+        "Lebensläufe, Stellenanzeigen und Dokumenterstellung",
+        "Wir verarbeiten die von dir hochgeladenen Dateien und eingegebenen Texte einschließlich Kontakt-, Ausbildungs- und Berufsangaben sowie gegebenenfalls ein Foto für Import, Bearbeitung und Export (Art. 6 Abs. 1 lit. b DSGVO). Serverdateien und Arbeitsdaten sind an deine geschützte Sitzung gebunden. Nachbearbeitung kann frühere Entwürfe und den zugehörigen Quellenkontext verwenden. Lade nur Informationen hoch, die du dafür verwenden darfst. Unnötige Gesundheitsdaten, Religion oder andere besonders geschützte Angaben gehören nicht in die Eingaben."
+      ],
+      [
+        "Stellenlink-Import",
+        "Beim Import ruft der Server die von dir eingegebene öffentliche HTTPS-Adresse auf. Die angesprochene Stellenplattform erhält dabei technische Verbindungsdaten des Servers und die angeforderte URL; dein Lebenslauf wird nicht an die Stellenplattform übermittelt. Verwende keine Links mit privaten Zugangstoken oder vertraulichen Parametern. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für den angeforderten Import."
+      ],
+      [
+        "OpenAI für Bewerbungsunterlagen",
+        "Nach deiner bestätigten Freigabe werden Profil, Lebenslaufquelle, Stellenbeschreibung, Wünsche und Bearbeitungsanweisung an OpenAI übermittelt, um Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail zu erstellen oder zu überarbeiten. Rechtsgrundlage für die optionale Weitergabe ist Art. 6 Abs. 1 lit. a DSGVO. Der Betreiber bezahlt und verwaltet den API-Zugang ausschließlich auf dem Server. Nutzer müssen keine Zugangsschlüssel hinterlegen. API-Antworten werden mit store=false angefordert; dies beseitigt nicht automatisch sämtliche Aufbewahrung bei OpenAI. OpenAI verarbeitet Daten nach seinen Verträgen und Datenschutzregeln. Die vor dem öffentlichen Betrieb zu prüfenden Auftragsverarbeitungs- und Drittlandregelungen bleiben erforderlich."
+      ],
+      [
+        "Boosty: Softwarehilfe mit OpenAI",
+        "Boosty beantwortet ausschließlich Fragen zur App und bietet freigegebene Navigationshinweise. Nach der Anmeldung übermittelt das Absenden einer Frage ausschließlich diese Frage und eine feste Software-Themenbeschreibung an OpenAI. Lebenslauf, Kontodaten, Dokumente und früherer Chat werden nicht beigefügt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für die angeforderte Softwarehilfe. Bitte keine Passwörter, Zugangsschlüssel oder personenbezogenen Lebenslaufdaten eingeben. Der zentrale Betreiber-Key wird dem Browser nicht offengelegt. Fragen werden nicht in der App-Datenbank gespeichert; der Chat bleibt bis zur Abmeldung bzw. zum Neuladen im Arbeitsspeicher. Zur Missbrauchs- und Kostenbegrenzung speichern wir bis zu 30 Tage kontobezogene Aufrufzähler, Modellnamen, Tokenanzahlen und Kostenschätzungen, ohne Prompts oder Antworten (Art. 6 Abs. 1 lit. f DSGVO). Kontolöschung entfernt die kontobezogenen Aufzeichnungen. Summierte Tagesbudgets ohne Personenbezug bleiben bis zu 30 Tage erhalten."
+      ],
+      [
+        "KI-Datenschutz und mögliche Drittlandverarbeitung",
+        "Bei OpenAI setzen unsere Serveraufrufe store=false. Das deaktiviert die normale Speicherung des Antwortzustands, garantiert aber keine sofortige Löschung aller Anbieterdaten. OpenAI beschreibt für API-Missbrauchsprotokolle grundsätzlich bis zu 30 Tage Speicherung und standardmäßig keine Nutzung für Modelltraining. Abweichende Projekt-/Vertragsregelungen sind möglich. Anbieter können Daten außerhalb des EWR verarbeiten. Vor Aktivierung eines Betreiber-KI-Projekts müssen Empfänger, Auftragsverarbeitung und gültiger Transfermechanismus nach Art. 44 ff. DSGVO, etwa eine einschlägige Angemessenheitsentscheidung oder Standardvertragsklauseln, konkret geprüft und dokumentiert werden. Ein API-Key allein ersetzt diese Prüfung nicht. Informationen zu den vereinbarten Garantien sind über {operator_email} erhältlich."
+      ],
+      [
+        "Browser-Speicher, Cookies und PWA",
+        "Für die Anmeldung verwendet die Server-Webseite ein technisch notwendiges, geschütztes Cookie candidaro_login mit maximal sieben Tagen Laufzeit. Sitzungs- und temporäre Anmeldekennungen dienen der angeforderten Funktion. Die installierbare PWA verwendet einen Service-Worker-Cache ausschließlich für öffentliche App-Dateien; API-Antworten, Adminseiten und persönliche Dokumente werden dort nicht gespeichert. Technisch notwendiger Zugriff auf Endgeräteinformationen erfolgt nach § 25 Abs. 2 Nr. 2 TDDDG; die anschließende personenbezogene Verarbeitung nach Art. 6 Abs. 1 lit. b bzw. f DSGVO. Es sind keine externen Werbetracker oder Marketing-Cookies eingebaut. Eine Einwilligung in optionale KI-Übermittlung ist davon getrennt."
+      ],
+      [
+        "OCR, Kamera, Dateien und E-Mail",
+        "OCR und Schriftdateien werden lokal aus der App geladen; ein externer OCR-Dienst erhält deine Bilder nicht. Kamera-/Dateiberechtigungen der mobilen App werden nur für ausdrücklich gewählte Funktionen genutzt. Exportdateien liegen auf deinem Gerät und können über dessen Freigabefunktion an einen von dir gewählten Dienst gelangen. Das Öffnen eines E-Mail-Entwurfs startet dein E-Mail-Programm. Für selbst gewählte Empfänger und deren Dienste gelten deren Datenschutzbedingungen. Eine Kontolöschung entfernt keine bereits exportierten oder selbst verschickten Dateien."
+      ],
+      [
+        "Interne Statistiken und Adminzugriffe",
+        "Für Betrieb, Fehlererkennung und Missbrauchsschutz werden feste Ereignisnamen, Zeitpunkt, Funktion, Statuscode und gegebenenfalls die Kontozuordnung gespeichert (Art. 6 Abs. 1 lit. f DSGVO; zuverlässiger Betrieb und Produktpflege). Diese Statistik enthält keine IP-Adressen, Frage-, Stellen- oder Dokumenttexte und keine API-Keys. Einzelereignisse werden nach 30 Tagen, tägliche Summen und Adminzugriffsprotokolle nach 90 Tagen bereinigt. Bei Kontolöschung wird der Personenbezug der Nutzungsereignisse entfernt. Der Betreiber kann bei Bedarf für Support und Administration auf gespeicherte Inhalte zugreifen. Inhaltliche Adminzugriffe sind protokolliert und durch gesonderte Anmeldung und MFA geschützt. Es ist keine öffentliche Datenbankansicht."
+      ],
+      [
+        "Speicherfristen und Sicherungen",
+        "Anonyme Serversitzungen einschließlich ihrer Uploads werden nach {retention_days} Tagen bereinigt. Gespeicherte Kontobewerbungen bleiben bis zur Löschung erhalten; abgelaufene Login- und Admin-Sitzungen werden bereinigt. Soweit gesetzliche Pflichten oder die Geltendmachung von Ansprüchen eine längere Aufbewahrung tatsächlich erfordern, wird die Verarbeitung entsprechend beschränkt. Sicherungsfrist: {backup_retention}. Backups können gelöschte Daten bis zum festgelegten Sicherungszyklus enthalten; sie sind gegen reguläre Nutzung zu sperren und bei Wiederherstellung müssen Löschungen erneut umgesetzt werden. Ein externer Backupdienst ist noch nicht eingerichtet."
+      ],
+      [
+        "Deine Rechte",
+        "Nach Maßgabe der gesetzlichen Voraussetzungen hast du Rechte auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung (Art. 18) und Datenübertragbarkeit (Art. 20 DSGVO). Gegen Verarbeitung auf Grundlage berechtigter Interessen kannst du aus Gründen deiner besonderen Situation Widerspruch einlegen (Art. 21). Eine Einwilligung kannst du jederzeit für die Zukunft widerrufen, indem du die KI-Funktion deaktivierst und uns kontaktierst. Der Widerruf betrifft nicht die Rechtmäßigkeit bereits erfolgter Verarbeitung. Schreibe an {operator_email}; wir beantworten Anträge grundsätzlich innerhalb eines Monats (Art. 12 Abs. 3 DSGVO). Wir können angemessene Angaben zur Identitätsprüfung benötigen, damit keine fremden Daten herausgegeben werden."
+      ],
+      [
+        "Beschwerderecht",
+        "Du kannst dich bei einer Datenschutzaufsichtsbehörde beschweren, insbesondere an deinem gewöhnlichen Aufenthaltsort, Arbeitsplatz oder am Ort des vermuteten Verstoßes (Art. 77 DSGVO). Für den derzeit hinterlegten Sitz in Mecklenburg-Vorpommern kommt der Landesbeauftragte für Datenschutz und Informationsfreiheit Mecklenburg-Vorpommern in Betracht: https://www.datenschutz-mv.de/. Die zuständige Behörde ist bei einer Änderung des Betreibersitzes neu zu bestimmen."
+      ],
+      [
+        "Freiwilligkeit und Entscheidungen",
+        "Du brauchst kein Konto und keine KI-Einwilligung für die lokale Demo. Ohne die für eine gewählte Funktion erforderlichen Angaben können wir diese Funktion nicht ausführen. Die Software trifft keine Einstellungsentscheidung und betreibt kein rechtlich wirksames automatisiertes Profiling nach Art. 22 DSGVO. Keyword-Abdeckung ist eine Wortüberschneidung, keine Einstellungschance. Prüfe alle KI-Texte vor einer Bewerbung."
+      ],
+      [
+        "Empfänger und Aktualisierung",
+        "Empfänger können der Betreiber, ein vertraglich eingebundener Hosting-/Backupdienst und nur bei deiner gewählten KI-Nutzung die genannten KI-Anbieter sein. Inhalte werden nicht veröffentlicht oder als Werbedaten verkauft. Maßgeblich sind die tatsächlich aktivierten Dienste und Verträge; die offenen Hosting-, Betreiber- und Transferangaben müssen vor öffentlichem Start vervollständigt werden. Stand: {updated}."
+      ]
+    ],
+    "legal": [
+      [
+        "Anbieterkennzeichnung nach § 5 DDG",
+        "tafolliboost.com\n{operator_name}\n{operator_address}"
+      ],
+      [
+        "Kontakt",
+        "E-Mail: {operator_email}\nBetreiberwebsite: https://www.tafolli.net\nApp: https://tafolliboost.com"
+      ],
+      [
+        "Inhalte und Bewerbungen",
+        "tafolliboost.com unterstützt die Erstellung und Bearbeitung von Bewerbungsunterlagen. Nutzer prüfen und versenden ihre Unterlagen selbst. Es werden keine Einstellungschancen oder rechtliche Eignung einzelner Dokumente zugesichert. Gesetzliche Ansprüche werden dadurch nicht ausgeschlossen."
+      ],
+      [
+        "Urheberrecht",
+        "Die Software, ihre Gestaltung und das Boosty-Maskottchen dürfen nur im Rahmen der geltenden Rechte verwendet werden. Rechte an verwendeten Bibliotheken und Drittbestandteilen bleiben bei deren jeweiligen Rechteinhabern. Deine hochgeladenen Inhalte und Bewerbungsunterlagen werden durch diesen Hinweis nicht zu Eigentum des Betreibers."
+      ],
+      [
+        "Datenschutz",
+        "Die Verarbeitung personenbezogener Daten wird auf der gesonderten Datenschutzseite erläutert. Kontakt für Datenschutzanfragen: {operator_email}."
+      ]
+    ]
+  },
+  "en": {
+    "privacy": [
+      [
+        "OpenAI & account login",
+        "An account is required. Optional Google, Apple, Facebook and X login processes a provider identifier, stable subject and email if available. Some services use an internal account alias instead of email. One-time login state expires after ten minutes. Verified profiles and job postings are sent to centrally funded OpenAI only after your permission. Help sends only the current question after sign-in, never your CV or chat history. The operator key never reaches the browser. Requests use store=false; this does not remove all provider retention. Account drafts and applications are saved automatically. Help text is not saved. AI call metadata, tokens and estimated costs are retained up to 30 days for abuse and cost prevention; aggregate daily budgets contain no personal data. Account deletion removes account-linked records. See the German notice for legal bases and provider/hosting requirements."
+      ],
+      [
+        "Controller and contact",
+        "{operator_name}, {operator_address}. Privacy requests: {operator_email}."
+      ],
+      [
+        "Website and account",
+        "The server receives IP address and technical connection details to deliver and secure the service (GDPR Art. 6(1)(f)). Hosting: {hosting_name}; country: {hosting_country}; logs: {hosting_retention}. Accounts store email, hashed passwords/recovery codes, expiring tokens and automatically saved drafts and applications after sign-in, including profile, job details, preferences, optional photo, design, documents, status, notes and creation/update timestamps. API keys and Boosty chat messages are never saved to the account (Art. 6(1)(b)). Login expires after seven days. Delete accounts and projects in the app."
+      ],
+      [
+        "Documents, AI and Boosty",
+        "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. Application AI sends sources, profile, posting and instructions to OpenAI only after permission (Art. 6(1)(a)). Boosty help sends only your current question and fixed help topics to OpenAI after sign-in and submission. No CV, account data or chat history is attached; questions are not saved in the app database. The central operator key never reaches the browser."
+      ],
+      [
+        "Provider processing",
+        "Our OpenAI server calls use store=false. This does not eliminate provider abuse logs: OpenAI generally describes up to 30 days and no default API training. Provider contracts may differ. OpenAI, Anthropic, Google, xAI and Microsoft may process outside the EEA. Actual processors, contracts and GDPR Art. 44 safeguards must be documented before launch. Ask {operator_email} for safeguards."
+      ],
+      [
+        "Storage and device access",
+        "Necessary login cookie candidaro_login lasts up to seven days; the PWA caches only public assets. No advertising trackers are installed. Necessary device storage relies on German TDDDG § 25(2)(2), subsequent processing on GDPR Art. 6(1)(b)/(f). Anonymous server sessions expire after {retention_days} days; saved projects remain until deleted. Usage events and help quotas: 30 days; aggregates/admin audit: 90 days. Backup retention: {backup_retention}. Exports and provider copies are not removed by deleting an account."
+      ],
+      [
+        "Statistics and administration",
+        "Internal statistics contain function, time, status and optional account association, never question/document text, keys or IP addresses. They support operation and abuse prevention (Art. 6(1)(f)). Account deletion removes the event association. Authorized operator access to content is protected by separate MFA and audited."
+      ],
+      [
+        "Rights and choice",
+        "An account is required. Optional Google, Apple, Facebook and X login processes a provider identifier, stable subject and email if available. Some services use an internal account alias instead of email. One-time login state expires after ten minutes. Verified profiles and job postings are sent to centrally funded OpenAI only after your permission. Help sends only the current question after sign-in, never your CV or chat history. The operator key never reaches the browser. Requests use store=false; this does not remove all provider retention. Account drafts and applications are saved automatically. Help text is not saved. AI call metadata, tokens and estimated costs are retained up to 30 days for abuse and cost prevention; aggregate daily budgets contain no personal data. Account deletion removes account-linked records. See the German notice for legal bases and provider/hosting requirements."
+      ]
+    ],
+    "legal": [
+      [
+        "Provider information under German DDG § 5",
+        "tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nOperator website: https://www.tafolli.net"
+      ],
+      [
+        "Service",
+        "You review and send your application documents yourself. The service does not guarantee employment outcomes. Copyright and third-party rights remain applicable. See the privacy notice for processing details."
+      ]
+    ]
+  },
+  "sq": {
+    "privacy": [
+      [
+        "OpenAI & hyrja në llogari",
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+      ],
+      [
+        "Përgjegjësi dhe kontakti",
+        "{operator_name}, {operator_address}. Kërkesat për privatësinë: {operator_email}."
+      ],
+      [
+        "Faqja dhe llogaria",
+        "Serveri merr IP-në dhe të dhëna teknike për ofrimin dhe sigurinë e shërbimit (neni 6(1)(f) GDPR). Hosting: {hosting_name}; vendi: {hosting_country}; afati i protokolleve: {hosting_retention}. Llogaritë ruajnë email-in, hash-et e fjalëkalimit dhe rikuperimit, token-at dhe draftet/aplikimet që ruhen automatikisht pas hyrjes (neni 6(1)(b)). Hyrja skadon pas shtatë ditësh. Llogaritë dhe projektet mund t’i fshish në aplikacion. Pas hyrjes, draftet dhe aplikimet ruhen automatikisht: profili, shpallja, dëshirat, fotoja opsionale, dizajni, dokumentet, statusi, shënimet dhe datat e krijimit/ndryshimit. Çelësat API dhe biseda me Boosty nuk ruhen në llogari."
+      ],
+      [
+        "Dokumentet, IA dhe Boosty",
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+      ],
+      [
+        "Ofruesit dhe transferimet",
+        "Kërkesat tona OpenAI përdorin store=false; kjo nuk përjashton protokollet e ofruesit kundër abuzimit. OpenAI përshkruan zakonisht deri në 30 ditë dhe pa trajnim standard me të dhëna API. Kontratat mund të ndryshojnë. OpenAI, Anthropic, Google, xAI dhe Microsoft mund të përpunojnë jashtë EEA-së. Kontratat dhe garancitë sipas nenit 44 GDPR duhen dokumentuar përpara publikimit. Pyet te {operator_email}."
+      ],
+      [
+        "Ruajtja dhe pajisja",
+        "Cookie i nevojshëm candidaro_login zgjat deri në shtatë ditë. PWA ruan vetëm skedarë publikë. Nuk ka gjurmues reklamash. Ruajtja e nevojshme mbështetet në §25(2)(2) TDDDG; përpunimi në nenin 6(1)(b)/(f) GDPR. Sesionet anonime pastrohen pas {retention_days} ditësh; projektet ruhen deri në fshirje. Ngjarjet dhe kufijtë e ndihmës: 30 ditë; statistikat ditore dhe auditimi admin: 90 ditë. Kopjet rezervë: {backup_retention}. Fshirja e llogarisë nuk fshin eksportet në pajisje ose kopjet tek ofruesit."
+      ],
+      [
+        "Statistikat dhe administrimi",
+        "Statistikat përmbajnë funksionin, kohën, rezultatin dhe lidhjen me llogarinë kur ekziston, jo tekstin e pyetjes, dokumentet, çelësat ose IP-në. Qëllimi është funksionimi dhe parandalimi i abuzimit (neni 6(1)(f)). Fshirja e llogarisë heq lidhjen e ngjarjeve. Qasja e operatorit mbrohet me MFA dhe protokollohet."
+      ],
+      [
+        "Të drejtat dhe zgjedhja",
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+      ]
+    ],
+    "legal": [
+      [
+        "Të dhënat e ofruesit sipas § 5 DDG gjerman",
+        "tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nFaqja e operatorit: https://www.tafolli.net"
+      ],
+      [
+        "Shërbimi",
+        "Ti kontrollon dhe dërgon vetë aplikimet. Shërbimi nuk garanton punësim. Të drejtat e autorit dhe të palëve të treta mbeten në fuqi. Shiko njoftimin e privatësisë për përpunimin e të dhënave."
+      ]
+    ]
+  }
+}

@@ -7,6 +7,10 @@ Die eigentliche Logik lebt in backend/services/ und backend/llm/.
 Start:  uvicorn backend.main:app --reload   (oder: python run.py)
 """
 
+import asyncio
+import logging
+from contextlib import asynccontextmanager, suppress
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -23,15 +27,48 @@ def create_app() -> FastAPI:
 
     # Tabellen beim Start anlegen — robust, egal ob via uvicorn oder TestClient.
     init_db()
+    from backend.cleanup import cleanup
 
-    app = FastAPI(title=settings.app_name, version=__version__)
+    cleanup()
+
+    @asynccontextmanager
+    async def lifespan(_app):
+        async def hourly_cleanup():
+            while True:
+                await asyncio.sleep(3600)
+                try:
+                    await asyncio.to_thread(cleanup)
+                except Exception:
+                    logging.getLogger(__name__).exception("Scheduled database cleanup failed")
+
+        task = asyncio.create_task(hourly_cleanup())
+        try:
+            yield
+        finally:
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+    app = FastAPI(
+        title=settings.app_name,
+        version=__version__,
+        lifespan=lifespan,
+        docs_url=None if settings.secure_cookies else "/docs",
+        redoc_url=None if settings.secure_cookies else "/redoc",
+        openapi_url=None if settings.secure_cookies else "/openapi.json",
+    )
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.allowed_origins.split(","),
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    from backend.security import install_security
+
+    install_security(app)
 
     for router in ALL_ROUTERS:
         app.include_router(router)

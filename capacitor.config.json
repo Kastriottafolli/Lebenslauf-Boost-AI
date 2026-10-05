@@ -1,0 +1,13 @@
+{
+  "appId": "net.tafolli.candidaro",
+  "appName": "Boosty AI",
+  "webDir": "_site",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}

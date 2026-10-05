@@ -1,0 +1,12 @@
+.git
+.env
+.env.production
+.review-venv
+.venv
+node_modules
+data
+_site
+android
+ios
+docs/video
+__pycache__

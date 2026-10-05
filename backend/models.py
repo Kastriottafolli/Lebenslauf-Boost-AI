@@ -14,7 +14,7 @@ Ausführliche Doku: docs/DATABASE.md
 """
 
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import (
     Boolean,
@@ -23,6 +23,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Integer,
     String,
     Text,
 )
@@ -43,15 +44,15 @@ class Session(Base):
     """
 
     __tablename__ = "sessions"
-    __table_args__ = (
-        CheckConstraint("language IN ('de','en')", name="ck_sessions_language"),
-    )
+    __table_args__ = (CheckConstraint("language IN ('de','en','sq')", name="ck_sessions_language"),)
 
+    owner_token_hash = Column(String(64), nullable=True)
+    owner_id = Column(String(36), nullable=True, index=True)
     id = Column(String(36), primary_key=True, default=_uuid)  # UUIDv4
     language = Column(String(2), nullable=False, default="de")  # 'de' | 'en'
     job_description = Column(Text, nullable=False, default="")  # eingefügte Stellenanzeige
     wishes = Column(Text, nullable=False, default="")  # optionale Nutzerwünsche
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     cv = relationship(
         "CVDocument",
@@ -59,12 +60,8 @@ class Session(Base):
         uselist=False,
         cascade="all, delete-orphan",
     )
-    generations = relationship(
-        "Generation", back_populates="session", cascade="all, delete-orphan"
-    )
-    messages = relationship(
-        "Message", back_populates="session", cascade="all, delete-orphan"
-    )
+    generations = relationship("Generation", back_populates="session", cascade="all, delete-orphan")
+    messages = relationship("Message", back_populates="session", cascade="all, delete-orphan")
 
 
 class CVDocument(Base):
@@ -89,14 +86,14 @@ class CVDocument(Base):
         String(36),
         ForeignKey("sessions.id", ondelete="CASCADE"),
         nullable=False,
-        unique=True,   # erzwingt 1:1
+        unique=True,  # erzwingt 1:1
         index=True,
     )
     filename = Column(String(255), nullable=False)  # Original-Dateiname des Uploads
     content = Column(Text, nullable=False)  # extrahierter Volltext (PDF/DOCX/TXT)
     index_json = Column(Text, nullable=False)  # RAG-Index, Struktur siehe Docstring
     photo_data_url = Column(Text, nullable=True)  # erkanntes Foto oder NULL
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     session = relationship("Session", back_populates="cv")
 
@@ -111,16 +108,17 @@ class Generation(Base):
     z. B. ["haccp", "menüplanung", "teamführung"].
     """
 
-    __tablename__ = "generations"
+    __tablename__ = "generations_v2"
     __table_args__ = (
-        CheckConstraint("provider IN ('claude','openai')", name="ck_generations_provider"),
+        CheckConstraint(
+            "provider IN ('claude','openai','gemini','grok','azure')",
+            name="ck_generations_provider",
+        ),
         CheckConstraint(
             "technique IN ('auto','few_shot','chain_of_thought','refine')",
             name="ck_generations_technique",
         ),
-        CheckConstraint(
-            "ats_score >= 0.0 AND ats_score <= 100.0", name="ck_generations_ats_range"
-        ),
+        CheckConstraint("ats_score >= 0.0 AND ats_score <= 100.0", name="ck_generations_ats_range"),
     )
 
     id = Column(String(36), primary_key=True, default=_uuid)
@@ -138,7 +136,7 @@ class Generation(Base):
     matched_keywords = Column(Text, nullable=False, default="[]")  # JSON-Array
     missing_keywords = Column(Text, nullable=False, default="[]")  # JSON-Array
     is_selected = Column(Boolean, nullable=False, default=False)  # reserviert (UI-Auswahl)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     session = relationship("Session", back_populates="generations")
 
@@ -152,9 +150,7 @@ class Message(Base):
     """
 
     __tablename__ = "messages"
-    __table_args__ = (
-        CheckConstraint("role IN ('user','assistant')", name="ck_messages_role"),
-    )
+    __table_args__ = (CheckConstraint("role IN ('user','assistant')", name="ck_messages_role"),)
 
     id = Column(String(36), primary_key=True, default=_uuid)
     session_id = Column(
@@ -165,6 +161,153 @@ class Message(Base):
     )
     role = Column(String(9), nullable=False)  # 'user' | 'assistant'
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
     session = relationship("Session", back_populates="messages")
+
+
+class Account(Base):
+    __tablename__ = "accounts"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    email = Column(String(254), nullable=False, unique=True)
+    password_hash = Column(Text, nullable=False)
+    recovery_hash = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class Login(Base):
+    __tablename__ = "logins"
+    token_hash = Column(String(64), primary_key=True)
+    account_id = Column(
+        String(36),
+        ForeignKey("accounts.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    expires_at = Column(DateTime, nullable=False)
+
+
+class Application(Base):
+    __tablename__ = "applications"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    session_id = Column(
+        String(36),
+        ForeignKey("sessions.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    title = Column(String(200), nullable=False)
+    status = Column(String(24), nullable=False, default="draft")
+    data_json = Column(Text, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class AdminAccess(Base):
+    __tablename__ = "admin_access"
+    account_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    enabled = Column(Boolean, nullable=False, default=False)
+    secret_cipher = Column(Text, nullable=False)
+    last_counter = Column(Integer, nullable=False, default=-1)
+    setup_hash = Column(String(64), nullable=True, unique=True)
+    setup_expires_at = Column(DateTime, nullable=True)
+
+
+class AdminLogin(Base):
+    __tablename__ = "admin_logins"
+    token_hash = Column(String(64), primary_key=True)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+
+class Activity(Base):
+    """Selected operation metadata only: never request bodies, keys or document text."""
+
+    __tablename__ = "activity"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    event = Column(String(64), nullable=False, index=True)
+    outcome = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class DailyMetric(Base):
+    __tablename__ = "daily_metrics"
+    day = Column(String(10), primary_key=True)
+    page_views = Column(Integer, nullable=False, default=0)
+    visits = Column(Integer, nullable=False, default=0)
+
+
+class AdminAudit(Base):
+    __tablename__ = "admin_audit"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    admin_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    action = Column(String(64), nullable=False)
+    subject_id = Column(String(36), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class AuthAttempt(Base):
+    __tablename__ = "auth_attempts"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    bucket = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class AssistantQuota(Base):
+    """Daily request counts only; no questions, keys or account association."""
+
+    __tablename__ = "assistant_quota"
+    day = Column(String(10), primary_key=True)
+    bucket = Column(String(36), primary_key=True)
+    calls = Column(Integer, nullable=False, default=0)
+
+
+class AICall(Base):
+    __tablename__ = "ai_calls"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    day = Column(String(10), nullable=False, index=True)
+    kind = Column(String(12), nullable=False)
+    model = Column(String(100), nullable=False)
+    status = Column(String(12), nullable=False, default="reserved")
+    reserved_microusd = Column(Integer, nullable=False)
+    input_tokens = Column(Integer, nullable=False, default=0)
+    output_tokens = Column(Integer, nullable=False, default=0)
+    actual_microusd = Column(Integer, nullable=False, default=0)
+
+
+class SocialIdentity(Base):
+    __tablename__ = "social_identities"
+    provider = Column(String(12), primary_key=True)
+    subject = Column(String(255), primary_key=True)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+
+class OAuthState(Base):
+    __tablename__ = "oauth_states"
+    state_hash = Column(String(64), primary_key=True)
+    browser_hash = Column(String(64), nullable=False)
+    provider = Column(String(12), nullable=False)
+    verifier = Column(String(128), nullable=False)
+    nonce = Column(String(64), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
+
+class AIBudget(Base):
+    __tablename__ = "ai_budgets"
+    day = Column(String(10), primary_key=True)
+    calls = Column(Integer, nullable=False, default=0)
+    reserved_microusd = Column(Integer, nullable=False, default=0)
+    actual_microusd = Column(Integer, nullable=False, default=0)
+    input_tokens = Column(Integer, nullable=False, default=0)
+    output_tokens = Column(Integer, nullable=False, default=0)

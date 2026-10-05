@@ -10,17 +10,16 @@ Implementierte Techniken:
   3. CHAIN-OF-THOUGHT (CoT)    -> chain_of_thought_{lang}.txt (strukturierte Analyse)
 """
 
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
-from typing import List
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "prompts"
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_template(name: str, language: str) -> str:
     """Lädt eine Prompt-Vorlage, z. B. load_template('system', 'de')."""
-    lang = language if language in ("de", "en") else "de"
+    lang = language if language in ("de", "en", "sq") else "de"
     return (PROMPTS_DIR / f"{name}_{lang}.txt").read_text(encoding="utf-8").strip()
 
 
@@ -33,13 +32,19 @@ def build_user_message(
     *,
     job_description: str,
     wishes: str,
-    cv_context: List[str],
+    cv_context: list[str],
     language: str,
     technique: str,
 ) -> str:
     """Baut die User-Nachricht inkl. Dynamic Context Injection."""
-    context = "\n\n---\n".join(cv_context) if cv_context else (
-        "(no CV text available)" if language == "en" else "(kein Lebenslauf-Text vorhanden)"
+    context = (
+        "\n\n---\n".join(cv_context)
+        if cv_context
+        else {
+            "de": "(kein Lebenslauf-Text vorhanden)",
+            "en": "(no CV text available)",
+            "sq": "(nuk ka tekst CV-je)",
+        }.get(language, "(kein Lebenslauf-Text vorhanden)")
     )
 
     technique_block = ""
@@ -48,7 +53,7 @@ def build_user_message(
     if technique in ("chain_of_thought", "auto"):
         technique_block += load_template("chain_of_thought", language) + "\n\n"
 
-    none_wishes = "(none)" if language == "en" else "(keine)"
+    none_wishes = {"de": "(keine)", "en": "(none)", "sq": "(asnjë)"}.get(language, "(keine)")
     return load_template("user_message", language).format(
         job_description=job_description.strip(),
         wishes=wishes.strip() or none_wishes,
