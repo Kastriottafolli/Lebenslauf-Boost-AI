@@ -12,11 +12,24 @@ from backend.services.legal_service import render as render_legal
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / '_site'
+
+
+def is_local_duplicate(name: str) -> bool:
+    # iCloud can add local conflict copies such as "branding 2.json" or
+    # "LICENSE 2". Keep those source files, but never publish them. Matching
+    # only the explicit copy suffix also works in release archives without Git.
+    return re.fullmatch(r'.+ 2(?:\.[^/]+)?', name) is not None
+
+
+def ignore_local_duplicates(directory: str, names: list[str]) -> list[str]:
+    return [name for name in names if is_local_duplicate(name)]
+
+
 if OUT.exists():
     shutil.rmtree(OUT)
 OUT.mkdir()
-shutil.copytree(ROOT / 'frontend/css', OUT / 'assets/css')
-shutil.copytree(ROOT / 'static', OUT / 'static')
+shutil.copytree(ROOT / 'frontend/css', OUT / 'assets/css', ignore=ignore_local_duplicates)
+shutil.copytree(ROOT / 'static', OUT / 'static', ignore=ignore_local_duplicates)
 css = OUT / 'assets/css/professional.css'
 css.write_text(css.read_text().replace("url('/static/", "url('../../static/"))
 branding = json.loads((ROOT / 'static/branding.json').read_text())
@@ -51,6 +64,8 @@ for route,kind in [('impressum','legal'),('datenschutz','privacy')]:
         (target / 'index.html').write_text(render_legal(kind,language,site_url=site,prefix='../' if language=='de' else '../../',static_routes=True))
     urls.append(route)
 for path in sorted((ROOT / 'frontend/content').rglob('*.json')):
+    if any(is_local_duplicate(part) for part in path.relative_to(ROOT / 'frontend/content').parts):
+        continue
     page = json.loads(path.read_text())
     route = page['route'].strip('/')
     target = OUT / route

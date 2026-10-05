@@ -6,3 +6,18 @@ export function jobDetails(description) {
  const email=field('E-Mail|Email|Kontakt-E-Mail|Contact email|Email i kontaktit');
  return {title,company,email:/^[\w.+-]+@[\w.-]+\.[a-z]{2,}$/i.test(email)?email:''};
 }
+
+export function validJobUrl(value) {
+ let url;
+ try { url=new URL(value.trim()); } catch { return null; }
+ if(!['https:','http:'].includes(url.protocol)||url.username||url.password||value.length>2000) return null;
+ return url.href;
+}
+
+// Never show server/parser internals when a job board blocks an import.
+export function jobImportProblem(error) {
+ if(error.status===429) return 'busy';
+ if(error.code==='API_TIMEOUT') return 'timeout';
+ if(error.status===401||error.status===403 && error.code==='ACCOUNT_REQUIRED') return 'login';
+ return 'blocked';
+}

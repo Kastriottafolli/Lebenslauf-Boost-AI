@@ -32,7 +32,10 @@ def render(
         "sq": "Ende pa vendosur — plotëso përpara publikimit",
     }[language]
     for name in ("hosting_name", "hosting_country", "hosting_retention", "backup_retention"):
-        data[name] = data.get(name) or pending
+        value = data.get(name)
+        if isinstance(value, dict):
+            value = value.get(language) or value.get("de")
+        data[name] = value or pending
     labels = {
         "de": (
             "Impressum",

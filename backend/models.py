@@ -26,6 +26,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -311,3 +312,95 @@ class AIBudget(Base):
     actual_microusd = Column(Integer, nullable=False, default=0)
     input_tokens = Column(Integer, nullable=False, default=0)
     output_tokens = Column(Integer, nullable=False, default=0)
+
+
+class CreditWallet(Base):
+    """Lifetime package balance; the welcome grant is never renewed by the date."""
+
+    __tablename__ = "credit_wallets"
+    __table_args__ = (CheckConstraint("available >= 0", name="ck_credit_wallet_available"),)
+    account_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    available = Column(Integer, nullable=False)
+    free_total = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class CreditLedger(Base):
+    """Immutable balance movements, scoped to an account and an idempotency key."""
+
+    __tablename__ = "credit_ledger"
+    __table_args__ = (
+        UniqueConstraint("account_id", "entry_key", name="uq_credit_ledger_entry"),
+        CheckConstraint("kind IN ('welcome','reserve','refund','purchase')", name="ck_credit_kind"),
+        CheckConstraint("delta != 0", name="ck_credit_delta"),
+    )
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    entry_key = Column(String(150), nullable=False)
+    kind = Column(String(12), nullable=False)
+    delta = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class PackageReservation(Base):
+    __tablename__ = "package_reservations"
+    __table_args__ = (
+        UniqueConstraint("account_id", "request_id", name="uq_package_request"),
+        CheckConstraint("status IN ('reserved','completed','refunded')", name="ck_package_status"),
+        CheckConstraint("attempt >= 1", name="ck_package_attempt"),
+    )
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    session_id = Column(
+        String(36), ForeignKey("sessions.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    project_id = Column(
+        String(36), ForeignKey("applications.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    request_id = Column(String(36), nullable=False)
+    fingerprint = Column(String(64), nullable=False)
+    status = Column(String(12), nullable=False, default="reserved")
+    attempt = Column(Integer, nullable=False, default=1)
+    response_json = Column(Text, nullable=True)
+    response_expires_at = Column(DateTime, nullable=True, index=True)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class PaymentOrder(Base):
+    __tablename__ = "payment_orders"
+    __table_args__ = (
+        UniqueConstraint("account_id", "request_id", name="uq_payment_request"),
+        UniqueConstraint("provider", "provider_order_id", name="uq_provider_order"),
+        CheckConstraint("provider IN ('stripe','paypal')", name="ck_payment_provider"),
+        CheckConstraint("status IN ('pending','paid')", name="ck_payment_status"),
+        CheckConstraint("amount_cents > 0 AND credits > 0", name="ck_payment_amount"),
+    )
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    request_id = Column(String(36), nullable=False)
+    provider = Column(String(12), nullable=False)
+    offer_id = Column(String(24), nullable=False)
+    amount_cents = Column(Integer, nullable=False)
+    credits = Column(Integer, nullable=False)
+    currency = Column(String(3), nullable=False, default="EUR")
+    provider_order_id = Column(String(200), nullable=True)
+    checkout_url = Column(Text, nullable=True)
+    status = Column(String(12), nullable=False, default="pending")
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class PaymentEvent(Base):
+    __tablename__ = "payment_events"
+    provider = Column(String(12), primary_key=True)
+    event_id = Column(String(200), primary_key=True)
+    order_id = Column(
+        String(36), ForeignKey("payment_orders.id", ondelete="CASCADE"), nullable=False
+    )
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))

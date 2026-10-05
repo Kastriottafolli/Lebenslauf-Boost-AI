@@ -70,6 +70,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build application container
         run: docker build --build-arg SITE_URL=https://tafolliboost.com --tag tafolliboost-ci .
+      - name: Verify non-root runtime imports
+        run: docker run --rm --network none --entrypoint python tafolliboost-ci -c "from backend.main import app; assert app.title"
       - name: Validate production Compose configuration
         run: |
           cp .env.production.example .env.production

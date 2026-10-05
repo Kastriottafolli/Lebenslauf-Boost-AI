@@ -150,7 +150,7 @@ def test_quota_persists_and_global_budget_survives_new_sessions(monkeypatch, tmp
     engine.dispose()
 
 
-def test_legal_pages_escape_operator_and_show_actual_pending_gaps():
+def test_legal_pages_escape_operator_and_show_configured_hosting():
     value = legal_service.render("privacy", "de", {"operator_name": "<script>bad</script>"})
     assert "<script>" not in value and "&lt;script&gt;" in value
     for text in [
@@ -161,8 +161,8 @@ def test_legal_pages_escape_operator_and_show_actual_pending_gaps():
         "§ 25",
         "OpenAI",
         "Speicherfristen",
-        "Noch nicht festgelegt",
-        "Entwurf",
+        "DreamHost, LLC",
+        "USA – Ashburn, Virginia",
     ]:
         assert text in value
     for language in ["de", "en", "sq"]:
@@ -172,6 +172,41 @@ def test_legal_pages_escape_operator_and_show_actual_pending_gaps():
     static = legal_service.render("privacy", "en", prefix="../../", static_routes=True)
     assert 'href="../../datenschutz/sq/"' in static
     assert 'href="../../datenschutz/"' in static
+
+
+def test_legal_pages_localize_hosting_and_backup_facts():
+    expected = {
+        "de": "Tägliche verschlüsselte Datenbanksicherungen",
+        "en": "Daily encrypted database backups",
+        "sq": "Kopjet e përditshme të enkriptuara",
+    }
+    for language, content in expected.items():
+        page = legal_service.render("privacy", language)
+        assert content in page
+        assert "Noch nicht festgelegt" not in page
+        assert "{'de':" not in page
+        assert "Entwurf: Betreiberangaben" not in page
+
+
+def test_legal_pages_keep_missing_hosting_facts_visible(monkeypatch):
+    read_text = Path.read_text
+
+    def missing_config(path, *args, **kwargs):
+        value = read_text(path, *args, **kwargs)
+        if path.name == "legal-config.json":
+            config = json.loads(value)
+            for name in ("hosting_name", "hosting_country", "hosting_retention", "backup_retention"):
+                config[name] = ""
+            return json.dumps(config)
+        return value
+
+    monkeypatch.setattr(Path, "read_text", missing_config)
+    for language, pending in {
+        "de": "Noch nicht festgelegt",
+        "en": "Not yet set",
+        "sq": "Ende pa vendosur",
+    }.items():
+        assert pending in legal_service.render("privacy", language)
 
 
 def test_public_shell_removes_repository_link_and_uses_boosty_favicon():

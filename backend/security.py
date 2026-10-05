@@ -67,11 +67,18 @@ def install_security(app):
                 "/api/assistant/config",
                 "/api/oauth/providers",
                 "/api/usage",
+                "/api/billing/pricing",
             }
+            # Only these exact callback endpoints bypass user login. They reject
+            # disabled payments and authenticate the provider signature themselves.
+            payment_webhook = (
+                path in {"/api/billing/webhooks/stripe", "/api/billing/webhooks/paypal"}
+                and request.method == "POST"
+            )
             allowed_public = path in public and not (
                 path == "/api/account" and request.method == "DELETE"
             )
-            if not allowed_public and not path.startswith("/api/oauth/"):
+            if not allowed_public and not payment_webhook and not path.startswith("/api/oauth/"):
                 from backend.database import SessionLocal
                 from backend.services.account_service import current_account
 

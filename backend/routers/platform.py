@@ -4,6 +4,7 @@ import json
 import re
 import secrets
 from datetime import UTC, datetime
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -48,6 +49,9 @@ class Job(BaseModel):
 class PackageRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     session_id: str
+    request_id: UUID | None = None
+    project_id: UUID | None = None
+    project_revision: int | None = Field(None, ge=1)
     profile: Profile
     job: Job
     wishes: str = Field("", max_length=4000)
@@ -103,7 +107,7 @@ def build_package(
             )
         if not req.consent:
             raise HTTPException(422, "Datenübermittlung an OpenAI zuerst bestätigen")
-        return applications.build_package(req, hosted_ai.Provider(db, account, "package"))
+        return hosted_ai.generate_package(db, account, req)
     return applications.build_package(req)
 
 
@@ -246,7 +250,12 @@ def recover(req: Recovery, db: DBSession = Depends(get_db)):
 @router.get("/api/account")
 def account_info(request: Request, db: DBSession = Depends(get_db)):
     account = accounts.current_account(db, request)
-    return {"email": account.email if account else None}
+    result = {"email": account.email if account else None}
+    if account and not db.get(AdminAccess, account.id):
+        from backend.services.billing_service import balance
+
+        result["billing"] = balance(db, account.id)
+    return result
 
 
 @router.post("/api/account/logout")
@@ -425,7 +434,10 @@ def update_project(
 
 @router.delete("/api/projects/{project_id}")
 def delete_project(project_id: str, request: Request, db: DBSession = Depends(get_db)):
+    from backend.services import billing_service
+
     project = owned_project(db, accounts.current_account(db, request, True), project_id)
+    billing_service.purge_cached_responses(db, project_ids=[project.id])
     db.delete(project)
     db.commit()
     return {"deleted": True}
@@ -435,7 +447,13 @@ def delete_project(project_id: str, request: Request, db: DBSession = Depends(ge
 def delete_session(
     session_id: str, db: DBSession = Depends(get_db), x_session_token: str = Header("")
 ):
+    from backend.services import billing_service
+
     sess = session_service.get_session(db, session_id, x_session_token)
+    project_ids = [
+        project_id for (project_id,) in db.query(Application.id).filter_by(session_id=sess.id).all()
+    ]
+    billing_service.purge_cached_responses(db, session_ids=[sess.id], project_ids=project_ids)
     db.query(Application).filter_by(session_id=sess.id).delete()
     db.delete(sess)
     db.commit()
