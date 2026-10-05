@@ -49,6 +49,26 @@ test("job import provides actionable categories without exposing raw server erro
   assert.equal(jobImportProblem({ status: 500, message: "parser internals" }), "blocked");
 });
 
+test("job import recognizes safe public HTTP 422 timeout messages in German and English", () => {
+  for(const message of [
+    "StepStone antwortet nicht rechtzeitig. Versuche den Link erneut oder öffne die Anzeige im Browser und kopiere ihren Stellentext / portal timed out; retry the link or paste the job text.",
+    "portal timed out; retry the link or paste the job text.",
+    "Import-Zeitüberschreitung / import timed out"
+  ]) assert.equal(jobImportProblem({status:422,message}),"timeout");
+});
+
+test("job import keeps unrelated, unsafe and non-422 errors out of the public timeout category", () => {
+  for(const error of [
+    {status:500,message:"portal timed out; retry the link or paste the job text."},
+    {status:422,message:"socket timed out"},
+    {status:422,message:"<script>portal timed out</script>"},
+    {status:422,message:"portal timed out\nTraceback: private parser details"},
+    {status:422,message:"portal timed out "+"x".repeat(500)},
+    {status:422,message:{text:"portal timed out"}},
+    {status:422,message:"StepStone: Die Verbindung zur Stellenanzeige konnte nicht abgeschlossen werden."}
+  ]) assert.equal(jobImportProblem(error),"blocked");
+});
+
 test("a generated package adopts its server-owned history ID and exact revision", () => {
   const state={projectId:'old-draft',projectRevision:9};
   const result={project_id:'c4e82d3e-a206-4d64-9931-e8bdf2b3bc14',project_revision:1};

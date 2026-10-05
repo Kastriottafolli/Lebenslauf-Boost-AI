@@ -18,6 +18,10 @@ export function validJobUrl(value) {
 export function jobImportProblem(error) {
  if(error.status===429) return 'busy';
  if(error.code==='API_TIMEOUT') return 'timeout';
+ const message=typeof error.message==='string'?error.message:'';
+ // Recognize the backend's short public timeout wording without rendering its message.
+ const cleanMessage=message.length>0&&message.length<=500&&!/[<>\u0000-\u001f\u007f]/.test(message);
+ if(error.status===422&&cleanMessage&&/\b(?:antwortet nicht rechtzeitig|(?:portal|import) timed out)\b/i.test(message)) return 'timeout';
  if(error.status===401||error.status===403 && error.code==='ACCOUNT_REQUIRED') return 'login';
  return 'blocked';
 }
