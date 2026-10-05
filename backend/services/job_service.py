@@ -10,6 +10,7 @@ import time
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlparse
 
+import certifi
 from fastapi import HTTPException
 
 
@@ -93,12 +94,20 @@ def public_address(url):
 
 class PinnedHTTPSConnection(http.client.HTTPSConnection):
     def __init__(self, host, address, timeout):
-        super().__init__(host, timeout=timeout, context=ssl.create_default_context())
+        # macOS Python installations may have no usable system CA bundle. Add
+        # Mozilla's roots while retaining configured system/private trust roots.
+        context = ssl.create_default_context()
+        context.load_verify_locations(cafile=certifi.where())
+        super().__init__(host, timeout=timeout, context=context)
         self.address = address
 
     def connect(self):
         sock = socket.create_connection((self.address, 443), self.timeout)
-        self.sock = self._context.wrap_socket(sock, server_hostname=self.host)
+        try:
+            self.sock = self._context.wrap_socket(sock, server_hostname=self.host)
+        except Exception:
+            sock.close()
+            raise
 
 
 def fetch_page(url):
@@ -150,6 +159,13 @@ def fetch_page(url):
             if len(data) > 2 * 1024 * 1024:
                 raise HTTPException(413, "Webseite zu groß / page too large")
             return data.decode("utf-8", errors="replace"), url
+        except ssl.SSLCertVerificationError:
+            raise HTTPException(
+                422,
+                "Das HTTPS-Zertifikat der Stellenwebseite konnte nicht geprüft werden. "
+                "Bitte die Adresse prüfen oder den Stellentext einfügen / "
+                "could not verify the job website's HTTPS certificate.",
+            ) from None
         except (OSError, http.client.HTTPException):
             raise HTTPException(
                 422,
