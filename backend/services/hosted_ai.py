@@ -99,7 +99,7 @@ class Provider:
         s = get_settings()
         if not configured():
             raise HTTPException(503, "KI derzeit nicht eingerichtet / AI currently unavailable")
-        maximum = {"package": 10000, "refine": 4000, "help": 256}[self.kind]
+        maximum = {"package": 10000, "refine": 4000, "help": 700}[self.kind]
         body = {
             "model": self.model,
             "input": [{"role": "system", "content": system}, *messages],

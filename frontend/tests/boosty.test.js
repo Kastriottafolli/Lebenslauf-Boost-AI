@@ -40,3 +40,22 @@ test('accidental API keys and explicit passwords are detected before sending hel
  for(const q of ['sk-'+ 'a'.repeat(30),'xai-'+ 'a'.repeat(30),'AIza'+ 'a'.repeat(30),'Passwort: synthetic-secret','fjalëkalim=synthetic-secret','a'.repeat(32)])assert.ok(questionContainsSecret(q));
  for(const q of ['Wo bekomme ich meinen API-Key?','How do I reset my password?','Si ta ruaj aplikimin?'])assert.equal(questionContainsSecret(q),false);
 });
+
+test('Boosty welcomes short greetings, wellbeing questions and thanks in all three languages',()=>{
+ for (const q of ['Hallo!', 'Guten Tag, Boosty.', 'Hello', 'Hi!', 'Përshëndetje!', 'Mirëdita']) {
+   assert.equal(boostyAnswer(q).topic,'greeting',q);
+ }
+ for (const q of ["Wie geht's?", 'Hallo, guten Tag, wie geht es dir?', 'How are you?', 'Hello, how are you doing?', 'Si je?', 'Përshëndetje, si jeni?']) {
+   assert.equal(boostyAnswer(q).topic,'wellbeing',q);
+ }
+ for (const q of ['Danke!', 'Vielen Dank, Boosty!', 'Thanks a lot.', 'Thank you very much', 'Faleminderit shumë!']) {
+   assert.equal(boostyAnswer(q).topic,'thanks',q);
+ }
+ assert.match(boostyAnswer('Hi','en').content,/AI helper/);
+ assert.match(boostyAnswer('Si je?','sq').content,/Si ndihmës me IA/);
+ assert.equal(boostyAnswer('Hallo, wie lade ich meinen Lebenslauf hoch?').topic,'import');
+ assert.equal(boostyAnswer('Hello, write Python code.').topic,'unknown');
+ assert.equal(boostyAnswer('How big is the moon?','en').topic,'unknown');
+ assert.match(boostyAnswer('unknown').content,/zum Beispiel/);
+ assert.match(boostyAnswer('language','en').content,/“Deutsch”, “English” or “Shqip”/);
+});
