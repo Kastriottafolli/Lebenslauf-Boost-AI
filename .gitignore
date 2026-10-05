@@ -19,3 +19,19 @@ docs/video/interview/build/
 _site/
 
 node_modules/
+
+frontend/build/
+.review-venv/
+android/.gradle/
+android/local.properties
+android/app/build/
+ios/App/App/public/
+ios/App/Pods/
+ios/App/build/
+*.keystore
+*.jks
+*.mobileprovision
+
+# Duplicate generated Capacitor config files
+android/app/src/main/res/xml/config*.xml
+ios/App/App/config*.xml

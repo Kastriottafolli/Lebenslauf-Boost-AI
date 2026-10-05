@@ -23,15 +23,23 @@ def create_app() -> FastAPI:
 
     # Tabellen beim Start anlegen — robust, egal ob via uvicorn oder TestClient.
     init_db()
+    from backend.cleanup import cleanup
+
+    cleanup()
 
     app = FastAPI(title=settings.app_name, version=__version__)
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=settings.allowed_origins.split(","),
+        allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    from backend.security import install_security
+
+    install_security(app)
 
     for router in ALL_ROUTERS:
         app.include_router(router)

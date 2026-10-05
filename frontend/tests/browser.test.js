@@ -52,15 +52,15 @@ test('provider adapters send the proper payload; failures never silently become 
         assert.equal(options.credentials,'omit');
         if(provider==='claude') {assert.match(url,/api.anthropic.com/);assert.equal(options.headers['x-api-key'],'test-only');assert.ok(payload.system);}
         else {assert.match(url,/api.openai.com/);assert.equal(options.headers.Authorization,'Bearer test-only');assert.equal(payload.store,false);}
-        return Response.json(provider==='claude'?{content:[{type:'text',text:'# Alex'}]}:{choices:[{message:{content:'# Alex'},finish_reason:'stop'}]});
+        return Response.json(provider==='claude'?{content:[{type:'text',text:'# Alex'}]}:{output:[{type:'message',content:[{type:'output_text',text:'# Alex'}]}]});
       };
       assert.equal((await requestAI(provider,'test-only',[{role:'user',content:'Test'}],'de','auto')).content,'# Alex');
     }
     globalThis.fetch=async()=>new Response('{}',{status:401});
-    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/Invalid API key/);
-    await assert.rejects(generateCv({job_description:SAMPLE.de.job,provider:'openai',language:'en',keys:{openai:'test-only'}}),/Invalid API key/);
-    globalThis.fetch=async()=>Response.json({choices:[{message:{content:'truncated'},finish_reason:'length'}]});
-    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/too long/);
+    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/401/g);
+    await assert.rejects(generateCv({job_description:SAMPLE.de.job,provider:'openai',language:'en',keys:{openai:'test-only'}}),/401/g);
+    globalThis.fetch=async()=>Response.json({status:'incomplete'});
+    await assert.rejects(requestAI('openai','test-only',[],'en','auto'),/incomplete/);
   } finally {globalThis.fetch=original;}
 });
 test('all six PDF designs export valid paginated documents with Unicode',async()=>{

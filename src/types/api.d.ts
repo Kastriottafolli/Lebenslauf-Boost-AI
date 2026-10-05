@@ -9,7 +9,7 @@
  */
 
 export type Language = "de" | "en";
-export type Provider = "claude" | "openai";
+export type Provider = "claude" | "openai" | "gemini" | "grok" | "azure";
 export type ProviderChoice = Provider | "compare";
 export type Technique = "auto" | "few_shot" | "chain_of_thought";
 export type ExportFormat = "pdf" | "docx";
@@ -20,6 +20,9 @@ export type RagMode = "embeddings" | "tfidf";
 export interface ApiKeys {
   openai?: string;
   anthropic?: string;
+  gemini?: string;
+  grok?: string;
+  azure?: string;
 }
 
 /** GET /api/status */
@@ -33,6 +36,7 @@ export interface StatusOut {
 /** POST /api/session */
 export interface SessionOut {
   session_id: string;
+  session_token: string;
   language: Language;
   has_cv: boolean;
 }
@@ -45,6 +49,7 @@ export interface UploadOut {
   chunks: number;
   rag_mode: RagMode;
   preview: string;
+  source_text: string;
   /** data:image/jpeg;base64,… (aus dem CV extrahiert) */
   photo: string | null;
 }
@@ -107,3 +112,25 @@ export interface ExportRequest {
   /** data:image/…;base64,… oder null */
   photo?: string | null;
 }
+
+
+export interface CandidateProfile {
+  name: string; email: string; phone: string; location: string; headline: string;
+  experience: string; education: string; skills: string; languages: string;
+  source_text: string; confirmed: boolean;
+}
+export interface JobPosting {
+  description: string; title: string; company: string; recipient: string;
+  email: string; url: string;
+}
+export type ApplicationDocument = "cv" | "cover_letter" | "motivation_letter" | "email";
+export interface PackageRequest {
+  session_id: string; profile: CandidateProfile; job: JobPosting;
+  language: Language; provider: Provider; model: string; endpoint?: string;
+  keys: ApiKeys; wishes: string; demo: boolean;
+}
+export interface PackageResponse {
+  documents: Record<ApplicationDocument, string>; is_demo: boolean;
+  provider: Provider; model: string; analysis: KeywordAnalysis;
+}
+export type ApplicationStatus = "draft" | "ready" | "sent" | "interview" | "offer" | "rejected";

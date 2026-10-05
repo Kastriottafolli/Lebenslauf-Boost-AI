@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-10-05",
+  "providers": [
+    {"id":"openai","name":"OpenAI","key":"openai","default_model":"gpt-6.1-sol","models":["gpt-6.1-sol","gpt-6-luna","gpt-6-astra"],"key_url":"https://platform.openai.com/api-keys","docs_url":"https://developers.openai.com/api/docs/models","protocol":"responses","endpoint":"https://api.openai.com/v1/responses"},
+    {"id":"claude","name":"Anthropic Claude","key":"anthropic","default_model":"claude-sonnet-5-5","models":["claude-sonnet-5-5","claude-haiku-4-5"],"key_url":"https://platform.claude.com/settings/keys","docs_url":"https://platform.claude.com/docs/en/models/overview","protocol":"messages","endpoint":"https://api.anthropic.com/v1/messages"},
+    {"id":"gemini","name":"Google Gemini","key":"gemini","default_model":"gemini-3.8-flash","models":["gemini-3.8-flash","gemini-3.5-flash-lite"],"key_url":"https://aistudio.google.com/api-keys","docs_url":"https://ai.google.dev/gemini-api/docs/models","protocol":"gemini","endpoint":"https://generativelanguage.googleapis.com/v1beta/models/"},
+    {"id":"grok","name":"xAI Grok","key":"grok","default_model":"grok-4.7","models":["grok-4.7"],"key_url":"https://console.x.ai/","docs_url":"https://docs.x.ai/developers/models","protocol":"responses","endpoint":"https://api.x.ai/v1/responses"},
+    {"id":"azure","name":"Microsoft Azure OpenAI","key":"azure","default_model":"","models":[],"key_url":"https://ai.azure.com/","docs_url":"https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/responses","protocol":"responses","endpoint":""}
+  ]
+}

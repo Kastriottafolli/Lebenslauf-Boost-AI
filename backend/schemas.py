@@ -1,6 +1,6 @@
 """Pydantic-Schemas für Requests und Responses (strukturierte Validierung)."""
 
-from typing import List, Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -8,12 +8,16 @@ from pydantic import BaseModel, Field
 class ApiKeys(BaseModel):
     """Vom Nutzer in der UI eingegebene API-Keys (überschreiben Server-Keys)."""
 
-    openai: Optional[str] = ""
-    anthropic: Optional[str] = ""
+    openai: str | None = ""
+    anthropic: str | None = ""
+    gemini: str | None = ""
+    grok: str | None = ""
+    azure: str | None = ""
 
 
 class SessionOut(BaseModel):
     session_id: str
+    session_token: str = ""
     language: str
     has_cv: bool
 
@@ -25,23 +29,27 @@ class UploadOut(BaseModel):
     chunks: int
     rag_mode: str  # "embeddings" | "tfidf"
     preview: str
-    photo: Optional[str] = None  # data:image/jpeg;base64,... (aus CV extrahiert)
+    photo: str | None = None
+    source_text: str = ""
+    profile: dict = Field(default_factory=dict)
 
 
 class GenerateRequest(BaseModel):
     session_id: str
-    job_description: str = Field(..., min_length=10)
-    wishes: Optional[str] = ""
-    provider: Literal["claude", "openai", "compare"] = "claude"
+    job_description: str = Field(..., min_length=10, max_length=20000)
+    wishes: str | None = Field("", max_length=4000)
+    provider: Literal["claude", "openai", "gemini", "grok", "azure", "compare"] = "claude"
     language: Literal["de", "en"] = "de"
     technique: Literal["auto", "few_shot", "chain_of_thought"] = "auto"
-    keys: Optional[ApiKeys] = None
+    keys: ApiKeys | None = None
+    model: str | None = Field(None, max_length=100)
+    endpoint: str | None = Field(None, max_length=300)
 
 
 class KeywordAnalysis(BaseModel):
     ats_score: float
-    matched_keywords: List[str]
-    missing_keywords: List[str]
+    matched_keywords: list[str]
+    missing_keywords: list[str]
 
 
 class GenerationOut(BaseModel):
@@ -56,28 +64,30 @@ class GenerationOut(BaseModel):
 
 class GenerateResponse(BaseModel):
     mode: str  # "single" | "compare"
-    results: List[GenerationOut]
-    winner_provider: Optional[str] = None
-    recommendation: Optional[str] = None
+    results: list[GenerationOut]
+    winner_provider: str | None = None
+    recommendation: str | None = None
 
 
 class RefineRequest(BaseModel):
     session_id: str
-    instruction: str = Field(..., min_length=2)
-    current_content: Optional[str] = None
-    provider: Literal["claude", "openai"] = "claude"
+    instruction: str = Field(..., min_length=2, max_length=4000)
+    current_content: str | None = Field(None, max_length=60000)
+    provider: Literal["claude", "openai", "gemini", "grok", "azure"] = "claude"
     language: Literal["de", "en"] = "de"
-    keys: Optional[ApiKeys] = None
+    keys: ApiKeys | None = None
+    model: str | None = Field(None, max_length=100)
+    endpoint: str | None = Field(None, max_length=300)
 
 
 class ExportRequest(BaseModel):
-    session_id: Optional[str] = None
-    content: str = Field(..., min_length=10)
+    session_id: str | None = None
+    content: str = Field(..., min_length=10, max_length=60000)
     format: Literal["pdf", "docx"] = "pdf"
     design: Literal["modern", "classic", "minimal", "sapphire", "cobalt", "slate"] = "modern"
     language: Literal["de", "en"] = "de"
-    filename: Optional[str] = "Lebenslauf"
-    photo: Optional[str] = None  # data:image/...;base64,... oder leer/None
+    filename: str | None = "Lebenslauf"
+    photo: str | None = None  # data:image/...;base64,... oder leer/None
 
 
 class StatusOut(BaseModel):

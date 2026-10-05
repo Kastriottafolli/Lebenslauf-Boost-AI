@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List
 
 
 @dataclass
@@ -22,7 +21,7 @@ class LLMProvider(ABC):
     def generate(
         self,
         system: str,
-        messages: List[Dict[str, str]],
+        messages: list[dict[str, str]],
         max_tokens: int = 2200,
         temperature: float = 0.4,
     ) -> LLMResult: ...

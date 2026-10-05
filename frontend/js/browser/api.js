@@ -30,40 +30,11 @@ function systemPrompt(language, technique = 'auto') {
   if (technique === 'chain_of_thought' || technique === 'auto') text += ' Before drafting, privately identify job requirements, match them against evidence in the resume, and check every claim. Return only the final resume.';
   return text;
 }
-export async function requestAI(provider, key, messages, language, technique) {
-  const claude = provider === 'claude';
-  const model = claude ? 'claude-sonnet-4-6' : 'gpt-4o-mini';
-  const endpoint = claude ? 'https://api.anthropic.com/v1/messages' : 'https://api.openai.com/v1/chat/completions';
-  const system = systemPrompt(language, technique);
-  const body = claude
-    ? { model, max_tokens: 6000, system, messages }
-    : { model, max_tokens: 6000, store: false, messages: [{ role: 'system', content: system }, ...messages] };
-  const headers = claude
-    ? { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' }
-    : { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` };
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 90000);
-  try {
-    const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal, credentials: 'omit', referrerPolicy: 'no-referrer' });
-    if (!response.ok) {
-      const cause = response.status === 401 || response.status === 403
-        ? errorText('API-Key ungültig oder Modellzugriff fehlt.', 'Invalid API key or model access denied.', language)
-        : response.status === 429
-          ? errorText('API-Guthaben oder Anfragelimit prüfen.', 'Check API credits or rate limits.', language)
-          : errorText('Anbieter-Anfrage fehlgeschlagen. Bitte erneut versuchen.', 'Provider request failed. Please try again.', language);
-      throw new Error(`${provider.toUpperCase()} (${response.status}): ${cause}`);
-    }
-    const data = await response.json();
-    if ((claude && data.stop_reason === 'max_tokens') || (!claude && data.choices?.[0]?.finish_reason === 'length')) throw new Error(errorText('KI-Ausgabe zu lang. Bitte den Ausgangstext kürzen und erneut versuchen.', 'AI output too long. Shorten the source text and try again.', language));
-    const content = (claude ? data.content?.filter(x=>x.type === 'text').map(x=>x.text).join('\n') : data.choices?.[0]?.message?.content)?.trim();
-    if (!content) throw new Error(errorText('Der Anbieter hat keinen Text geliefert.', 'The provider returned no text.', language));
-    return { content: content.replace(/^```(?:markdown)?\s*\n|\n```$/g, ''), model };
-  } catch (e) {
-    if (e.name === 'AbortError') throw new Error(errorText('Zeitüberschreitung beim KI-Anbieter. Bitte erneut versuchen.', 'AI request timed out. Please try again.', language));
-    if (e instanceof TypeError) throw new Error(errorText('KI-Anbieter nicht erreichbar. Internetverbindung und Browser-Zugriff prüfen; ohne Key funktioniert der Demo-Modus.', 'Cannot reach AI provider. Check your connection and browser access; demo mode works without a key.', language));
-    throw e;
-  } finally { clearTimeout(timer); }
+export async function requestAI(provider, key, messages, language, technique, options={}) {
+  const {callProvider}=await import('../core/providers.js');
+  return callProvider(provider,key,systemPrompt(language,technique),messages,options);
 }
+
 function result(provider, content, model, technique, is_demo) {
   return { generation_id: crypto.randomUUID(), provider, content, model, technique, is_demo, analysis: analyze(content, job) };
 }

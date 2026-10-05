@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Candidaro</string>
+    <string name="title_activity_main">Candidaro</string>
+    <string name="package_name">app.candidaro.mobile</string>
+    <string name="custom_url_scheme">app.candidaro.mobile</string>
+</resources>

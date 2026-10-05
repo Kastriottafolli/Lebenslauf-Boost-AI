@@ -1,0 +1,7 @@
+{
+  "appId": "app.candidaro.mobile",
+  "appName": "Candidaro",
+  "webDir": "_site",
+  "server": {"androidScheme": "https"},
+  "plugins": {"CapacitorHttp": {"enabled": true}}
+}

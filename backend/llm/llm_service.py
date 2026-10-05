@@ -1,60 +1,51 @@
-"""Orchestrierung: Einzel-Generierung, Vergleichsanalyse, Demo-Fallback."""
-
-from typing import Dict, List, Optional
+"""AI orchestration with explicit demos and errors, no silent fallbacks."""
 
 from backend.config import get_settings
-from backend.llm.anthropic_provider import AnthropicProvider
-from backend.llm.openai_provider import OpenAIProvider
-from backend.services import rag_service
+from backend.llm.http_provider import PROVIDERS, HTTPProvider
 
 settings = get_settings()
 
 
-def get_provider(name: str, keys: Optional[dict] = None):
+def get_provider(name, keys=None, model=None, endpoint=None):
     keys = keys or {}
-    if name == "claude":
-        return AnthropicProvider(api_key=keys.get("anthropic"))
-    if name == "openai":
-        return OpenAIProvider(api_key=keys.get("openai"))
-    return None
+    config = PROVIDERS.get(name)
+    if not config:
+        return None
+    key = keys.get(config["key"]) or ""
+    if not key and settings.allow_server_keys:
+        key = getattr(settings, f"{config['key']}_api_key", "")
+    return HTTPProvider(
+        name,
+        key,
+        model or getattr(settings, f"{config['key']}_model", None),
+        endpoint or settings.azure_endpoint,
+    )
 
 
-def provider_status() -> Dict[str, bool]:
-    return {
-        "claude": AnthropicProvider().available(),
-        "openai": OpenAIProvider().available(),
-    }
+def provider_status():
+    return {name: get_provider(name).available() for name in PROVIDERS}
 
 
 def run_generation(
-    provider_name: str,
-    system: str,
-    messages: List[Dict[str, str]],
+    provider_name,
+    system,
+    messages,
     *,
-    language: str,
-    demo_payload: dict,
-    keys: Optional[dict] = None,
-) -> dict:
-    """Ruft den Anbieter auf — oder erzeugt eine klar markierte Demo-Ausgabe."""
-    provider = get_provider(provider_name, keys)
+    language,
+    demo_payload,
+    keys=None,
+    model=None,
+    endpoint=None,
+):
+    provider = get_provider(provider_name, keys, model, endpoint)
     if provider and provider.available():
-        try:
-            result = provider.generate(system, messages)
-            if result.content.strip():
-                return {
-                    "content": result.content,
-                    "provider": result.provider,
-                    "model": result.model,
-                    "is_demo": False,
-                }
-        except Exception as exc:  # robuste Fehlerkorrektur -> Demo statt Crash
-            return {
-                "content": _demo_cv(demo_payload, language, error=str(exc)),
-                "provider": provider_name,
-                "model": "demo",
-                "is_demo": True,
-            }
-
+        result = provider.generate(system, messages)
+        return {
+            "content": result.content,
+            "provider": result.provider,
+            "model": result.model,
+            "is_demo": False,
+        }
     return {
         "content": _demo_cv(demo_payload, language),
         "provider": provider_name,
@@ -63,88 +54,22 @@ def run_generation(
     }
 
 
-def recommend(results: List[dict], language: str) -> dict:
-    """Use-Case-spezifische Vergleichsanalyse zweier Anbieter."""
-    ranked = sorted(results, key=lambda r: r["analysis"]["ats_score"], reverse=True)
-    winner = ranked[0]
-    loser = ranked[-1]
-    wp = winner["provider"]
-    ws = winner["analysis"]["ats_score"]
-    ls = loser["analysis"]["ats_score"]
-
-    if language == "en":
-        text = (
-            f"{wp.upper()} scores higher on ATS keyword coverage "
-            f"({ws}% vs {ls}%) for this posting. "
-            f"Both drafts are saved — pick the one you prefer."
-        )
-        if ws == ls:
-            text = (
-                f"Both providers reach {ws}% ATS coverage. "
-                f"Compare tone and wording and choose your favorite."
-            )
-    else:
-        text = (
-            f"{wp.upper()} erreicht eine höhere ATS-Keyword-Abdeckung "
-            f"({ws}% vs. {ls}%) für diese Stelle. "
-            f"Beide Entwürfe sind gespeichert — wähle deinen Favoriten."
-        )
-        if ws == ls:
-            text = (
-                f"Beide Anbieter erreichen {ws}% ATS-Abdeckung. "
-                f"Vergleiche Ton und Formulierung und wähle deinen Favoriten."
-            )
-
-    return {"winner_provider": wp, "recommendation": text}
+def recommend(results, language):
+    return {
+        "winner_provider": None,
+        "recommendation": "Compare the drafts and verify every fact. Keyword coverage is not a hiring probability."
+        if language == "en"
+        else "Vergleiche die Entwürfe und prüfe alle Angaben. Keyword-Abdeckung ist keine Einstellungswahrscheinlichkeit.",
+    }
 
 
-# ──────────────────────────────────────────────────────────────────────────
-# Demo-Fallback (ohne API-Key) — regelbasiert, klar gekennzeichnet
-# ──────────────────────────────────────────────────────────────────────────
-def _demo_cv(payload: dict, language: str, error: Optional[str] = None) -> str:
-    cv_full: str = payload.get("cv_full", "") or ""
-    job_desc: str = payload.get("job_description", "")
-    wishes: str = payload.get("wishes", "")
-    keywords = rag_service.extract_keywords(job_desc, limit=12)
-
-    lines = [ln.strip() for ln in cv_full.splitlines() if ln.strip()]
-    name = lines[0] if lines else ("Your Name" if language == "en" else "Vor- und Nachname")
-    title = lines[1] if len(lines) > 1 else (
-        "Target Role" if language == "en" else "Zielposition"
+def _demo_cv(payload, language, error=None):
+    source = payload.get("cv_full", "").strip()
+    if not source.startswith("# "):
+        source = "# " + source
+    note = (
+        "> DEMO: Rule-based source formatting. No AI request."
+        if language == "en"
+        else "> DEMO: Regelbasierte Aufbereitung deiner Angaben. Keine KI-Anfrage."
     )
-    contact = next(
-        (ln for ln in lines[:6] if "@" in ln or any(c.isdigit() for c in ln)),
-        "email@example.com | +49 …",
-    )
-
-    body = "\n".join(f"- {ln}" for ln in lines[2:10]) if len(lines) > 2 else (
-        "- (Lebenslauf-Inhalte erscheinen hier)"
-    )
-    skills = ", ".join(keywords) if keywords else "—"
-
-    if language == "en":
-        note = "> ⚠️ DEMO MODE: no API key set — this is a rule-based preview, not AI output."
-        if error:
-            note = f"> ⚠️ DEMO MODE (provider error): {error[:160]}"
-        wishblock = f"\n## Notes\n- Requested focus: {wishes}\n" if wishes else ""
-        return (
-            f"{note}\n\n"
-            f"# {name}\n{title}\n{contact}\n\n"
-            f"## Summary\nExperienced professional aligned to the target role, "
-            f"highlighting strengths relevant to the posting.\n\n"
-            f"## Experience\n{body}\n\n"
-            f"## Skills\n- {skills}\n{wishblock}"
-        )
-
-    note = "> ⚠️ DEMO-MODUS: Kein API-Key gesetzt — regelbasierte Vorschau, keine KI-Ausgabe."
-    if error:
-        note = f"> ⚠️ DEMO-MODUS (Anbieter-Fehler): {error[:160]}"
-    wishblock = f"\n## Hinweise\n- Gewünschter Fokus: {wishes}\n" if wishes else ""
-    return (
-        f"{note}\n\n"
-        f"# {name}\n{title}\n{contact}\n\n"
-        f"## Profil\nErfahrene Fachkraft, ausgerichtet auf die Zielposition, "
-        f"mit Fokus auf die für die Stelle relevanten Stärken.\n\n"
-        f"## Berufserfahrung\n{body}\n\n"
-        f"## Fähigkeiten\n- {skills}\n{wishblock}"
-    )
+    return source + "\n\n" + note

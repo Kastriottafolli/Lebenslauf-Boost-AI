@@ -7,7 +7,6 @@ Modell erzeugte Markdown-Lebenslauf wird geparst und layoutet.
 
 import html
 import io
-from typing import List, Optional
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -21,22 +20,54 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import (
     HRFlowable,
-    Image as RLImage,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
     Table,
     TableStyle,
 )
+from reportlab.platypus import (
+    Image as RLImage,
+)
 
 # Farb- und Stilpalette je Design — "Sapphire Nightfall".
 _PALETTE = {
-    "classic": {"accent": "#262B40", "muted": "#4A5568", "rule": "#262B40", "serif": True},
-    "modern": {"accent": "#0474C4", "muted": "#5379AE", "rule": "#0474C4", "serif": False},
-    "minimal": {"accent": "#5379AE", "muted": "#7D8698", "rule": "#C9D6EA", "serif": False},
-    "sapphire": {"accent": "#06457F", "muted": "#5379AE", "rule": "#06457F", "serif": False},
-    "cobalt": {"accent": "#0474C4", "muted": "#4A5568", "rule": "#A8C4EC", "serif": False},
-    "slate": {"accent": "#2C444C", "muted": "#64748B", "rule": "#9DB3B9", "serif": True},
+    "classic": {
+        "accent": "#262B40",
+        "muted": "#4A5568",
+        "rule": "#262B40",
+        "serif": True,
+    },
+    "modern": {
+        "accent": "#0474C4",
+        "muted": "#5379AE",
+        "rule": "#0474C4",
+        "serif": False,
+    },
+    "minimal": {
+        "accent": "#5379AE",
+        "muted": "#7D8698",
+        "rule": "#C9D6EA",
+        "serif": False,
+    },
+    "sapphire": {
+        "accent": "#06457F",
+        "muted": "#5379AE",
+        "rule": "#06457F",
+        "serif": False,
+    },
+    "cobalt": {
+        "accent": "#0474C4",
+        "muted": "#4A5568",
+        "rule": "#A8C4EC",
+        "serif": False,
+    },
+    "slate": {
+        "accent": "#2C444C",
+        "muted": "#64748B",
+        "rule": "#9DB3B9",
+        "serif": True,
+    },
 }
 
 # Designs mit Akzentleiste oben bzw. GROSSGESCHRIEBENEN Abschnittstiteln.
@@ -49,9 +80,9 @@ _HEADER_TYPES = ("name", "title", "contact")
 # ──────────────────────────────────────────────────────────────────────────
 # Markdown-Parser
 # ──────────────────────────────────────────────────────────────────────────
-def parse_cv(md: str) -> List[dict]:
-    elements: List[dict] = []
-    pending_sub: List[str] = []
+def parse_cv(md: str) -> list[dict]:
+    elements: list[dict] = []
+    pending_sub: list[str] = []
     seen_section = False
 
     def flush_sub() -> None:
@@ -84,11 +115,13 @@ def parse_cv(md: str) -> List[dict]:
             flush_sub()
             elements.append({"type": "bullet", "text": s[2:].strip()})
         else:
-            if (elements and elements[-1]["type"] == "name") or (
-                pending_sub and not seen_section
+            if (
+                (elements and elements[-1]["type"] == "name")
+                or (pending_sub and not seen_section)
+                or not seen_section
+                and elements
+                and elements[-1]["type"] in ("title", "contact")
             ):
-                pending_sub.append(s)
-            elif not seen_section and elements and elements[-1]["type"] in ("title", "contact"):
                 pending_sub.append(s)
             else:
                 elements.append({"type": "para", "text": s})
@@ -105,7 +138,10 @@ def _clean(s: str) -> str:
 # PDF (ReportLab)
 # ══════════════════════════════════════════════════════════════════════════
 def to_pdf(
-    content: str, design: str = "modern", language: str = "de", photo: Optional[bytes] = None
+    content: str,
+    design: str = "modern",
+    language: str = "de",
+    photo: bytes | None = None,
 ) -> bytes:
     pal = _PALETTE.get(design, _PALETTE["modern"])
     serif = pal["serif"]
@@ -119,42 +155,82 @@ def to_pdf(
 
     styles = {
         "name": ParagraphStyle(
-            "name", fontName=bold, fontSize=23 if design == "minimal" else 25,
-            textColor=HexColor("#111111"), alignment=name_align, spaceAfter=2, leading=27,
+            "name",
+            fontName=bold,
+            fontSize=23 if design == "minimal" else 25,
+            textColor=HexColor("#111111"),
+            alignment=name_align,
+            spaceAfter=2,
+            leading=27,
         ),
         "title": ParagraphStyle(
-            "title", fontName=italic if design == "classic" else base, fontSize=12.5,
-            textColor=accent if design in _TOPBAR_DESIGNS else muted, alignment=name_align, spaceAfter=3,
+            "title",
+            fontName=italic if design == "classic" else base,
+            fontSize=12.5,
+            textColor=accent if design in _TOPBAR_DESIGNS else muted,
+            alignment=name_align,
+            spaceAfter=3,
         ),
         "contact": ParagraphStyle(
-            "contact", fontName=base, fontSize=9, textColor=muted,
-            alignment=name_align, spaceAfter=2, leading=12,
+            "contact",
+            fontName=base,
+            fontSize=9,
+            textColor=muted,
+            alignment=name_align,
+            spaceAfter=2,
+            leading=12,
         ),
         "section": ParagraphStyle(
-            "section", fontName=bold, fontSize=12.5, textColor=accent,
-            spaceBefore=13, spaceAfter=2,
+            "section",
+            fontName=bold,
+            fontSize=12.5,
+            textColor=accent,
+            spaceBefore=13,
+            spaceAfter=2,
         ),
         "entry": ParagraphStyle(
-            "entry", fontName=bold, fontSize=10.5, textColor=HexColor("#222222"),
-            spaceBefore=6, spaceAfter=1,
+            "entry",
+            fontName=bold,
+            fontSize=10.5,
+            textColor=HexColor("#222222"),
+            spaceBefore=6,
+            spaceAfter=1,
         ),
         "bullet": ParagraphStyle(
-            "bullet", fontName=base, fontSize=10, textColor=HexColor("#333333"),
-            leftIndent=12, spaceAfter=2, leading=13.5,
+            "bullet",
+            fontName=base,
+            fontSize=10,
+            textColor=HexColor("#333333"),
+            leftIndent=12,
+            spaceAfter=2,
+            leading=13.5,
         ),
         "para": ParagraphStyle(
-            "para", fontName=base, fontSize=10, textColor=HexColor("#333333"),
-            spaceAfter=3, leading=13.5,
+            "para",
+            fontName=base,
+            fontSize=10,
+            textColor=HexColor("#333333"),
+            spaceAfter=3,
+            leading=13.5,
         ),
         "note": ParagraphStyle(
-            "note", fontName=base, fontSize=8.5, textColor=HexColor("#B45309"), spaceAfter=8,
+            "note",
+            fontName=base,
+            fontSize=8.5,
+            textColor=HexColor("#B45309"),
+            spaceAfter=8,
         ),
     }
 
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
-        buf, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm,
-        topMargin=1.5 * cm, bottomMargin=1.5 * cm, title="Lebenslauf",
+        buf,
+        pagesize=A4,
+        leftMargin=2 * cm,
+        rightMargin=2 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=1.5 * cm,
+        title="Lebenslauf",
     )
     els = parse_cv(content)
     story: list = []
@@ -182,8 +258,15 @@ def to_pdf(
             label = text.upper() if design in _UPPERCASE_DESIGNS else text
             story.append(Paragraph(label, styles["section"]))
             thickness = 0.5 if design == "minimal" else (1.5 if design in _TOPBAR_DESIGNS else 1)
-            story.append(HRFlowable(width="100%", thickness=thickness, color=rule,
-                                    spaceBefore=1, spaceAfter=4))
+            story.append(
+                HRFlowable(
+                    width="100%",
+                    thickness=thickness,
+                    color=rule,
+                    spaceBefore=1,
+                    spaceAfter=4,
+                )
+            )
         elif t == "entry":
             story.append(Paragraph(text, styles["entry"]))
         elif t == "bullet":
@@ -221,14 +304,18 @@ def _pdf_header(header_els, photo, design, styles, avail_width) -> list:
 
     photo_w = (2.4 if design == "minimal" else 2.8) * cm + 0.4 * cm
     table = Table([[text_cells, img]], colWidths=[avail_width - photo_w, photo_w])
-    table.setStyle(TableStyle([
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ("ALIGN", (1, 0), (1, 0), "RIGHT"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 0),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-        ("TOPPADDING", (0, 0), (-1, -1), 0),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-    ]))
+    table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
     return [table, Spacer(1, 10)]
 
 
@@ -240,7 +327,10 @@ def _xml(s: str) -> str:
 # Word / DOCX (python-docx)
 # ══════════════════════════════════════════════════════════════════════════
 def to_docx(
-    content: str, design: str = "modern", language: str = "de", photo: Optional[bytes] = None
+    content: str,
+    design: str = "modern",
+    language: str = "de",
+    photo: bytes | None = None,
 ) -> bytes:
     pal = _PALETTE.get(design, _PALETTE["modern"])
     font_name = "Georgia" if pal["serif"] else "Calibri"
@@ -348,13 +438,13 @@ def _docx_header(doc, header_els, photo, design, accent, muted, center) -> None:
 # ──────────────────────────────────────────────────────────────────────────
 # Request-Helfer (vom Export-Router genutzt)
 # ──────────────────────────────────────────────────────────────────────────
-def sanitize_filename(name: Optional[str]) -> str:
+def sanitize_filename(name: str | None) -> str:
     """Erzeugt einen sicheren Dateinamen ohne Sonderzeichen."""
     safe = "".join(c for c in (name or "Lebenslauf") if c.isalnum() or c in " _-").strip()
     return safe.replace(" ", "_") or "Lebenslauf"
 
 
-def decode_photo(data_url: Optional[str]) -> Optional[bytes]:
+def decode_photo(data_url: str | None) -> bytes | None:
     """Wandelt eine data-URL (data:image/...;base64,...) in Bytes um."""
     import base64
 

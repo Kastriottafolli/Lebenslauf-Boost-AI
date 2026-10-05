@@ -10,14 +10,13 @@ Implementierte Techniken:
   3. CHAIN-OF-THOUGHT (CoT)    -> chain_of_thought_{lang}.txt (strukturierte Analyse)
 """
 
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
-from typing import List
 
 PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "prompts"
 
 
-@lru_cache(maxsize=None)
+@cache
 def load_template(name: str, language: str) -> str:
     """Lädt eine Prompt-Vorlage, z. B. load_template('system', 'de')."""
     lang = language if language in ("de", "en") else "de"
@@ -33,13 +32,15 @@ def build_user_message(
     *,
     job_description: str,
     wishes: str,
-    cv_context: List[str],
+    cv_context: list[str],
     language: str,
     technique: str,
 ) -> str:
     """Baut die User-Nachricht inkl. Dynamic Context Injection."""
-    context = "\n\n---\n".join(cv_context) if cv_context else (
-        "(no CV text available)" if language == "en" else "(kein Lebenslauf-Text vorhanden)"
+    context = (
+        "\n\n---\n".join(cv_context)
+        if cv_context
+        else ("(no CV text available)" if language == "en" else "(kein Lebenslauf-Text vorhanden)")
     )
 
     technique_block = ""

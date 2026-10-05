@@ -16,7 +16,20 @@ client = TestClient(app)
 def session_id() -> str:
     r = client.post("/api/session?language=de")
     assert r.status_code == 200
-    return r.json()["session_id"]
+    body = r.json()
+    client.headers["X-Session-Token"] = body["session_token"]
+    client.post(
+        "/api/upload-cv",
+        data={"session_id": body["session_id"]},
+        files={
+            "file": (
+                "cv.txt",
+                b"Max Mustermann\nKoch\nmax@example.com\n10 Jahre Gastronomie",
+                "text/plain",
+            )
+        },
+    )
+    return body["session_id"]
 
 
 def test_status():
@@ -24,7 +37,13 @@ def test_status():
     assert r.status_code == 200
     body = r.json()
     assert body["app"]
-    assert set(body["providers"].keys()) == {"claude", "openai"}
+    assert set(body["providers"].keys()) == {
+        "claude",
+        "openai",
+        "gemini",
+        "grok",
+        "azure",
+    }
     assert body["rag_mode"] in ("embeddings", "tfidf")
 
 

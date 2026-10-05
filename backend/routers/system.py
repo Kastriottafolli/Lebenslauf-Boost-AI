@@ -16,5 +16,5 @@ def status():
         app=settings.app_name,
         version=__version__,
         providers=llm_service.provider_status(),
-        rag_mode="embeddings" if settings.openai_enabled else "tfidf",
+        rag_mode="tfidf",
     )
