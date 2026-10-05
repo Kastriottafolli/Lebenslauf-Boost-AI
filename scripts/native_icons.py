@@ -1,4 +1,4 @@
-"""Render native launch assets from the shared Candidaro arrow mark."""
+"""Render native launch assets from the shared Boosty AI arrow mark."""
 from pathlib import Path
 from PIL import Image, ImageDraw
 

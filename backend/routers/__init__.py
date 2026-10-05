@@ -10,6 +10,8 @@ frontend.py     GET  /                  Single-Page-Frontend ausliefern
 """
 
 from backend.routers import (
+    admin,
+    assistant,
     documents,
     exports,
     frontend,
@@ -22,6 +24,8 @@ from backend.routers import (
 ALL_ROUTERS = [
     system.router,
     platform.router,
+    admin.router,
+    assistant.router,
     sessions.router,
     documents.router,
     generations.router,

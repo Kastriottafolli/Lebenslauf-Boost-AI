@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {boostyAnswer, TOUR, BOOSTY_SYSTEM} from '../js/core/boosty.js';
+
+test('Boosty gives bilingual help without keys and does not pretend to perform actions',()=>{
+  assert.match(boostyAnswer('Wo bekomme ich einen API-Key?').content,/offizieller Konsole/);
+  assert.match(boostyAnswer('How do I save?', 'en').content,/Save application/);
+  assert.match(boostyAnswer('privacy','en').content,/admin access is audited/);
+  assert.match(boostyAnswer('admin').content,/keine Adminrechte/);
+  assert.equal(boostyAnswer('Purple rain tomorrow').topic,'unknown');
+  assert.match(boostyAnswer('Purple rain tomorrow').content,/weder sehen noch ändern/);
+});
+test('Boosty tours cover every workflow step and AI has no action permissions',()=>{
+  assert.deepEqual([...new Set(TOUR.map(t=>t.step))],[1,2,3,4]);
+  assert.ok(TOUR.every(t=>t.de&&t.en&&t.target));
+  assert.match(BOOSTY_SYSTEM,/cannot take actions/);
+  assert.match(BOOSTY_SYSTEM,/Never ask for a password, API key or recovery code/);
+});

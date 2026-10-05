@@ -1,6 +1,6 @@
 {
   "appId": "net.tafolli.candidaro",
-  "appName": "Candidaro",
+  "appName": "Boosty AI",
   "webDir": "_site",
   "server": {
     "androidScheme": "https"

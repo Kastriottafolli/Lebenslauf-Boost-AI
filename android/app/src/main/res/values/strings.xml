@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Candidaro</string>
-    <string name="title_activity_main">Candidaro</string>
+    <string name="app_name">Boosty AI</string>
+    <string name="title_activity_main">Boosty AI</string>
     <string name="package_name">net.tafolli.candidaro</string>
     <string name="custom_url_scheme">net.tafolli.candidaro</string>
 </resources>

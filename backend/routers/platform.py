@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session as DBSession
 from backend import schemas
 from backend.database import get_db
 from backend.llm import llm_service
-from backend.models import Account, Application, Login, Session
+from backend.models import Account, AdminAccess, Application, Login, Session
 from backend.services import account_service as accounts
 from backend.services import application_service as applications
 from backend.services import job_service, session_service
@@ -143,7 +143,9 @@ class Credentials(BaseModel):
 
 
 @router.post("/api/account/register")
-def register(req: Credentials, response: Response, db: DBSession = Depends(get_db)):
+def register(
+    req: Credentials, request: Request, response: Response, db: DBSession = Depends(get_db)
+):
     email = req.normalized_email()
     if db.query(Account).filter_by(email=email).first():
         raise HTTPException(
@@ -166,17 +168,26 @@ def register(req: Credentials, response: Response, db: DBSession = Depends(get_d
             "Registrierung nicht möglich. Anmelden oder Wiederherstellung nutzen / sign in or recover account.",
         ) from None
     token = accounts.login_cookie(db, account, response)
+    request.state.metric_account = account.id
     return {"email": email, "recovery_code": recovery, "access_token": token}
 
 
 @router.post("/api/account/login")
-def login(req: Credentials, response: Response, db: DBSession = Depends(get_db)):
+def login(req: Credentials, request: Request, response: Response, db: DBSession = Depends(get_db)):
+    accounts.limit_identity(db, req.normalized_email())
     account = db.query(Account).filter_by(email=req.normalized_email()).first()
     # Perform a password hash even for unknown users.
-    stored = account.password_hash if account else accounts.password_hash("unavailable-password")
-    if not accounts.password_matches(req.password, stored) or not account:
+    stored = account.password_hash if account else accounts.DUMMY_HASH
+    if (
+        not accounts.password_matches(req.password, stored)
+        or not account
+        or db.get(AdminAccess, account.id)
+    ):
         raise HTTPException(401, "Anmeldedaten ungültig / invalid credentials")
+    if not account.password_hash.startswith("scrypt$"):
+        account.password_hash = accounts.password_hash(req.password)
     token = accounts.login_cookie(db, account, response)
+    request.state.metric_account = account.id
     return {"email": account.email, "access_token": token}
 
 
@@ -186,9 +197,14 @@ class Recovery(Credentials):
 
 @router.post("/api/account/recover")
 def recover(req: Recovery, db: DBSession = Depends(get_db)):
+    accounts.limit_identity(db, req.normalized_email(), "recover")
     account = db.query(Account).filter_by(email=req.normalized_email()).first()
-    if not account or not secrets.compare_digest(
-        account.recovery_hash, session_service.token_hash(req.recovery_code)
+    if (
+        not account
+        or db.get(AdminAccess, account.id)
+        or not secrets.compare_digest(
+            account.recovery_hash, session_service.token_hash(req.recovery_code)
+        )
     ):
         raise HTTPException(401, "Wiederherstellung fehlgeschlagen / recovery failed")
     code = secrets.token_urlsafe(32)
@@ -377,3 +393,26 @@ def public_config():
         "operator_email": settings.operator_email,
         "retention_days": settings.retention_days,
     }
+
+
+class UsageRequest(BaseModel):
+    session_id: str = Field(..., max_length=36)
+    event: str = Field(
+        ..., pattern="^(demo.generate|document.export|project.backup|profile.confirm)$"
+    )
+
+
+@router.post("/api/usage")
+def usage(
+    req: UsageRequest,
+    request: Request,
+    db: DBSession = Depends(get_db),
+    x_session_token: str = Header(""),
+):
+    from backend.models import Activity
+
+    session_service.get_session(db, req.session_id, x_session_token)
+    account = accounts.current_account(db, request)
+    db.add(Activity(event=req.event, outcome=200, account_id=account.id if account else None))
+    db.commit()
+    return {"ok": True}

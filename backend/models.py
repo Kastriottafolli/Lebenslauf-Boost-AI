@@ -23,6 +23,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Integer,
     String,
     Text,
 )
@@ -199,3 +200,60 @@ class Application(Base):
     status = Column(String(24), nullable=False, default="draft")
     data_json = Column(Text, nullable=False)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class AdminAccess(Base):
+    __tablename__ = "admin_access"
+    account_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    enabled = Column(Boolean, nullable=False, default=False)
+    secret_cipher = Column(Text, nullable=False)
+    last_counter = Column(Integer, nullable=False, default=-1)
+    setup_hash = Column(String(64), nullable=True, unique=True)
+    setup_expires_at = Column(DateTime, nullable=True)
+
+
+class AdminLogin(Base):
+    __tablename__ = "admin_logins"
+    token_hash = Column(String(64), primary_key=True)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    expires_at = Column(DateTime, nullable=False, index=True)
+
+
+class Activity(Base):
+    """Selected operation metadata only: never request bodies, keys or document text."""
+
+    __tablename__ = "activity"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    event = Column(String(64), nullable=False, index=True)
+    outcome = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class DailyMetric(Base):
+    __tablename__ = "daily_metrics"
+    day = Column(String(10), primary_key=True)
+    page_views = Column(Integer, nullable=False, default=0)
+    visits = Column(Integer, nullable=False, default=0)
+
+
+class AdminAudit(Base):
+    __tablename__ = "admin_audit"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    admin_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    action = Column(String(64), nullable=False)
+    subject_id = Column(String(36), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
+
+
+class AuthAttempt(Base):
+    __tablename__ = "auth_attempts"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    bucket = Column(String(64), nullable=False, index=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)

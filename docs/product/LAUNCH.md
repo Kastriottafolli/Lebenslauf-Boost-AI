@@ -1,10 +1,10 @@
 # Marke, SEO und Launch
 
-## Vorläufige Marke
+## Produktmarke
 
-Candidaro · „Deine Erfahrung. Deine nächste Chance.“ / “Your experience. Your next opportunity.” Boosti bleibt die hilfreiche Figur im Editor. Name und Betreiberangaben liegen in `static/branding.json`; Modelle/Key-Links in `static/providers.json`.
+Boosty AI · „Deine Erfahrung. Deine nächste Chance.“ / “Your experience. Your next opportunity.” Boosty bleibt die hilfreiche Figur im Editor. Name und Betreiberangaben liegen in `static/branding.json`; Modelle/Key-Links in `static/providers.json`.
 
-Die Domainprüfung vom 05.10.2026 zeigte bei `candidaro.com` und `candidaro.de` keinen RDAP-Datensatz. Das ist keine Reservierung, Preiszusage oder Markenfreigabe. Vor dem Kauf beim Registrar neu prüfen und Marken-/Namenskonflikte klären. Es wurde keine Domain gekauft.
+Boosty AI ist die vom Betreiber gewählte Marke. Die App wird unter der Tafolli-Domain vorbereitet. Eine Freigabe für Marken-/Namensrechte oder eine Verfügbarkeit von Boosty-Domains wurde nicht bestätigt.
 
 ## Vorbereitete SEO-Seiten
 
@@ -21,16 +21,16 @@ Erste Zielgruppe: Berufseinsteiger und wechselwillige Fachkräfte im deutschen/e
 
 ## Launch-Texte
 
-**DE:** „Deine nächste Bewerbung beginnt mit deinen echten Erfahrungen. Mit Candidaro erstellst du einen Lebenslauf, ein Anschreiben und einen E-Mail-Entwurf – passend zur Stelle und jederzeit editierbar. Probiere die Demo oder nutze deine eigene KI.“
+**DE:** „Deine nächste Bewerbung beginnt mit deinen echten Erfahrungen. Mit Boosty AI erstellst du einen Lebenslauf, ein Anschreiben und einen E-Mail-Entwurf – passend zur Stelle und jederzeit editierbar. Probiere die Demo oder nutze deine eigene KI.“
 
-**EN:** “Your next application starts with your real experience. Candidaro helps you prepare a resume, cover letter and email draft for a specific role. Edit every document, try the demo or connect your own AI provider.”
+**EN:** “Your next application starts with your real experience. Boosty AI helps you prepare a resume, cover letter and email draft for a specific role. Edit every document, try the demo or connect your own AI provider.”
 
 **Kurzdemo:** Beispiel importieren → erkannte Angaben prüfen → Stellenbeschreibung einfügen → Demo/gewünschte KI wählen → Mappe bearbeiten → als ZIP herunterladen. Keine echten personenbezogenen Daten in öffentlichen Demo-Videos.
 
 ## Erste 30 Tage nach dem geprüften Release
 
 - 10–20 freiwillige Pilotnutzer mit konkreten Stellen und verschiedenen Ausgangsformaten testen lassen.
-- Messen: Import gelungen, Profil bestätigt, Mappe erstellt, Export abgeschlossen. Keine Dokumentinhalte oder Keys in Analytics. Ein Tracking-Dienst ist bewusst nicht eingebaut.
+- Messen: Import gelungen, Profil bestätigt, Mappe erstellt, Export abgeschlossen. Keine Dokumentinhalte oder Keys in Analytics. Erste interne Funktionsstatistiken sind eingebaut; sie zählen keine eindeutigen Menschen und sind kein externer Werbe-Trackingdienst.
 - Häufigste Abbrüche zuerst beheben. Inhaltliche Fehler und OCR-Verwechslungen separat erfassen.
 - Eine ehrliche Produktdemo auf eigenen Kanälen veröffentlichen; Kooperationen mit Karriereberatern oder Hochschulgruppen gezielt anfragen.
 - Drei nützliche Beiträge statt generischer Werbung: ATS-Struktur, belegbare Erfolge, Unterschiede Anschreiben/Motivation.

@@ -38,6 +38,10 @@ jobs:
           DATABASE_URL: sqlite:///./data/ci-test.db
           ALLOW_SERVER_KEYS: "false"
         run: pytest backend/tests -v
+      - name: Audit Python runtime dependencies
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
 
   web:
     name: Browser tests and production build

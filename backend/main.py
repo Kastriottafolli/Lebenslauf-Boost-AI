@@ -49,7 +49,14 @@ def create_app() -> FastAPI:
             with suppress(asyncio.CancelledError):
                 await task
 
-    app = FastAPI(title=settings.app_name, version=__version__, lifespan=lifespan)
+    app = FastAPI(
+        title=settings.app_name,
+        version=__version__,
+        lifespan=lifespan,
+        docs_url=None if settings.secure_cookies else "/docs",
+        redoc_url=None if settings.secure_cookies else "/redoc",
+        openapi_url=None if settings.secure_cookies else "/openapi.json",
+    )
 
     app.add_middleware(
         CORSMiddleware,

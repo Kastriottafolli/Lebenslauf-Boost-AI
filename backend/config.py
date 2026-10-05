@@ -35,7 +35,8 @@ class Settings(BaseSettings):
     operator_email: str = "info@tafolli.net"
 
     # ── App ──
-    app_name: str = "Candidaro"
+    app_name: str = "Boosty AI"
+    admin_key_file: str = "./data/admin-secrets.key"
     database_url: str = "sqlite:///./data/app.db"
     upload_dir: str = "./data/uploads"
     max_upload_mb: int = 10

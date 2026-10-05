@@ -12,6 +12,16 @@ FRONTEND_DIR = PROJECT_ROOT / "frontend"
 STATIC_DIR = PROJECT_ROOT / "static"
 
 
+def asset_revision():
+    import hashlib
+
+    bundle = FRONTEND_DIR / "build/app.js"
+    return hashlib.sha256(
+        (bundle.read_bytes() if bundle.exists() else b"unbuilt")
+        + (FRONTEND_DIR / "css/professional.css").read_bytes()
+    ).hexdigest()[:12]
+
+
 @router.get("/index.html", include_in_schema=False)
 @router.get("/", include_in_schema=False)
 def index():
@@ -21,16 +31,28 @@ def index():
     from backend.config import get_settings
 
     brand = json.loads((STATIC_DIR / "branding.json").read_text())["name"]
-    source = (
-        (FRONTEND_DIR / "index.html").read_text().replace("Lebenslauf Boost AI", html.escape(brand))
-    )
+    source = (FRONTEND_DIR / "index.html").read_text().replace("Boosty AI", html.escape(brand))
     site = get_settings().site_url.rstrip("/")
     if site.startswith("https://"):
         source = source.replace(
             "</head>", f'<link rel="canonical" href="{html.escape(site, quote=True)}/"></head>'
         )
     # The shell lives at /; API and generated documents are never cached.
-    return HTMLResponse(source.replace("</head>", '<meta name="app-base" content="/"></head>'))
+    return HTMLResponse(
+        source.replace("__BUILD_ID__", asset_revision()).replace(
+            "</head>", '<meta name="app-base" content="/"></head>'
+        ),
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
+@router.get("/admin", include_in_schema=False)
+@router.get("/admin/", include_in_schema=False)
+def admin_page():
+    return HTMLResponse(
+        (FRONTEND_DIR / "admin.html").read_text().replace("__BUILD_ID__", asset_revision()),
+        headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"},
+    )
 
 
 @router.get("/manifest.webmanifest", include_in_schema=False)
@@ -43,13 +65,9 @@ def manifest():
 
 @router.get("/sw.js", include_in_schema=False)
 def worker():
-    import hashlib
     import json
 
-    bundle = FRONTEND_DIR / "build/app.js"
-    revision = (
-        hashlib.sha256(bundle.read_bytes()).hexdigest()[:12] if bundle.exists() else "unbuilt"
-    )
+    revision = asset_revision()
     value = (
         (FRONTEND_DIR / "public/sw.js")
         .read_text()
@@ -81,7 +99,7 @@ def robots():
 
     base = get_settings().site_url.rstrip("/")
     return PlainTextResponse(
-        "User-agent: *\nAllow: /\nDisallow: /api/\n"
+        "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\n"
         + (f"Sitemap: {base}/sitemap.xml\n" if base else "")
     )
 

@@ -4,7 +4,16 @@ from datetime import UTC, datetime, timedelta
 
 from backend.config import get_settings
 from backend.database import SessionLocal, init_db
-from backend.models import Application, Login, Session
+from backend.models import (
+    Activity,
+    AdminAudit,
+    AdminLogin,
+    Application,
+    AuthAttempt,
+    DailyMetric,
+    Login,
+    Session,
+)
 
 
 def cleanup():
@@ -12,6 +21,14 @@ def cleanup():
         days=max(1, get_settings().retention_days)
     )
     with SessionLocal() as db:
+        now = datetime.now(UTC).replace(tzinfo=None)
+        db.query(AdminLogin).filter(AdminLogin.expires_at <= now).delete()
+        db.query(AuthAttempt).filter(AuthAttempt.created_at < now - timedelta(minutes=15)).delete()
+        db.query(Activity).filter(Activity.created_at < now - timedelta(days=30)).delete()
+        db.query(AdminAudit).filter(AdminAudit.created_at < now - timedelta(days=90)).delete()
+        db.query(DailyMetric).filter(
+            DailyMetric.day < (now - timedelta(days=90)).date().isoformat()
+        ).delete()
         db.query(Login).filter(Login.expires_at <= datetime.now(UTC).replace(tzinfo=None)).delete()
         sessions = (
             db.query(Session).filter(Session.owner_id.is_(None), Session.created_at < cutoff).all()

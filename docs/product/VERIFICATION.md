@@ -2,13 +2,24 @@
 
 ## Automatisiert
 
-- Backend: 24 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext. Ein zusätzlicher Test registriert und speichert in einem Prozess und prüft Anmeldung/Projektzugriff nach einem echten Prozessneustart einschließlich einer geprüften SQLite-Sicherung. Retention-Test: abgelaufene anonyme Daten und Login-Tokens entfernt, Konten/Bewerbungen erhalten.
-- Frontend: 13 Tests für Demo-Fakten, Anbieter-Verträge, Import-/Exportgrenzen, sechs PDF-Layouts mit Unicode, lesbare Word-Dateien und ZIP-Inhalte.
+- Backend: 40 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext. Ein zusätzlicher Test registriert und speichert in einem Prozess und prüft Anmeldung/Projektzugriff nach einem echten Prozessneustart einschließlich einer geprüften SQLite-Sicherung. Retention-Test: abgelaufene anonyme Daten und Login-Tokens entfernt, Konten/Bewerbungen erhalten.
+- Frontend: 15 Tests für Demo-Fakten, Anbieter-Verträge, Import-/Exportgrenzen, sechs PDF-Layouts mit Unicode, lesbare Word-Dateien und ZIP-Inhalte.
 - `ruff check backend` und `git diff --check`: erfolgreich.
 - `npm run build` und `npx cap sync`: erfolgreich für Browser, Server, Android und iOS.
 - Apple Info.plist, PrivacyInfo.xcprivacy und project.pbxproj: `plutil -lint` erfolgreich.
 - Produktions-Konfiguration: GitHub-CI prüft Compose und Caddy syntaktisch, ohne öffentlichen Serverstart oder DNS-Änderung.
 - `npm audit --omit=dev` und `pip-audit -r requirements.txt` einschließlich aufgelöster Python-Abhängigkeiten: keine bekannten gemeldeten Schwachstellen. Dies ist keine Garantie, dass keine unbekannten Schwachstellen vorhanden sind.
+
+## Admin, Boosty und Updates
+
+- Admin: öffentliche Registrierung und normale Login-Tokens können keine Adminrechte vergeben; CSRF/Origin-Regeln, native CORS-Preflights, MFA inklusive RFC-6238-Testvektor, Replay-Schutz, Setup-Ablauf, 15-Minuten-Sitzung, Widerruf und serverseitige Wiederherstellung geprüft.
+- Admin-Konto, MFA-Replay-Zustand und Admin-Sitzung auch nach einem echten Prozessneustart verifiziert.
+- Auditiert: einzelne Nutzerdaten-/Bewerbungszugriffe. API-Ansichten enthalten keine Passwort-Hashes, Schlüssel oder Tokens. E-Mail-Suche mit Sonderzeichen und Query-Grenzen geprüft.
+- Verstärkte scrypt-Parameter mit kompatibler Aktualisierung alter Hashes, persistente Limits je Identität, Statistik-Retention und Entkopplung bei Kontolöschung geprüft.
+- Boosty: Bedienungsantworten in DE/EN, Tour über alle vier Schritte, KI nur mit Zustimmung/Session-Besitz/eigenem Key. Mock-Anfrage enthält weder Lebenslauf noch API-Key im Prompt.
+- Browser: Anmeldung eines ausschließlich synthetischen Admin-Testkontos in einer getrennten Datenbank, Dashboard, Nutzerliste, Bewerbungsinhalt, Admin-Protokoll und erfolgreiche Abmeldung geprüft. Keine Aktivierung oder Passwortvergabe für das echte Betreiberkonto durch den Agenten.
+- Versionen von HTML, App/CSS und Service-Worker stimmen überein; alte Cache-Dateien werden abgelöst. Admin/API werden nicht im Service-Worker gecacht.
+- Mobile Boosty-Frage zur Speicherung ohne Key beantwortet, Admin-Button bei 429 px sichtbar. Keine Browser-Konsolenfehler.
 
 ## Im Browser mit synthetischen Daten
 

@@ -25,8 +25,8 @@ base = '/' + base + '/' if base else '/'
 site = os.environ.get('SITE_URL', '').rstrip('/')
 if site and not re.fullmatch(r'https://[a-zA-Z0-9.-]+(?::[0-9]+)?(?:/[a-zA-Z0-9._/-]*)?', site):
     raise ValueError('SITE_URL must be a public HTTPS origin/base URL')
-source = (ROOT / 'frontend/index.html').read_text().replace('Lebenslauf Boost AI', html.escape(brand))
-source = source.replace('"/assets/build/app.js"', '"./assets/js/app.js"').replace('"/assets/', '"./assets/').replace('"/static/', '"./static/')
+source = (ROOT / 'frontend/index.html').read_text().replace('Boosty AI', html.escape(brand))
+source = source.replace('"/assets/build/app.js?v=__BUILD_ID__"', '"./assets/js/app.js?v=__BUILD_ID__"').replace('"/assets/', '"./assets/').replace('"/static/', '"./static/')
 source = source.replace('"/manifest.webmanifest"', '"./manifest.webmanifest"').replace('href="/de/', 'href="./de/')
 source = source.replace('</head>', '<meta name="app-base" content="./"></head>')
 if site:
@@ -52,7 +52,7 @@ for path in sorted((ROOT / 'frontend/content').rglob('*.json')):
     value = f'''<!doctype html><html lang="{page['language']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(page['title'])} | {html.escape(brand)}</title><meta name="description" content="{html.escape(page['description'], quote=True)}">{canonical}{alt}<link rel="stylesheet" href="{prefix}assets/css/professional.css"><link rel="icon" href="{prefix}static/icon.svg"></head><body><header class="topbar"><a class="brand" href="{prefix}"><span class="brand-symbol">↗</span>{html.escape(brand)}</a><a href="{prefix}{page['alternates']['en' if page['language']=='de' else 'de']}/">{'English' if page['language']=='de' else 'Deutsch'}</a></header><main class="guide"><p class="eyebrow">{page['eyebrow']}</p><h1>{html.escape(page['heading'])}</h1><p>{html.escape(page['description'])}</p><a class="button primary" href="{prefix}?lang={page['language']}#workspace">{page['cta']}</a>{paragraphs}<p><a href="{prefix}">{page['back']}</a></p></main><footer><span>{owner}</span><a href="{home_url}">www.tafolli.net</a><a href="mailto:{owner_email}">{owner_email}</a></footer></body></html>'''
     (target / 'index.html').write_text(value)
     urls.append(route)
-robots = 'User-agent: *\nAllow: /\nDisallow: ' + base + 'api/\n'
+robots = 'User-agent: *\nAllow: /\nDisallow: ' + base + 'api/\nDisallow: ' + base + 'admin\n'
 if site:
     robots += f'Sitemap: {site}/sitemap.xml\n'
 (OUT / 'robots.txt').write_text(robots)

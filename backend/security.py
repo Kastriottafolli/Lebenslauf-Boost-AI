@@ -50,6 +50,18 @@ def install_security(app):
     @app.middleware("http")
     async def boundaries(request, call_next):
         origin = request.headers.get("origin")
+        is_admin = request.url.path.startswith("/api/admin/")
+        if (
+            is_admin
+            and request.method != "OPTIONS"
+            and request.headers.get("X-Boosty-Request") != "1"
+        ):
+            return JSONResponse({"detail": "Admin request header required"}, status_code=403)
+        admin_origins = {str(request.base_url).rstrip("/")} | (
+            origins & {"capacitor://localhost", "http://localhost", "https://localhost"}
+        )
+        if is_admin and origin and origin not in admin_origins:
+            return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
         if request.url.path.startswith("/api/") and request.method not in (
             "GET",
             "HEAD",
@@ -66,7 +78,7 @@ def install_security(app):
                 return JSONResponse({"detail": "Invalid content length"}, status_code=400)
             category = (
                 "auth"
-                if "/account/" in request.url.path
+                if "/account/" in request.url.path or is_admin
                 else "ai"
                 if request.url.path
                 in (
@@ -75,6 +87,7 @@ def install_security(app):
                     "/api/package",
                     "/api/package/refine",
                     "/api/provider/test",
+                    "/api/assistant",
                 )
                 else "other"
             )
@@ -106,13 +119,45 @@ def install_security(app):
                             {"detail": "Server-KI benötigt Anmeldung / server AI requires sign-in"},
                             status_code=401,
                         )
+        from backend.database import SessionLocal
+        from backend.services.account_service import current_account
+        from backend.services.activity_service import EVENTS, record
+
+        path = request.url.path
+        event = EVENTS.get((request.method, path))
+        if path.startswith("/api/projects/"):
+            event = {
+                "GET": "project.open",
+                "PUT": "project.update",
+                "DELETE": "project.delete",
+            }.get(request.method)
+        account_id = None
+        if event and event != "account.delete":
+            with SessionLocal() as db:
+                account = current_account(db, request)
+                account_id = account.id if account else None
         response = await call_next(request)
+        if event or (request.method == "GET" and path in ("/", "/index.html")):
+            import asyncio
+
+            await asyncio.to_thread(
+                record,
+                event,
+                response.status_code,
+                getattr(request.state, "metric_account", account_id),
+                request.method == "GET" and path in ("/", "/index.html"),
+                event == "session.start" and response.status_code < 400,
+            )
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["Permissions-Policy"] = "camera=(self), microphone=(), geolocation=()"
-        if request.url.path.startswith("/api/"):
+        if request.url.path.startswith("/api/") or path.rstrip("/") == "/admin":
             response.headers["Cache-Control"] = "no-store"
+        if path.rstrip("/") == "/admin" or is_admin:
+            response.headers["X-Robots-Tag"] = "noindex, nofollow"
+        if settings.secure_cookies:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.openai.com https://api.anthropic.com https://api.x.ai https://generativelanguage.googleapis.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
         )

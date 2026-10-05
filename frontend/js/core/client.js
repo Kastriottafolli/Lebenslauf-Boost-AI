@@ -12,7 +12,7 @@ export function setLoginToken(value) {
 }
 export async function api(path, body, method = body ? "POST" : "GET") {
   if (BROWSER_ONLY) throw new Error("Diese Funktion ben\xF6tigt den Serverbetrieb / this feature requires server mode.");
-  const headers = {};
+  const headers = { "X-Boosty-Request": "1" };
   if (session.session_token) headers["X-Session-Token"] = session.session_token;
   if (loginToken) headers.Authorization = `Bearer ${loginToken}`;
   if (body && !(body instanceof FormData)) headers["Content-Type"] = "application/json";

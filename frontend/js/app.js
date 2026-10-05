@@ -4,6 +4,8 @@ import { BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core
 import { SAMPLE } from "./browser/demo.js";
 import { readDocument } from "./browser/import.js";
 import branding from "../../static/branding.json" with { type: "json" };
+import { BOOSTY_SYSTEM, TOUR, boostyAnswer } from "./core/boosty.js";
+import { mountAdmin } from "./admin.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
@@ -11,6 +13,51 @@ const state = { language: new URLSearchParams(location.search).get("lang") === "
 const tr = (de, en) => state.language === "en" ? en : de;
 let toastTimer, installPrompt;
 let comparisonResults = [];
+let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
+function usage(event) {
+  if (!BROWSER_ONLY) api("/api/usage", { session_id: getSession().session_id, event }).catch(() => {});
+}
+function boostyTip() {
+  const tip = TOUR[tourIndex];
+  $("#boostyTip").textContent = tip[state.language];
+}
+function guideTo(index) {
+  tourTarget?.classList.remove("boosty-tour-target");
+  const tip = TOUR[index];
+  if (tip.step === 4 && !state.documents) {
+    notify(tr("Erstelle zuerst eine Mappe mit der Demo oder deiner KI. Danach begleite ich dich zum Export.", "Create an application using demo or AI first. Then I can guide you to export."));
+    return;
+  }
+  tourIndex = index;
+  tourActive = true;
+  showStep(tip.step);
+  tourTarget = $(tip.target);
+  tourTarget?.classList.add("boosty-tour-target");
+  tourTarget?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth", block: "center" });
+  boostyTip();
+}
+async function askBoosty(event) {
+  event.preventDefault();
+  const question = $("#boostyQuestion").value.trim();
+  if (!question) return;
+  const answer = $("#boostyAnswer"), submit = $("#boostyForm button");
+  submit.disabled = true;
+  try {
+    if (!$("#boostyAi").checked) {
+      answer.textContent = tr("Boosty · Bedienungshilfe\n\n", "Boosty · App help\n\n") + boostyAnswer(question, state.language).content;
+      return;
+    }
+    const options = collectProvider();
+    if (!state.keys[state.provider]) throw new Error(tr("Trage deinen API-Key in Schritt 3 ein. Für Bedienungsfragen kannst du KI deaktivieren.", "Enter your API key in step 3. For app help you can disable AI."));
+    answer.textContent = tr("Boosty denkt nach …", "Boosty is thinking …");
+    const result = BROWSER_ONLY ? await callProvider(state.provider, state.keys[state.provider], BOOSTY_SYSTEM, [{ role: "user", content: `Language: ${state.language}\nQuestion: ${question}` }], options) : await api("/api/assistant", { session_id: getSession().session_id, question, language: state.language, ...options, keys: keysBody(), consent: true });
+    answer.textContent = tr("Boosty · KI-Antwort · Angaben prüfen\n\n", "Boosty · AI answer · Verify details\n\n") + result.content;
+  } catch (error) {
+    answer.textContent = error.message;
+  } finally {
+    submit.disabled = false;
+  }
+}
 function notify(message, error = false) {
   $("#status").textContent = message;
   $("#status").classList.toggle("error", error);
@@ -52,6 +99,7 @@ function applyLanguage() {
   $("#privacyExplanation").textContent = BROWSER_ONLY ? tr("Ohne Konto bleiben die Angaben bis zum Neuladen im Arbeitsspeicher des Browsers. Beim Export entstehen pers\xF6nliche Dateien auf deinem Ger\xE4t. Mit API-Key werden Profil und Stellenbeschreibung an den gew\xE4hlten KI-Anbieter gesendet. Dessen Regeln zur Speicherung gelten zus\xE4tzlich.", "Without an account, details remain in browser memory until reload. Exports create personal files on your device. With an API key, your profile and posting are sent to that provider; their retention rules also apply.") : tr("Datei-Uploads werden auf diesem Server verarbeitet und in deiner gesch\xFCtzten Sitzung gespeichert. Bewerbungen werden nur auf deinen Wunsch im Konto gespeichert. Du kannst Sitzung und Konto l\xF6schen. F\xFCr KI-Anfragen gelten zus\xE4tzlich die Datenschutzregeln des gew\xE4hlten Anbieters.", "Uploads are processed on this server and stored in your protected session. Applications are saved to your account only when you choose. You can delete your session or account. AI provider privacy rules additionally apply.");
   $("#guideLink").href = new URL(`${state.language}/` + (state.language === "en" ? "ai-resume-builder/" : "lebenslauf-mit-ki/"), baseURL()).href;
   accountView();
+  boostyTip();
   if (state.documents) {
     if (state.savedProject) $("#generationInfo").textContent = tr("Gespeicherte Bewerbung · alle Angaben erneut prüfen.", "Saved application · verify all details again.");
     else if (state.isDemo) $("#generationInfo").textContent = tr("DEMO · Regelbasierte Vorlagen. Platzhalter selbst ergänzen.", "DEMO · Rule-based templates. Fill in placeholders yourself.");
@@ -106,6 +154,9 @@ function showStep(step) {
     return;
   }
   state.step = step;
+  if (!tourActive) tourIndex = Math.max(0, TOUR.findIndex(t => t.step === step));
+  else tourActive = false;
+  boostyTip();
   $$("[data-panel]").forEach((el) => el.hidden = Number(el.dataset.panel) !== step);
   $$("[data-step]").forEach((el) => {
     el.classList.toggle("active", Number(el.dataset.step) === step);
@@ -249,7 +300,10 @@ function renderQuality() {
   }
 }
 async function generatePayload(body) {
-  if (body.demo) return { documents: demoPackage(body.profile, body.job, body.language), is_demo: true, model: "demo", provider: body.provider };
+  if (body.demo) {
+    usage("demo.generate");
+    return { documents: demoPackage(body.profile, body.job, body.language), is_demo: true, model: "demo", provider: body.provider };
+  }
   if (!BROWSER_ONLY) return api("/api/package", body);
   const config = PROVIDERS.find((p) => p.id === body.provider);
   const documents = body.demo ? demoPackage(body.profile, body.job, body.language) : validatePackage((await callProvider(body.provider, body.keys[config.key], applicationPrompt(body.language), [{ role: "user", content: JSON.stringify({ confirmed_profile: body.profile, job: body.job, preferences: body.wishes }) }], body)).content);
@@ -345,12 +399,14 @@ async function saveBlob(blob, filename) {
     });
     const file = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
     await Share.share({ title: filename, url: file.uri });
+    usage(filename.endsWith(".project.json") ? "project.backup" : "document.export");
     return;
   }
   const url = URL.createObjectURL(blob), link = document.createElement("a");
   link.href = url;
   link.download = filename;
   link.click();
+  usage(filename.endsWith(".project.json") ? "project.backup" : "document.export");
   setTimeout(() => URL.revokeObjectURL(url), 1e3);
 }
 async function download(all = false) {
@@ -479,6 +535,9 @@ function showInfo(title, text) {
   $("#infoDialog").showModal();
 }
 function clearPersonalMemory() {
+  $("#boostyAnswer").textContent = "";
+  $("#boostyQuestion").value = "";
+  $("#boostyAi").checked = false;
   state.keys = {};
   state.models = {};
   state.documents = null;
@@ -748,10 +807,25 @@ async function init() {
   }));
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   $("#clearData").addEventListener("click", action(deleteData));
-  $("#helpBtn").addEventListener("click", () => notify(tr("Schreibe konkrete, belegbare Erfahrungen. Erg\xE4nze Kennzahlen nur, wenn sie stimmen. Eine L\xFCcke ist besser als eine erfundene F\xE4higkeit.", "Describe specific, verifiable experience. Add metrics only when accurate. A gap is better than an invented skill.")));
+  $("#helpBtn").addEventListener("click", () => {
+    $("#boostyAnswer").textContent = boostyAnswer("start", state.language).content;
+    $("#boostyDialog").showModal();
+  });
+  $("#boostyNext").addEventListener("click", () => guideTo((tourIndex + 1) % TOUR.length));
+  $("#boostyForm").addEventListener("submit", askBoosty);
+  $$("[data-boosty]").forEach(button => button.addEventListener("click", () => {
+    $("#boostyAnswer").textContent = boostyAnswer(button.dataset.boosty, state.language).content;
+  }));
+  $("#adminLink").addEventListener("click", (event) => {
+    event.preventDefault();
+    embeddedAdmin?.clear();
+    embeddedAdmin = mountAdmin($("#embeddedAdmin"));
+    $("#adminDialog").showModal();
+  });
+  $("#adminDialog").addEventListener("close", () => embeddedAdmin?.clear());
   $("#privacyBtn").addEventListener("click", action(async () => {
     const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");
-    showInfo(tr("Datenschutz", "Privacy"), $("#privacyExplanation").textContent + "\n\n" + tr("Verantwortlicher: ", "Controller: ") + info.operator_name + "\n" + info.operator_address + "\n" + info.operator_email + "\n\n" + tr("Konten speichern deine E-Mail-Adresse und einen geschützten Passwort-Hash. Bewerbungen werden auf deinen Wunsch gespeichert und bleiben bis zur Löschung erhalten. Anonyme Uploads werden nach ", "Accounts store your email and a protected password hash. Applications are saved when you choose and remain until deleted. Anonymous uploads are removed after ") + (info.retention_days || 30) + tr(" Tagen bereinigt. Keine Werbe-Tracker oder gespeicherten API-Keys. Keine persönlichen Daten im Service-Worker-Cache. Exporte auf deinem Gerät und Daten beim KI-Anbieter werden durch eine Kontolöschung nicht entfernt. Details zu Hosting und Anbietervereinbarungen müssen vor dem öffentlichen Start ergänzt werden.", " days. No advertising trackers or stored API keys. Personal data is never cached by the service worker. Deleting an account does not remove exports on your device or data at AI providers. Hosting and provider agreements must be documented before public launch."));
+    showInfo(tr("Datenschutz", "Privacy"), $("#privacyExplanation").textContent + "\n\n" + tr("Verantwortlicher: ", "Controller: ") + info.operator_name + "\n" + info.operator_address + "\n" + info.operator_email + "\n\n" + tr("Konten speichern deine E-Mail-Adresse und einen geschützten Passwort-Hash. Bewerbungen werden auf deinen Wunsch gespeichert und bleiben bis zur Löschung erhalten. Anonyme Uploads werden nach ", "Accounts store your email and a protected password hash. Applications are saved when you choose and remain until deleted. Anonymous uploads are removed after ") + (info.retention_days || 30) + tr(" Tagen bereinigt. Keine Werbe-Tracker oder gespeicherten API-Keys. Keine persönlichen Daten im Service-Worker-Cache. Exporte auf deinem Gerät und Daten beim KI-Anbieter werden durch eine Kontolöschung nicht entfernt. Der Betreiber kann für Support und Verwaltung auf gespeicherte Inhalte zugreifen; Admin-Zugriffe werden protokolliert. Nutzungsereignisse (Konto, Zeitpunkt, Funktion, Erfolg/Fehler) bleiben 30 Tage, Admin-Protokolle und tägliche Summen 90 Tage. Keine IP-Adressen, Frage- oder Dokumenttexte in der Statistik. Bei Kontolöschung wird die Kontozuordnung der Nutzungsereignisse entfernt. Details zu Hosting und Anbietervereinbarungen müssen vor dem öffentlichen Start ergänzt werden.", " days. No advertising trackers or stored API keys. Personal data is never cached by the service worker. Deleting an account does not remove exports on your device or data at AI providers. The operator can access stored content for support and administration; admin access is audited. Usage metadata (account, time, function, result) remains for 30 days, admin audit logs and daily totals for 90 days. Analytics excludes IP addresses, questions and document text. Account deletion removes its association with usage events. Hosting and provider agreements must be documented before public launch."));
   }));
   $("#legalBtn").addEventListener("click", action(async () => {
     const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");

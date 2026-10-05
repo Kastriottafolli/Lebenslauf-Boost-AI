@@ -96,3 +96,61 @@ backup_database(Path(os.environ["TEST_BACKUP_DIR"]))
     if os.name != "nt":
         assert database.stat().st_mode & 0o777 == 0o600
         assert backup.stat().st_mode & 0o777 == 0o600
+
+
+def test_admin_mfa_and_sessions_survive_restart(tmp_path):
+    environment = {
+        **os.environ,
+        "DATABASE_URL": "sqlite:///" + str(tmp_path / "admin.db"),
+        "ADMIN_KEY_FILE": str(tmp_path / "admin.key"),
+        "SECURE_COOKIES": "true",
+        "TEST_PRIVATE_DIR": str(tmp_path / "private"),
+        "TEST_TOKEN_FILE": str(tmp_path / "token"),
+    }
+    common = """
+import os, re
+from pathlib import Path
+from fastapi.testclient import TestClient
+from backend.main import app
+from backend.database import SessionLocal
+from backend.models import AdminAccess
+from backend.services import admin_service as admins
+client=TestClient(app,base_url="https://testserver",headers={"X-Boosty-Request":"1"})
+"""
+    first = (
+        common
+        + """
+with SessionLocal() as db:
+    file=admins.provision(db,"restart-admin@example.invalid",Path(os.environ["TEST_PRIVATE_DIR"]))
+setup={"email":"restart-admin@example.invalid","setup_code":re.search(r"Einrichtungscode: (\\S+)",file.read_text())[1]}
+secret=client.post("/api/admin/setup/begin",json=setup).json()["secret"]
+response=client.post("/api/admin/setup/finish",json={**setup,"password":"synthetic-test-password-1234","code":admins.totp(secret,int(admins.time.time())//30)})
+assert response.status_code==200,response.text
+Path(os.environ["TEST_TOKEN_FILE"]).write_text(response.json()["access_token"])
+assert client.get("/api/admin/overview").status_code==200
+"""
+    )
+    second = (
+        common
+        + """
+client.headers["Authorization"]="Bearer "+Path(os.environ["TEST_TOKEN_FILE"]).read_text()
+assert client.get("/api/admin/me").json()["email"]=="restart-admin@example.invalid"
+assert client.get("/api/admin/database").status_code==200
+with SessionLocal() as db:
+    access=db.query(AdminAccess).one()
+    secret=admins.cipher().decrypt(access.secret_cipher.encode()).decode()
+    assert not admins.accept_totp(db,access,admins.totp(secret,access.last_counter))
+assert client.post("/api/admin/logout",json={}).status_code==200
+assert client.get("/api/admin/overview").status_code==401
+"""
+    )
+    for script in (first, second):
+        subprocess.run(
+            [sys.executable, "-c", script],
+            env=environment,
+            cwd=Path(__file__).resolve().parents[2],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )

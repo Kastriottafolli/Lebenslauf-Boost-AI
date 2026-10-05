@@ -1,6 +1,6 @@
-# Candidaro · Lebenslauf Boost AI
+# Boosty AI · Lebenslauf Boost AI
 
-Bewerbungswerkstatt auf Deutsch und Englisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Candidaro ist ein vorläufiger Produktname. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
+Bewerbungswerkstatt auf Deutsch und Englisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist ein vorläufiger Produktname. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
 
 ## Was funktioniert
 
@@ -116,3 +116,15 @@ Die ausdrücklich gewählte Demo erstellt Dokumente lokal auch im Serverbetrieb.
 Die lokale Konfiguration aus `.env.example` verwendet `data/tafolli.db`. Initialisieren und eine geprüfte Sicherung erstellen: `python -m backend.manage_database init` bzw. `python -m backend.manage_database backup`. Registrierung und gespeicherte Bewerbungen bleiben nach einem Serverneustart erhalten. Der Prüflauf testet dies mit zwei unabhängigen Prozessen.
 
 Für die öffentliche Verbindung zu tafolli.net sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage sieht zunächst `bewerbung.tafolli.net` vor; keine DNS-Änderung wurde durchgeführt. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).
+
+## Boosty AI · Admin und Hilfe
+
+Die Marke ist Boosty AI. Das Maskottchen führt durch die Bewerbung und beantwortet Bedienungsfragen ohne API-Key; freie KI-Fragen benötigen Zustimmung und einen eigenen Anbieter-Key.
+
+Unter `/admin` und über **Admin** in der App stehen separate MFA-Anmeldung, Konten, Nutzungsverlauf, Tagesstatistiken, gespeicherte Inhalte und Datenbankstatus bereit. Keine öffentliche Vergabe von Adminrechten und kein Standardpasswort. Einrichtung und Schutzgrenzen: [ADMIN.md](docs/product/ADMIN.md).
+
+```sh
+python -m backend.manage_admin --email DEINE-ADMIN-EMAIL
+```
+
+Die private Datei mit einmaligem Setup-Code bleibt außerhalb von Git und Webauslieferung. Auf dem Produktionsserver getrennt provisionieren. Passwort-Hashes, Tokens und Keys erscheinen nicht in den Datenansichten. Statistik zählt Seitenaufrufe/Sitzungen; keine exakte Zahl eindeutiger Besucher.

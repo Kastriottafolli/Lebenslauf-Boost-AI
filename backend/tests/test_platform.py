@@ -381,3 +381,99 @@ def test_api_abuse_limit():
         ).status_code
         == 429
     )
+
+
+def test_boosty_requires_consent_ownership_and_own_key(monkeypatch):
+    seen = []
+
+    def answer(self, system, messages, **_kwargs):
+        seen.append((system, messages))
+        return LLMResult("Follow the four steps.", self.name, "test-model")
+
+    monkeypatch.setattr(HTTPProvider, "generate", answer)
+    client = TestClient(app)
+    sid = session(client)
+    body = {
+        "session_id": sid,
+        "question": "How do I save?",
+        "provider": "openai",
+        "keys": {"openai": "synthetic-key"},
+    }
+    assert client.post("/api/assistant", json=body).status_code == 422
+    body["consent"] = True
+    stranger = TestClient(app)
+    assert stranger.post("/api/assistant", json=body).status_code == 403
+    assert client.post("/api/assistant", json={**body, "keys": {}}).status_code == 422
+    result = client.post("/api/assistant", json=body)
+    assert result.status_code == 200 and result.json()["model"] == "test-model"
+    assert seen[0][1] == [{"role": "user", "content": "Language: de\nQuestion: How do I save?"}]
+    assert SOURCE not in seen[0][0] and "synthetic-key" not in str(seen)
+
+
+def test_usage_is_metadata_only_and_account_deletion_unlinks_events():
+    from backend.database import SessionLocal
+    from backend.models import Account, Activity
+
+    client = TestClient(app)
+    value = register(client)
+    sid = session(client)
+    assert (
+        client.post("/api/usage", json={"session_id": sid, "event": "demo.generate"}).status_code
+        == 200
+    )
+    assert (
+        client.post("/api/usage", json={"session_id": sid, "event": "password.secret"}).status_code
+        == 422
+    )
+    with SessionLocal() as db:
+        account = db.query(Account).filter_by(email=value["email"]).one()
+        aid = account.id
+        rows = db.query(Activity).filter_by(account_id=aid).all()
+        assert {r.event for r in rows} >= {"account.register", "session.start", "demo.generate"}
+    assert client.delete("/api/account").status_code == 200
+    with SessionLocal() as db:
+        assert db.query(Activity).filter_by(account_id=aid).count() == 0
+
+
+def test_analytics_and_admin_retention_is_bounded():
+    from backend.cleanup import cleanup
+    from backend.database import SessionLocal
+    from backend.models import Activity, AdminAudit, AdminLogin, DailyMetric
+
+    now = datetime.now(UTC).replace(tzinfo=None)
+    with SessionLocal() as db:
+        old_event = Activity(
+            event="retention.test", outcome=200, created_at=now - timedelta(days=31)
+        )
+        fresh_event = Activity(event="retention.test", outcome=200, created_at=now)
+        old_audit = AdminAudit(action="retention.test", created_at=now - timedelta(days=91))
+        fresh_audit = AdminAudit(action="retention.test", created_at=now)
+        day = (now - timedelta(days=91)).date().isoformat()
+        if not db.get(DailyMetric, day):
+            db.add(DailyMetric(day=day, page_views=1, visits=1))
+        db.add_all([old_event, fresh_event, old_audit, fresh_audit])
+        db.commit()
+        ids = [old_event.id, fresh_event.id, old_audit.id, fresh_audit.id]
+    cleanup()
+    with SessionLocal() as db:
+        assert db.get(Activity, ids[0]) is None and db.get(Activity, ids[1])
+        assert db.get(AdminAudit, ids[2]) is None and db.get(AdminAudit, ids[3])
+        assert db.get(DailyMetric, day) is None
+        assert db.query(AdminLogin).filter(AdminLogin.expires_at <= now).count() == 0
+
+
+def test_app_shell_assets_and_worker_share_a_version():
+    import re
+
+    client = TestClient(app)
+    index = client.get("/")
+    admin = client.get("/admin")
+    version = re.search(r"professional.css\?v=([a-f0-9]{12})", index.text)[1]
+    assert f"professional.css?v={version}" in admin.text
+    assert index.headers["cache-control"] == "no-cache"
+    worker = client.get("/sw.js").text
+    assert "__BUILD_ID__" not in worker
+    assert f"boosty-shell-{version}" in worker
+    assert f"app.js?v={version}" in worker
+    assert "clients.claim" in worker
+    assert "endsWith('/admin')" in worker
