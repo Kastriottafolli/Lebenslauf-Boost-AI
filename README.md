@@ -1,6 +1,6 @@
 # Boosty AI · Lebenslauf Boost AI
 
-Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist die vom Betreiber gewählte Produktmarke. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
+Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist die vom Betreiber gewählte Produktmarke. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die gekaufte App-Domain ist **[tafolliboost.com](https://tafolliboost.com)**.
 
 ## Was funktioniert
 
@@ -117,7 +117,7 @@ Die ausdrücklich gewählte Demo erstellt Dokumente lokal auch im Serverbetrieb.
 
 Die lokale Konfiguration aus `.env.example` verwendet `data/tafolli.db`. Initialisieren und eine geprüfte Sicherung erstellen: `python -m backend.manage_database init` bzw. `python -m backend.manage_database backup`. Registrierung und gespeicherte Bewerbungen bleiben nach einem Serverneustart erhalten. Der Prüflauf testet dies mit zwei unabhängigen Prozessen.
 
-Für die öffentliche Verbindung zu tafolli.net sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage sieht zunächst `bewerbung.tafolli.net` vor; keine DNS-Änderung wurde durchgeführt. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).
+Für die Veröffentlichung auf tafolliboost.com sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage verwendet `https://tafolliboost.com`; `www.tafolliboost.com` wird auf diese Adresse weitergeleitet. Beide DNS-Namen müssen auf den Server zeigen. Keine DNS-Änderung wurde durchgeführt. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).
 
 ## Boosty AI · Admin und Hilfe
 

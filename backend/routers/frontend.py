@@ -35,7 +35,9 @@ def index():
     site = get_settings().site_url.rstrip("/")
     if site.startswith("https://"):
         source = source.replace(
-            "</head>", f'<link rel="canonical" href="{html.escape(site, quote=True)}/"></head>'
+            "</head>",
+            f'<link rel="canonical" href="{html.escape(site, quote=True)}/">'
+            f'<meta property="og:url" content="{html.escape(site, quote=True)}/"></head>',
         )
     # The shell lives at /; API and generated documents are never cached.
     return HTMLResponse(

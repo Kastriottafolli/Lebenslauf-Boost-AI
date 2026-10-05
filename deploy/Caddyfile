@@ -6,3 +6,8 @@
     encode zstd gzip
     reverse_proxy app:8000
 }
+
+# Both names need DNS records pointing to this server.
+www.{$APP_DOMAIN} {
+    redir https://{$APP_DOMAIN}{uri} permanent
+}

@@ -37,7 +37,7 @@ Eine mobile Breite wurde angefordert und die tatsächlich gemessene Browserbreit
 - Android/iOS: native Quellen synchronisiert, aber keine APK/AAB/IPA erstellt. JDK/Android SDK bzw. vollständiges Xcode fehlen.
 - Docker-Image: Konfiguration erstellt, Docker ist hier nicht verfügbar; Image-Build nicht durchgeführt.
 - Endor Dependency Reviewer: Skill gelesen, Endor-MCP/CLI nicht verfügbar. Zusätzliche Endor-Risiko-, Lizenz- und Maintenance-Bewertung **UNKNOWN**, nicht bestanden behauptet. npm/pip-Audits sind davon unabhängige Prüfungen.
-- Öffentliche Veröffentlichung, Markenfreigabe, Domainkauf, SMTP, Checkout und Store-Freigabe: nicht erfolgt. www.tafolli.net und info@tafolli.net sind als Betreiberverbindung hinterlegt; keine bestehende Website ersetzt und kein DNS-Eintrag verändert.
+- Öffentliche Veröffentlichung, Markenfreigabe, SMTP, Checkout und Store-Freigabe: nicht erfolgt. www.tafolli.net und info@tafolli.net sind als Betreiberverbindung hinterlegt; keine bestehende Website ersetzt und kein DNS-Eintrag verändert.
 
 Die verbleibenden Betriebs- und Ausbaupunkte stehen in RELEASE.md und MOBILE.md. Der Stand ist eine prüfbare Beta.
 
@@ -51,3 +51,9 @@ Die verbleibenden Betriebs- und Ausbaupunkte stehen in RELEASE.md und MOBILE.md.
 - Albanische Oberfläche, Dokumentvorlagen, Hilfe, Tour, Ratgeber, API-Sprachwerte und Legacy-Prompts geprüft. Eigenes lokales Tesseract-sqi-Modell verarbeitet einen synthetischen Scan; Name und berufliche Inhalte erkannt, E-Mail/Einzelwörter teilweise falsch. Manuelle OCR-Prüfung bleibt erforderlich. Automatischer Chrome-Dateiupload scheiterte an der nicht aktivierten Erweiterungsberechtigung für Datei-URLs; OCR separat lokal geprüft.
 - Idempotente SQLite-Sprachmigration erhält bestehende Sitzungen, abhängige Daten und Indizes; vor der Umstellung wird eine nicht überschreibbare Sicherung mit Dateirechten 0600 erstellt. Migration an lokaler Preview-Datenbank abgeschlossen. Betreiber verwaltet Aufbewahrung und Löschung dieser personenbezogenen Backups.
 - Boosty ersetzt das Pfeil-Logo auch in PWA- und nativen App-Icons. Capacitor-Quellen erneut synchronisiert; native Geräte-Builds weiterhin nicht verifiziert.
+
+## Domain tafolliboost.com
+
+Die Domain wurde laut Betreiber gekauft. App-Links, Branding, Produktions-Hosts und -Origins, Canonicals, Open-Graph-URL und Sitemap sind auf https://tafolliboost.com angepasst. Caddy leitet www.tafolliboost.com einschließlich Pfad/Query auf die Hauptadresse weiter. Betreiberwebsite und info@tafolli.net bleiben bestehen. Keine DNS-Einträge, GitHub-Pages-Domain oder öffentliche Server wurden verändert.
+
+Domain-Prüfung: Server-HTML und Browser-Build liefern die neue Canonical-/Open-Graph-Adresse. Sitemap enthält Startseite und alle sechs DE/EN/SQ-Ratgeber; Footer-Links und robots.txt geprüft. 64 Tests, Ruff und Build/Capacitor-Sync bestanden. HTTPS-Ausstellung und Weiterleitung sind für den späteren Serverbetrieb vorbereitet, lokal nicht als öffentlich aktiv getestet.

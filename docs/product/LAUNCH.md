@@ -4,14 +4,14 @@
 
 Boosty AI · „Deine Erfahrung. Deine nächste Chance.“ / “Your experience. Your next opportunity.” Boosty erscheint als Logo, animierte Begleitung, feste Hilfe und in Ladephasen. Name und Betreiberangaben liegen in `static/branding.json`; Modelle/Key-Links in `static/providers.json`.
 
-Boosty AI ist die vom Betreiber gewählte Marke. Die App wird unter der Tafolli-Domain vorbereitet. Eine Freigabe für Marken-/Namensrechte oder eine Verfügbarkeit von Boosty-Domains wurde nicht bestätigt.
+Boosty AI ist die vom Betreiber gewählte Marke. Die App-Domain **tafolliboost.com** wurde vom Betreiber gekauft. Marken-/Namensrechte wurden nicht geprüft. DNS-/Hosting-Veröffentlichung steht noch aus.
 
 ## Vorbereitete SEO-Seiten
 
 - `/de/lebenslauf-mit-ki/` ↔ `/en/ai-resume-builder/` ↔ `/sq/cv-me-ia/`
 - `/de/anschreiben-mit-ki/` ↔ `/en/ai-cover-letter/` ↔ `/sq/leter-aplikimi-me-ia/`
 
-Die Seiten liefern echte HTML-Inhalte, individuelle Titel/Beschreibungen, interne Verlinkung und Sprachwechsel. Beim Build mit `SITE_URL=https://DEINE-DOMAIN` werden Canonicals, hreflang-Verweise und Sitemap erstellt. Die App enthält beschreibende Metadaten und eine lesbare Überschriftenstruktur. Keine erfundenen Testimonials, Bewertungssterne oder Platz-1-Versprechen.
+Die Seiten liefern echte HTML-Inhalte, individuelle Titel/Beschreibungen, interne Verlinkung und Sprachwechsel. Beim Build mit `SITE_URL=https://tafolliboost.com PUBLIC_BASE_PATH=/` werden Canonicals, hreflang-Verweise und Sitemap erstellt. Die App enthält beschreibende Metadaten und eine lesbare Überschriftenstruktur. Keine erfundenen Testimonials, Bewertungssterne oder Platz-1-Versprechen.
 
 Nach Domain-Konfiguration: Sitemap in Search Console einreichen, Indexierung prüfen, echte Fragen der Nutzer beantworten und Ratgeber anhand dieser Fragen erweitern. Keine massenhaften automatisch generierten Orts-/Berufsseiten ohne eigenen Nutzen.
 

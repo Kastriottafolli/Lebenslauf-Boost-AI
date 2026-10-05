@@ -20,6 +20,7 @@ brand = branding['name']
 owner = html.escape(branding['operator']['operator_name'])
 owner_email = html.escape(branding['operator']['operator_email'], quote=True)
 home_url = html.escape(branding['home_url'], quote=True)
+home_label = html.escape(branding['domain'])
 base = os.environ.get('PUBLIC_BASE_PATH', '/Lebenslauf-Boost-AI/').strip('/')
 base = '/' + base + '/' if base else '/'
 site = os.environ.get('SITE_URL', '').rstrip('/')
@@ -30,7 +31,7 @@ source = source.replace('"/assets/build/app.js?v=__BUILD_ID__"', '"./assets/js/a
 source = source.replace('"/manifest.webmanifest"', '"./manifest.webmanifest"').replace('href="/de/', 'href="./de/')
 source = source.replace('</head>', '<meta name="app-base" content="./"></head>')
 if site:
-    source = source.replace('</head>', f'<link rel="canonical" href="{site}/"></head>')
+    source = source.replace('</head>', f'<link rel="canonical" href="{site}/"><meta property="og:url" content="{site}/"></head>')
 (OUT / 'index.html').write_text(source)
 (OUT / '.nojekyll').touch()
 manifest = {'id': '.', 'name': brand, 'short_name': brand, 'description': 'Resume and application studio / Bewerbungswerkstatt', 'start_url': './', 'scope': './', 'display': 'standalone', 'background_color': '#f6f7f3', 'theme_color': '#22393a', 'icons': [{'src': 'static/icon-192.png', 'sizes': '192x192', 'type': 'image/png'}, {'src': 'static/icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any maskable'}]}
@@ -50,7 +51,7 @@ for path in sorted((ROOT / 'frontend/content').rglob('*.json')):
     paragraphs = ''.join(f'<section><h2>{html.escape(s["heading"])}</h2>{s["html"]}</section>' for s in page['sections'])
     language_links = ''.join(f'<a href="{prefix}{route}/">'+{'de':'Deutsch','en':'English','sq':'Shqip'}[lang]+'</a>' for lang,route in page['alternates'].items() if lang != page['language'])
     # No JSON-LD until a real site URL/operator has been configured; no invented ratings.
-    value = f'''<!doctype html><html lang="{page['language']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(page['title'])} | {html.escape(brand)}</title><meta name="description" content="{html.escape(page['description'], quote=True)}">{canonical}{alt}<link rel="stylesheet" href="{prefix}assets/css/professional.css"><link rel="icon" href="{prefix}static/icon.svg"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img class="brand-mascot" src="{prefix}static/boosti.svg" alt="" width="44" height="48">{html.escape(brand)}</a><nav>{language_links}</nav></header><main class="guide"><p class="eyebrow">{page['eyebrow']}</p><h1>{html.escape(page['heading'])}</h1><p>{html.escape(page['description'])}</p><a class="button primary" href="{prefix}?lang={page['language']}#workspace">{page['cta']}</a>{paragraphs}<p><a href="{prefix}">{page['back']}</a></p></main><footer><span>{owner}</span><a href="{home_url}">www.tafolli.net</a><a href="mailto:{owner_email}">{owner_email}</a></footer></body></html>'''
+    value = f'''<!doctype html><html lang="{page['language']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(page['title'])} | {html.escape(brand)}</title><meta name="description" content="{html.escape(page['description'], quote=True)}">{canonical}{alt}<link rel="stylesheet" href="{prefix}assets/css/professional.css"><link rel="icon" href="{prefix}static/icon.svg"></head><body><header class="topbar"><a class="brand" href="{prefix}"><img class="brand-mascot" src="{prefix}static/boosti.svg" alt="" width="44" height="48">{html.escape(brand)}</a><nav>{language_links}</nav></header><main class="guide"><p class="eyebrow">{page['eyebrow']}</p><h1>{html.escape(page['heading'])}</h1><p>{html.escape(page['description'])}</p><a class="button primary" href="{prefix}?lang={page['language']}#workspace">{page['cta']}</a>{paragraphs}<p><a href="{prefix}">{page['back']}</a></p></main><footer><span>{owner}</span><a href="{home_url}">{home_label}</a><a href="mailto:{owner_email}">{owner_email}</a></footer></body></html>'''
     (target / 'index.html').write_text(value)
     urls.append(route)
 robots = 'User-agent: *\nAllow: /\nDisallow: ' + base + 'api/\nDisallow: ' + base + 'admin\n'
@@ -58,7 +59,7 @@ if site:
     robots += f'Sitemap: {site}/sitemap.xml\n'
 (OUT / 'robots.txt').write_text(robots)
 if site:
-    items = ''.join(f'<url><loc>{site}/{u}/</loc></url>' for u in urls)
+    items = f'<url><loc>{site}/</loc></url>' + ''.join(f'<url><loc>{site}/{u}/</loc></url>' for u in urls)
     (OUT / 'sitemap.xml').write_text(f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>')
 (ROOT / 'frontend/public/routes.json').write_text(json.dumps(urls))
 print('Built public pages and PWA shell; canonical URLs require SITE_URL.')

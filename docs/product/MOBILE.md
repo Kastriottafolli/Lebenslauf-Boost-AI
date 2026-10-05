@@ -21,7 +21,7 @@ Auf diesem Rechner fehlen vollständiges Xcode, ein JDK und das Android SDK. Es 
 
 1. Android Studio mit SDK/JDK bzw. Xcode installieren; vorhandene Projektdateien öffnen.
 2. Bundle-/Application-ID, Anzeigename, reale Domain und Store-Konten festlegen. `net.tafolli.candidaro` ist vorläufig.
-3. Bei Serverbetrieb mit `PUBLIC_API_BASE=https://DEIN-SERVER npm run mobile:sync` bauen. Die App-Ursprünge im Server konfigurieren; Bearer-Login für native Requests testen.
+3. Bei Serverbetrieb mit `SITE_URL=https://tafolliboost.com PUBLIC_BASE_PATH=/ PUBLIC_API_BASE=https://tafolliboost.com npm run mobile:sync` bauen. Die App-Ursprünge im Server konfigurieren; Bearer-Login für native Requests testen.
 4. Geräteprüfungen: Kameraabbruch, große Scans, OCR-Zahlenfehler, Fotoauswahl, Offline-Demo, Export/Share, Deep Links, Android Share-Intent und Tastatur/Safe Areas.
 5. Store-Screenshots, Beschreibung, Support-/Datenschutz-URL und Datenangaben vervollständigen. App-Icons und Startbildschirme verwenden bereits die vorläufige Marke.
 6. Android Release-AAB signieren; iOS Archive mit eigenem Apple-Team signieren und TestFlight testen.
