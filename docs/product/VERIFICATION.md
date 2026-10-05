@@ -2,8 +2,8 @@
 
 ## Automatisiert
 
-- Backend: 40 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext. Ein zusätzlicher Test registriert und speichert in einem Prozess und prüft Anmeldung/Projektzugriff nach einem echten Prozessneustart einschließlich einer geprüften SQLite-Sicherung. Retention-Test: abgelaufene anonyme Daten und Login-Tokens entfernt, Konten/Bewerbungen erhalten.
-- Frontend: 15 Tests für Demo-Fakten, Anbieter-Verträge, Import-/Exportgrenzen, sechs PDF-Layouts mit Unicode, lesbare Word-Dateien und ZIP-Inhalte.
+- Backend: 45 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext. Ein zusätzlicher Test registriert und speichert in einem Prozess und prüft Anmeldung/Projektzugriff nach einem echten Prozessneustart einschließlich einer geprüften SQLite-Sicherung. Retention-Test: abgelaufene anonyme Daten und Login-Tokens entfernt, Konten/Bewerbungen erhalten.
+- Frontend: 19 Tests für Demo-Fakten, Anbieter-Verträge, Import-/Exportgrenzen, sechs PDF-Layouts mit Unicode, lesbare Word-Dateien und ZIP-Inhalte.
 - `ruff check backend` und `git diff --check`: erfolgreich.
 - `npm run build` und `npx cap sync`: erfolgreich für Browser, Server, Android und iOS.
 - Apple Info.plist, PrivacyInfo.xcprivacy und project.pbxproj: `plutil -lint` erfolgreich.
@@ -16,14 +16,14 @@
 - Admin-Konto, MFA-Replay-Zustand und Admin-Sitzung auch nach einem echten Prozessneustart verifiziert.
 - Auditiert: einzelne Nutzerdaten-/Bewerbungszugriffe. API-Ansichten enthalten keine Passwort-Hashes, Schlüssel oder Tokens. E-Mail-Suche mit Sonderzeichen und Query-Grenzen geprüft.
 - Verstärkte scrypt-Parameter mit kompatibler Aktualisierung alter Hashes, persistente Limits je Identität, Statistik-Retention und Entkopplung bei Kontolöschung geprüft.
-- Boosty: Bedienungsantworten in DE/EN, Tour über alle vier Schritte, KI nur mit Zustimmung/Session-Besitz/eigenem Key. Mock-Anfrage enthält weder Lebenslauf noch API-Key im Prompt.
+- Boosty: Bedienungsantworten in DE/EN/SQ, Tour über alle vier Schritte, KI nur mit Zustimmung/Session-Besitz/eigenem Key. Mock-Anfrage enthält weder Lebenslauf noch API-Key im Prompt.
 - Browser: Anmeldung eines ausschließlich synthetischen Admin-Testkontos in einer getrennten Datenbank, Dashboard, Nutzerliste, Bewerbungsinhalt, Admin-Protokoll und erfolgreiche Abmeldung geprüft. Keine Aktivierung oder Passwortvergabe für das echte Betreiberkonto durch den Agenten.
 - Versionen von HTML, App/CSS und Service-Worker stimmen überein; alte Cache-Dateien werden abgelöst. Admin/API werden nicht im Service-Worker gecacht.
 - Mobile Boosty-Frage zur Speicherung ohne Key beantwortet, Admin-Button bei 429 px sichtbar. Keine Browser-Konsolenfehler.
 
 ## Im Browser mit synthetischen Daten
 
-Beispielprofil → Fakten bestätigen → Stellenbeschreibung → ausdrückliche Demo → vier editierbare Dokumente. DE/EN-Oberfläche und englische Demo-Vorlagen geprüft; die Demo übersetzt den ursprünglichen Lebenslauf nicht automatisch. Die neueste Demo läuft auch im Serverbetrieb lokal und sendet keinen KI-Aufruf.
+Beispielprofil → Fakten bestätigen → Stellenbeschreibung → ausdrückliche Demo → vier editierbare Dokumente. DE/EN/SQ-Oberfläche sowie englische und albanische Demo-Vorlagen geprüft; die Demo übersetzt den ursprünglichen Lebenslauf nicht automatisch. Die neueste Demo läuft auch im Serverbetrieb lokal und sendet keinen KI-Aufruf.
 
 Ein synthetischer Bildscan wurde lokal mit Tesseract erkannt; Name, E-Mail und Text erschienen zur manuellen Prüfung. Keine Fehlermeldungen in der Browserkonsole.
 
@@ -40,3 +40,14 @@ Eine mobile Breite wurde angefordert und die tatsächlich gemessene Browserbreit
 - Öffentliche Veröffentlichung, Markenfreigabe, Domainkauf, SMTP, Checkout und Store-Freigabe: nicht erfolgt. www.tafolli.net und info@tafolli.net sind als Betreiberverbindung hinterlegt; keine bestehende Website ersetzt und kein DNS-Eintrag verändert.
 
 Die verbleibenden Betriebs- und Ausbaupunkte stehen in RELEASE.md und MOBILE.md. Der Stand ist eine prüfbare Beta.
+
+## Schritt 4, Texte und Albanisch
+
+- Insgesamt 64 automatische Tests bestanden. Zusätzliche Prüfungen: DE/EN/SQ-Briefe verwenden tatsächliche CV-Belege, Aufgaben aus der Anzeige und persönliche Motivation; keine fehlenden Qualifikationen erfunden. Kurze Briefe werden als Prüfhinweis markiert. Lebenslauf bleibt in der Demo in seiner Originalsprache.
+- In Google Chrome: synthetischer Lebenslauf mit 120 Projekten; Vorschau 446 px hoch bei 6632 px Inhalt. Scrollen innerhalb der Vorschau bewegt nicht die äußere Seite. Exportleiste steht oberhalb der Vorschau. Sichtbare 75 % entsprechen 12 von 16 Stichwörtern. Der ursprüngliche Nutzertab wurde nicht neu geladen.
+- Chrome-Downloads erneut gelesen: Word enthält den ersten und letzten Projektabschnitt; PDF hat sechs Seiten und enthält Alex Beispiel sowie Projekt 120.
+- Mobile Prüfung zusätzlich im In-App-Browser bei tatsächlich gemessenen 390 px: kein horizontaler Überlauf, nur Vorschau oder Texteditor sichtbar. Umschaltung funktioniert, Editor auf 380 px begrenzt. Chromes angeforderte Breite blieb 1475 px und wurde deshalb nicht als bestandener mobiler Chrome-Test gewertet.
+- Ladeoberfläche mit getrenntem Mock-Server: 25 % nach geprüften Eingaben; weitere Phasen nach Antwort, Dokumentprüfung und Abschluss. Allgemeine Importe/Exporte zeigen eine unbestimmte Ladeanzeige, OCR seinen tatsächlich gemeldeten Fortschritt. Keine Live-KI genutzt.
+- Albanische Oberfläche, Dokumentvorlagen, Hilfe, Tour, Ratgeber, API-Sprachwerte und Legacy-Prompts geprüft. Eigenes lokales Tesseract-sqi-Modell verarbeitet einen synthetischen Scan; Name und berufliche Inhalte erkannt, E-Mail/Einzelwörter teilweise falsch. Manuelle OCR-Prüfung bleibt erforderlich. Automatischer Chrome-Dateiupload scheiterte an der nicht aktivierten Erweiterungsberechtigung für Datei-URLs; OCR separat lokal geprüft.
+- Idempotente SQLite-Sprachmigration erhält bestehende Sitzungen, abhängige Daten und Indizes; vor der Umstellung wird eine nicht überschreibbare Sicherung mit Dateirechten 0600 erstellt. Migration an lokaler Preview-Datenbank abgeschlossen. Betreiber verwaltet Aufbewahrung und Löschung dieser personenbezogenen Backups.
+- Boosty ersetzt das Pfeil-Logo auch in PWA- und nativen App-Icons. Capacitor-Quellen erneut synchronisiert; native Geräte-Builds weiterhin nicht verifiziert.

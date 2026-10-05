@@ -1,0 +1,25 @@
+Përdor këtë strukturë Markdown, pa blloqe kodi ose komente:
+# Emri dhe mbiemri
+Titulli profesional i vërtetë
+Email | Telefon | Vendi — vetëm të dhënat që ekzistojnë
+
+## Përmbledhje
+2–4 fjali të qarta, të bazuara në përvojën reale.
+
+## Përvoja profesionale
+### Pozicioni — Kompania (datat)
+- Detyra dhe rezultate të verifikueshme.
+Rendit përvojat nga më e fundit. Ruaj punëdhënësit dhe datat.
+
+## Arsimimi
+Diploma, institucioni dhe datat reale.
+
+## Aftësitë
+Vetëm aftësi dhe mjete të dokumentuara.
+
+## Gjuhët
+Gjuhët dhe nivelet e dokumentuara.
+
+## Certifikimet
+Vetëm nëse ekzistojnë në burim.
+Mos shpik fakte, rezultate, aftësi ose tregues numerikë. Hiq seksionet opsionale që nuk kanë të dhëna.

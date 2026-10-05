@@ -19,7 +19,7 @@ PROMPTS_DIR = Path(__file__).resolve().parent.parent.parent / "prompts"
 @cache
 def load_template(name: str, language: str) -> str:
     """Lädt eine Prompt-Vorlage, z. B. load_template('system', 'de')."""
-    lang = language if language in ("de", "en") else "de"
+    lang = language if language in ("de", "en", "sq") else "de"
     return (PROMPTS_DIR / f"{name}_{lang}.txt").read_text(encoding="utf-8").strip()
 
 
@@ -40,7 +40,11 @@ def build_user_message(
     context = (
         "\n\n---\n".join(cv_context)
         if cv_context
-        else ("(no CV text available)" if language == "en" else "(kein Lebenslauf-Text vorhanden)")
+        else {
+            "de": "(kein Lebenslauf-Text vorhanden)",
+            "en": "(no CV text available)",
+            "sq": "(nuk ka tekst CV-je)",
+        }.get(language, "(kein Lebenslauf-Text vorhanden)")
     )
 
     technique_block = ""
@@ -49,7 +53,7 @@ def build_user_message(
     if technique in ("chain_of_thought", "auto"):
         technique_block += load_template("chain_of_thought", language) + "\n\n"
 
-    none_wishes = "(none)" if language == "en" else "(keine)"
+    none_wishes = {"de": "(keine)", "en": "(none)", "sq": "(asnjë)"}.get(language, "(keine)")
     return load_template("user_message", language).format(
         job_description=job_description.strip(),
         wishes=wishes.strip() or none_wishes,

@@ -39,7 +39,7 @@ class GenerateRequest(BaseModel):
     job_description: str = Field(..., min_length=10, max_length=20000)
     wishes: str | None = Field("", max_length=4000)
     provider: Literal["claude", "openai", "gemini", "grok", "azure", "compare"] = "claude"
-    language: Literal["de", "en"] = "de"
+    language: Literal["de", "en", "sq"] = "de"
     technique: Literal["auto", "few_shot", "chain_of_thought"] = "auto"
     keys: ApiKeys | None = None
     model: str | None = Field(None, max_length=100)
@@ -74,7 +74,7 @@ class RefineRequest(BaseModel):
     instruction: str = Field(..., min_length=2, max_length=4000)
     current_content: str | None = Field(None, max_length=60000)
     provider: Literal["claude", "openai", "gemini", "grok", "azure"] = "claude"
-    language: Literal["de", "en"] = "de"
+    language: Literal["de", "en", "sq"] = "de"
     keys: ApiKeys | None = None
     model: str | None = Field(None, max_length=100)
     endpoint: str | None = Field(None, max_length=300)
@@ -85,7 +85,7 @@ class ExportRequest(BaseModel):
     content: str = Field(..., min_length=10, max_length=60000)
     format: Literal["pdf", "docx"] = "pdf"
     design: Literal["modern", "classic", "minimal", "sapphire", "cobalt", "slate"] = "modern"
-    language: Literal["de", "en"] = "de"
+    language: Literal["de", "en", "sq"] = "de"
     filename: str | None = "Lebenslauf"
     photo: str | None = None  # data:image/...;base64,... oder leer/None
 

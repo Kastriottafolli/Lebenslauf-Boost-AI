@@ -1,0 +1,13 @@
+Përgatit një CV profesionale në shqip për këtë pozicion, duke përdorur vetëm përvojën e dokumentuar.
+
+### SHPALLJA E PUNËS
+{job_description}
+
+### DËSHIRAT E KANDIDATIT
+{wishes}
+
+### PJESËT PËRKATËSE TË CV-SË — BURIMI I FAKTEVE
+{cv_context}
+
+{technique_block}
+{format}

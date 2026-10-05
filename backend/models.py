@@ -44,7 +44,7 @@ class Session(Base):
     """
 
     __tablename__ = "sessions"
-    __table_args__ = (CheckConstraint("language IN ('de','en')", name="ck_sessions_language"),)
+    __table_args__ = (CheckConstraint("language IN ('de','en','sq')", name="ck_sessions_language"),)
 
     owner_token_hash = Column(String(64), nullable=True)
     owner_id = Column(String(36), nullable=True, index=True)

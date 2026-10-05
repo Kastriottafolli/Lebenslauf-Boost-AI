@@ -16,7 +16,7 @@ def token_hash(token):
 def create_session(db: DBSession, language: str, owner_id=None):
     token = secrets.token_urlsafe(32)
     sess = Session(
-        language=language if language in ("de", "en") else "de",
+        language=language if language in ("de", "en", "sq") else "de",
         owner_token_hash=token_hash(token),
         owner_id=owner_id,
     )

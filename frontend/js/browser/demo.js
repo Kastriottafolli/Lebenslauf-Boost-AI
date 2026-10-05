@@ -1,5 +1,5 @@
 // Deterministic demo: only source facts are retained; job keywords are never added as skills.
-const STOP = new Set(('der die das den dem des ein eine einer einem einen und oder mit für von im in am an auf zu zur zum ist sind wir du sie ihr ihre ihren unser unsere suchen gesucht bieten haben hast erfahrung entwickelst schreibst arbeitest willkommen sowie als bei sich auch the a an and or to of for in on with is are we you your our this that will have has from as be').split(' '));
+const STOP = new Set(('dhe ose me për nga në një të ti ju ne është janë kjo ky kërkojmë detyrat duhet do tek që si edhe ' + 'der die das den dem des ein eine einer einem einen und oder mit für von im in am an auf zu zur zum ist sind wir du sie ihr ihre ihren unser unsere suchen gesucht bieten haben hast erfahrung entwickelst schreibst arbeitest willkommen sowie als bei sich auch the a an and or to of for in on with is are we you your our this that will have has from as be').split(' '));
 export function keywords(text) {
   const words = (text.toLowerCase().match(/[\p{L}\p{N}][\p{L}\p{N}+#.-]*/gu) || []).map(w => w.replace(/[.-]+$/, ''));
   const counts = new Map();
@@ -14,7 +14,7 @@ export function analyze(content, job) {
 }
 export function demoCv(source, job, language = 'de', variant = 'claude') {
   const lines = source.trim().split(/\r?\n/).map(l => l.trim());
-  const note = language === 'en'
+  const note = language === 'sq' ? '> DEMO: Formatim me rregulla i tekstit burimor; nuk u bë kërkesë IA. Teksti burimor ruhet në gjuhën origjinale.' : language === 'en'
     ? '> DEMO: Rule-based formatting of your source text; no AI request was made.'
     : '> DEMO: Regelbasierte Aufbereitung deiner Angaben; keine KI-Anfrage.';
   let content = lines.join('\n');
@@ -55,4 +55,9 @@ export const SAMPLE = {
     job: 'Frontend Developer\nWe are looking for JavaScript, TypeScript, React and HTML/CSS experience. Build accessible interfaces, write tests and use Git in an agile team. REST APIs and performance optimization are a plus.',
     cv: '# Alex Example\nFrontend Developer\nalex@example.com · Berlin\n\n## Profile\nFrontend development focused on clear, accessible web applications.\n\n## Experience\n### Frontend Developer · Example Company · 2022–2025\n- Built responsive interfaces using React, TypeScript and CSS.\n- Collaborated in an agile team and reviewed code using Git.\n- Reduced loading times by 25% through performance optimization.\n- Integrated REST APIs and automated tests.\n\n## Education\nB.Sc. Media Informatics · Example University · 2018–2022\n\n## Skills\nJavaScript, TypeScript, React, HTML, CSS, Git, tests\n\n## Languages\nGerman: fluent · English: advanced',
   },
+};
+
+SAMPLE.sq = {
+ cv: "# Alex Shembull\nZhvillues Frontend\nalex@example.com · Berlin\n\n## Përvoja profesionale\n### Zhvillues Frontend · Kompania Shembull · 2022–2025\n- Zhvillimi i ndërfaqeve responsive me React, TypeScript dhe CSS.\n- Bashkëpunimi në ekip dhe rishikimi i kodit me Git.\n- Ulja e kohës së ngarkimit me 25% përmes optimizimit të performancës.\n- Integrimi i REST API dhe testeve të automatizuara.\n\n## Arsimimi\nB.Sc. Informatikë · Universiteti Shembull · 2018–2022\n\n## Aftësitë\nJavaScript, TypeScript, React, HTML, CSS, Git\n\n## Gjuhët\nShqip: gjuhë amtare · Anglisht: shumë mirë",
+ job: "Zhvillues Frontend\nKërkojmë përvojë me JavaScript, TypeScript, React dhe HTML/CSS. Zhvillimi i ndërfaqeve të aksesueshme dhe testeve të automatizuara është pjesë e punës. Bashkëpunoni me ekipin përmes Git dhe integroni REST API."
 };

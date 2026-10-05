@@ -18,11 +18,11 @@ from backend.config import get_settings
 settings = get_settings()
 
 # Slash NICHT erlaubt -> "m/w/d" / "eine/n" zerfallen in einzelne Tokens.
-_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüß][A-Za-zÄÖÜäöüß0-9+#.-]*")
+_WORD_RE = re.compile(r"[A-Za-zÄÖÜäöüßËëÇç][A-Za-zÄÖÜäöüßËëÇç0-9+#.-]*")
 
 # Häufige Stoppwörter (DE + EN) + Stellenanzeigen-Floskeln,
 # damit die Keyword-/ATS-Analyse nur sinnvolle Begriffe zeigt.
-_STOPWORDS = set(
+_STOPWORDS = set("dhe ose me për nga në një të ti ju ne është janë kjo ky kërkojmë detyrat duhet do tek që si edhe".split()) | set(
     [
         "der",
         "die",

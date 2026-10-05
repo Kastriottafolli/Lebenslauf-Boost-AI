@@ -2,14 +2,14 @@
 
 ## Produktmarke
 
-Boosty AI · „Deine Erfahrung. Deine nächste Chance.“ / “Your experience. Your next opportunity.” Boosty bleibt die hilfreiche Figur im Editor. Name und Betreiberangaben liegen in `static/branding.json`; Modelle/Key-Links in `static/providers.json`.
+Boosty AI · „Deine Erfahrung. Deine nächste Chance.“ / “Your experience. Your next opportunity.” Boosty erscheint als Logo, animierte Begleitung, feste Hilfe und in Ladephasen. Name und Betreiberangaben liegen in `static/branding.json`; Modelle/Key-Links in `static/providers.json`.
 
 Boosty AI ist die vom Betreiber gewählte Marke. Die App wird unter der Tafolli-Domain vorbereitet. Eine Freigabe für Marken-/Namensrechte oder eine Verfügbarkeit von Boosty-Domains wurde nicht bestätigt.
 
 ## Vorbereitete SEO-Seiten
 
-- `/de/lebenslauf-mit-ki/` ↔ `/en/ai-resume-builder/`
-- `/de/anschreiben-mit-ki/` ↔ `/en/ai-cover-letter/`
+- `/de/lebenslauf-mit-ki/` ↔ `/en/ai-resume-builder/` ↔ `/sq/cv-me-ia/`
+- `/de/anschreiben-mit-ki/` ↔ `/en/ai-cover-letter/` ↔ `/sq/leter-aplikimi-me-ia/`
 
 Die Seiten liefern echte HTML-Inhalte, individuelle Titel/Beschreibungen, interne Verlinkung und Sprachwechsel. Beim Build mit `SITE_URL=https://DEINE-DOMAIN` werden Canonicals, hreflang-Verweise und Sitemap erstellt. Die App enthält beschreibende Metadaten und eine lesbare Überschriftenstruktur. Keine erfundenen Testimonials, Bewertungssterne oder Platz-1-Versprechen.
 
@@ -17,7 +17,7 @@ Nach Domain-Konfiguration: Sitemap in Search Console einreichen, Indexierung pr�
 
 ## Beta statt vorschneller Abo-Versprechen
 
-Erste Zielgruppe: Berufseinsteiger und wechselwillige Fachkräfte im deutschen/englischen Bewerbungsmarkt. Vorläufiges Angebot: kostenloser Demo-/Editor-Ablauf, KI über eigene separat abgerechnete Keys. Es ist kein Billing-/Abosystem implementiert. Zuerst Nutzung und Kosten mit echten Pilotnutzern verstehen, bevor Preise und Kontingente festgelegt werden.
+Erste Zielgruppe: Berufseinsteiger und wechselwillige Fachkräfte im deutschen, englischen und albanischen Bewerbungsmarkt. Vorläufiges Angebot: kostenloser Demo-/Editor-Ablauf, KI über eigene separat abgerechnete Keys. Es ist kein Billing-/Abosystem implementiert. Zuerst Nutzung und Kosten mit echten Pilotnutzern verstehen, bevor Preise und Kontingente festgelegt werden.
 
 ## Launch-Texte
 

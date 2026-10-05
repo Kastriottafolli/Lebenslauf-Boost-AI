@@ -27,7 +27,7 @@ class Profile(BaseModel):
     phone: str = Field("", max_length=100)
     location: str = Field("", max_length=300)
     headline: str = Field("", max_length=300)
-    experience: str = Field("", max_length=12000)
+    experience: str = Field("", max_length=60000)
     education: str = Field("", max_length=6000)
     skills: str = Field("", max_length=6000)
     languages: str = Field("", max_length=1000)
@@ -49,7 +49,7 @@ class PackageRequest(BaseModel):
     profile: Profile
     job: Job
     wishes: str = Field("", max_length=4000)
-    language: str = Field("de", pattern="^(de|en)$")
+    language: str = Field("de", pattern="^(de|en|sq)$")
     provider: str = Field("openai", pattern="^(openai|claude|gemini|grok|azure)$")
     model: str = Field("", max_length=100)
     endpoint: str = Field("", max_length=300)
@@ -252,7 +252,7 @@ class ProjectRequest(BaseModel):
     profile: Profile
     job: Job
     documents: dict[str, str]
-    language: str = Field("de", pattern="^(de|en)$")
+    language: str = Field("de", pattern="^(de|en|sq)$")
     notes: str = Field("", max_length=4000)
 
 

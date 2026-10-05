@@ -68,7 +68,9 @@ def _demo_cv(payload, language, error=None):
     if not source.startswith("# "):
         source = "# " + source
     note = (
-        "> DEMO: Rule-based source formatting. No AI request."
+        "> DEMO: Formatim me rregulla i tekstit burimor; nuk u bë kërkesë IA. Teksti burimor ruhet në gjuhën origjinale."
+        if language == "sq"
+        else "> DEMO: Rule-based source formatting. No AI request."
         if language == "en"
         else "> DEMO: Regelbasierte Aufbereitung deiner Angaben. Keine KI-Anfrage."
     )

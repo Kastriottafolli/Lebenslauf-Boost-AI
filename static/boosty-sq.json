@@ -1,0 +1,12 @@
+{
+  "key": "Në hapin 3 zgjedh ofruesin. “Merr një çelës API” hap konsolën zyrtare. Vendose çelësin vetëm në fushën API-Key. Abonimet ChatGPT, Claude dhe Copilot nuk përfshijnë akses API. Çelësat mbeten në memorien e përkohshme; kërkesat mund të shkaktojnë kosto tek ofruesi.",
+  "save": "Krijo llogarinë te “Hyr” dhe ruaje kodin e rikuperimit në mënyrë të sigurt. Në hapin 4 kliko “Ruaj në llogari”. Pas hyrjes së ardhshme, aplikimet i gjen te “Aplikimet e mia”. Pa llogari mund të shkarkosh skedarin e projektit në pajisjen tënde.",
+  "privacy": "Çelësat API nuk ruhen. Në server, ngarkimet përpunohen në një sesion të mbrojtur. Sesionet anonime pastrohen pas 30 ditësh. Aplikimet e ruajtura mbeten deri në fshirje. Operatori mund t’i hapë përmbajtjet për mbështetje; aksesi i administratorit regjistrohet. Afatet janë në dialogun e privatësisë.",
+  "export": "Në hapin 4 kontrollon katër dokumentet. Zgjidh dizajnin dhe PDF ose Word. Eksporto dosjen si ZIP. Për çdo dokument mund të kopjosh tekstin. Email-i përgatitet; kontrollo marrësin, bashkëngjitjet dhe tekstin, pastaj dërgoje vetë.",
+  "job": "Në hapin 2 ngjit linkun e plotë HTTPS dhe kliko “Importo linkun”. Nëse portali bllokon aksesin, kopjo tekstin e shpalljes. Kontrollo përshkrimin, kompaninë dhe pozicionin. Letrat përdorin detyrat e shpalljes dhe përvojën e dokumentuar në CV.",
+  "import": "Ngarko PDF, DOCX ose TXT në hapin 1, ose ngjit tekstin. Për dokumente të skanuara përdor njohjen lokale të tekstit. Kontrollo fushat e profilit dhe konfirmo të dhënat. IA duhet të përdorë përvojën tënde të verifikueshme dhe t’i lërë të hapura faktet që mungojnë.",
+  "quality": "Përqindja tregon sa fjalë kyçe të shpalljes gjenden në CV. Nuk është probabilitet punësimi. Hap “Fjalët e analizuara” për të parë fjalët e gjetura dhe ato që mungojnë. Shto vetëm aftësi që mund t’i vërtetosh.",
+  "admin": "Te /admin operatori përdor hyrjen e veçantë me fjalëkalim dhe kod Authenticator. Llogaritë normale nuk japin të drejta administratori. Konfigurimi privat përgatitet vetëm përmes serverit.",
+  "start": "1. Importo CV-në dhe kontrollo profilin. 2. Shto linkun ose përshkrimin e punës. 3. Zgjidh ofruesin IA me çelësin tënd API, ose provo demonstrimin. 4. Kontrollo, ruaj dhe eksporto dokumentet. “Trego hapin tjetër” të udhëzon nëpër fushat.",
+  "unknown": "Mund të shpjegoj importimin, linket e punës, çelësat API, ruajtjen, privatësinë dhe eksportimin. Për pyetje të lira aktivizo IA-në dhe vendos çelësin tek ofruesi në hapin 3. Nuk mund t’i shoh ose ndryshoj të dhënat e tua."
+}

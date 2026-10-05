@@ -1,3 +1,5 @@
+import { jobDetails } from "./core/job.js";
+import { LANGUAGES, translate } from "./core/locale.js";
 import { PROVIDERS, callProvider } from "./core/providers.js";
 import { DOCUMENTS, parseProfile, profileSource, applicationPrompt, demoPackage, validatePackage, assessPackage } from "./core/application.js";
 import { BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core/client.js";
@@ -9,9 +11,9 @@ import { mountAdmin } from "./admin.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
-const state = { language: new URLSearchParams(location.search).get("lang") === "en" ? "en" : document.documentElement.lang === "en" ? "en" : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
-const tr = (de, en) => state.language === "en" ? en : de;
-let toastTimer, installPrompt;
+const state = { language: LANGUAGES.includes(new URLSearchParams(location.search).get("lang")) ? new URLSearchParams(location.search).get("lang") : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
+const tr = (de, en, sq) => translate(state.language, de, en, sq);
+let toastTimer, installPrompt, editorMode = false;
 let comparisonResults = [];
 let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
 function usage(event) {
@@ -65,17 +67,50 @@ function notify(message, error = false) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => $("#status").hidden = true, error ? 15e3 : 6500);
 }
-async function busy(label, work) {
+const waitingFacts = [
+ ["Ein klar gegliederter Lebenslauf hilft Menschen und Recruiting-Systemen beim Lesen.", "A clearly structured resume helps people and recruiting systems read it."],
+ ["Nutze konkrete Beispiele aus deiner Erfahrung. Ergänze nur Fähigkeiten, die du belegen kannst.", "Use concrete examples from your experience. Add only skills you can substantiate."],
+ ["Ein gutes Motivationsschreiben erklärt, warum dich die konkreten Aufgaben interessieren.", "A good motivation letter explains why the specific tasks interest you."],
+ ["Prüfe vor dem Versand Namen, Kontaktdaten und die Anhänge deiner E-Mail.", "Check names, contact details and email attachments before sending."],
+ ["Keyword-Abdeckung misst Wortüberschneidungen. Sie garantiert keine Einladung.", "Keyword coverage measures word overlap. It does not guarantee an interview."]
+];
+async function busy(label, work, stages = false) {
   $("#busyTitle").textContent = label;
   $("#busy").hidden = false;
   $("#workspace").setAttribute("aria-busy", "true");
+  const blocked = $$("main, header, footer, #boostyLauncher").map(el => [el, el.inert]);
+  blocked.forEach(([el]) => el.inert = true);
+  const report = (percent, phase) => {
+    $("#busyProgress").value = percent;
+    $("#busyPercent").textContent = `${percent}% ` + tr("der Arbeitsschritte abgeschlossen", "of workflow stages completed");
+    $("#busyPhase").textContent = phase;
+  };
+  let index = 0;
+  const fact = () => $("#busyFact").textContent = tr(...waitingFacts[index++ % waitingFacts.length]);
+  if (stages) {
+    report(25, tr("Angaben geprüft · Anfrage läuft", "Inputs checked · Request in progress"));
+    $("#busyExplanation").textContent = tr("Fortschritt der Arbeitsschritte. Die Dauer einer KI-Anfrage lässt sich nicht vorhersagen.", "Completed workflow stages. AI request duration cannot be predicted.");
+  } else {
+    $("#busyProgress").removeAttribute("value");
+    $("#busyPercent").textContent = tr("Boosty arbeitet für dich …", "Boosty is working for you …", "Boosty po punon për ty …");
+    $("#busyPhase").textContent = "";
+    $("#busyExplanation").textContent = tr("Bitte einen Moment warten. Die Dauer hängt von deinem Anbieter ab.", "Please wait. Timing depends on your provider.");
+  }
+  fact();
+  const timer = setInterval(fact, 7000);
   try {
-    return await work();
+    await new Promise(requestAnimationFrame);
+    const result = await work(report);
+    report(100, tr("Fertig", "Complete"));
+    return result;
   } finally {
+    clearInterval(timer);
+    blocked.forEach(([el, previous]) => el.inert = previous);
     $("#busy").hidden = true;
     $("#workspace").removeAttribute("aria-busy");
   }
 }
+
 function action(work) {
   return async (event) => {
     try {
@@ -85,19 +120,30 @@ function action(work) {
     }
   };
 }
+function editorView() {
+  $(".editor-grid").classList.toggle("editor-mode",editorMode);
+  $("#toggleEditor").textContent = editorMode ? tr("Vorschau zeigen", "Show preview", "Shfaq parapamjen") : tr("Text bearbeiten", "Edit text", "Redakto tekstin");
+  $("#toggleEditor").setAttribute("aria-pressed", String(editorMode));
+}
 function applyLanguage() {
   document.documentElement.lang = state.language;
   document.title = branding.name + " – " + tr("Lebenslauf und Bewerbung mit KI", "AI resume and application builder");
-  $$("[data-de]").forEach((el) => el.textContent = el.dataset[state.language]);
-  $$("[data-placeholder-de]").forEach((el) => el.placeholder = el.dataset[state.language === "en" ? "placeholderEn" : "placeholderDe"]);
-  $("#language").textContent = state.language === "en" ? "DE" : "EN";
-  $("#language").setAttribute("aria-label", tr("Sprache auf Englisch wechseln", "Switch language to German"));
-  Object.entries(labels).forEach(([key, value]) => $("#profile-" + key).previousElementSibling.textContent = value[state.language === "en" ? 1 : 0]);
+  $$("[data-de]").forEach((el) => el.textContent = el.dataset[state.language] ?? tr(el.dataset.de, el.dataset.en));
+  $$("[data-placeholder-de]").forEach((el) => el.placeholder = el.dataset["placeholder" + ({de:"De",en:"En",sq:"Sq"}[state.language])]);
+  $("#language").value = state.language;
+  $("#preview").setAttribute("aria-label", tr("Dokumentvorschau · separat scrollbar", "Document preview · scroll independently", "Parapamja e dokumentit · lëviz veçmas"));
+  $("#boostyLauncher").setAttribute("aria-label", tr("Boosty fragen", "Ask Boosty"));
+  $("#documentTabs").setAttribute("aria-label",tr("Dokumente","Documents","Dokumentet"));
+  $("#steps").setAttribute("aria-label",tr("Bewerbungsschritte","Application steps","Hapat e aplikimit"));
+  $$("[data-close]").forEach(el=>el.setAttribute("aria-label",tr("Schließen","Close","Mbyll")));
+  $("#keyEye").setAttribute("aria-label",tr("API-Key anzeigen oder ausblenden","Show or hide API key","Shfaq ose fshih çelësin API"));
+  Object.entries(labels).forEach(([key, value]) => $("#profile-" + key).previousElementSibling.textContent = tr(...value));
   renderTabs();
+  editorView();
   providerView(false);
   $("#runtimeNotice").textContent = BROWSER_ONLY ? tr("Browserbetrieb: Import, Demo und Export laufen lokal. KI-Anfragen gehen direkt an den Anbieter. Stellenlink-Import und Konten ben\xF6tigen den Server.", "Browser mode: import, demo and export run locally. AI requests go directly to your provider. Job URL import and accounts require the server.") : tr("Serverbetrieb: Datei-Import und Stellenlinks werden auf diesem Server verarbeitet. API-Keys werden nicht gespeichert.", "Server mode: file imports and job links are processed on this server. API keys are not stored.");
   $("#privacyExplanation").textContent = BROWSER_ONLY ? tr("Ohne Konto bleiben die Angaben bis zum Neuladen im Arbeitsspeicher des Browsers. Beim Export entstehen pers\xF6nliche Dateien auf deinem Ger\xE4t. Mit API-Key werden Profil und Stellenbeschreibung an den gew\xE4hlten KI-Anbieter gesendet. Dessen Regeln zur Speicherung gelten zus\xE4tzlich.", "Without an account, details remain in browser memory until reload. Exports create personal files on your device. With an API key, your profile and posting are sent to that provider; their retention rules also apply.") : tr("Datei-Uploads werden auf diesem Server verarbeitet und in deiner gesch\xFCtzten Sitzung gespeichert. Bewerbungen werden nur auf deinen Wunsch im Konto gespeichert. Du kannst Sitzung und Konto l\xF6schen. F\xFCr KI-Anfragen gelten zus\xE4tzlich die Datenschutzregeln des gew\xE4hlten Anbieters.", "Uploads are processed on this server and stored in your protected session. Applications are saved to your account only when you choose. You can delete your session or account. AI provider privacy rules additionally apply.");
-  $("#guideLink").href = new URL(`${state.language}/` + (state.language === "en" ? "ai-resume-builder/" : "lebenslauf-mit-ki/"), baseURL()).href;
+  $("#guideLink").href = new URL(({de:"de/lebenslauf-mit-ki/",en:"en/ai-resume-builder/",sq:"sq/cv-me-ia/"}[state.language]), baseURL()).href;
   accountView();
   boostyTip();
   if (state.documents) {
@@ -163,6 +209,7 @@ function showStep(step) {
     if (Number(el.dataset.step) === step) el.setAttribute("aria-current", "step");
     else el.removeAttribute("aria-current");
   });
+  $(".studio-content").scrollIntoView({behavior:"instant",block:"start"});
 }
 function providerView(reset = true) {
   const provider = PROVIDERS.find((p) => p.id === state.provider);
@@ -213,7 +260,7 @@ function renderTabs() {
     const button = document.createElement("button");
     button.id = `tab-${id}`;
     button.dataset.document = id;
-    button.textContent = docLabels[id][state.language === "en" ? 1 : 0];
+    button.textContent = tr(...docLabels[id]);
     button.setAttribute("role", "tab");
     button.setAttribute("aria-selected", String(id === state.document));
     button.setAttribute("aria-controls", "documentEditor");
@@ -224,6 +271,7 @@ function renderTabs() {
 }
 function renderPreview() {
   const root = $("#preview");
+  const position = root.scrollTop;
   root.replaceChildren();
   if (state.document === "cv" && state.photo) {
     const img = document.createElement("img");
@@ -262,10 +310,11 @@ function renderPreview() {
     }
     root.append(node);
   }
+  root.scrollTop = position;
 }
 function renderDocument() {
   renderTabs();
-  $("#editorLabel").textContent = docLabels[state.document][state.language === "en" ? 1 : 0];
+  $("#editorLabel").textContent = tr(...docLabels[state.document]);
   $("#documentEditor").value = state.documents[state.document];
   $("#documentEditor").setAttribute("aria-labelledby", "editorLabel");
   renderPreview();
@@ -277,22 +326,29 @@ function renderQuality() {
   state.analysis = quality;
   const root = $("#quality");
   root.replaceChildren();
-  const strong = document.createElement("strong");
-  strong.textContent = tr("Keyword-Abdeckung", "Keyword coverage") + `: ${quality.ats_score}%`;
-  root.append(strong);
-  const p = document.createElement("p");
-  p.textContent = tr("Ein Hinweis auf Wort\xFCberschneidungen, keine Einstellungswahrscheinlichkeit. Alle Angaben vor dem Versand pr\xFCfen.", "A word overlap indicator, not a hiring probability. Verify all details before sending.");
-  root.append(p);
-  const missing = document.createElement("div");
-  missing.className = "keyword-list";
-  missing.append(document.createTextNode(tr("Nicht belegt im Entwurf: ", "Missing from draft: ")));
-  for (const word of quality.missing_keywords) {
-    const span = document.createElement("span");
-    span.textContent = word;
-    missing.append(span);
+  const total = quality.matched_keywords.length + quality.missing_keywords.length;
+  const score = document.createElement("div"); score.className = "quality-score";
+  const number = document.createElement("strong"); number.className = "score-number";
+  number.textContent = total ? `${quality.ats_score}%` : "—";
+  const summary = document.createElement("div");
+  const title = document.createElement("strong"); title.textContent = tr("Keyword-Abdeckung", "Keyword coverage");
+  const count = document.createElement("p"); count.textContent = total ? `${quality.matched_keywords.length} / ${total} ` + tr("Begriffe im Lebenslauf gefunden", "terms found in resume") : tr("Keine auswertbaren Keywords", "No measurable keywords");
+  const meter = document.createElement("meter"); meter.min = 0; meter.max = 100; meter.value = quality.ats_score; meter.setAttribute("aria-label", title.textContent);
+  summary.append(title, count, meter); score.append(number, summary); root.append(score);
+  const p = document.createElement("p"); p.className = "hint";
+  p.textContent = tr("Ein Hinweis auf Wortüberschneidungen, keine Einstellungswahrscheinlichkeit. Alle Angaben vor dem Versand prüfen.", "A word overlap indicator, not a hiring probability. Verify all details before sending."); root.append(p);
+  const details = document.createElement("details"), heading = document.createElement("summary");
+  heading.textContent = tr("Erfasste Begriffe", "Analyzed terms") + ` · ${quality.matched_keywords.length} ✓ · ${quality.missing_keywords.length} ` + tr("Nicht im Lebenslauf", "Missing from resume"); details.append(heading);
+  for (const [words,label,kind] of [[quality.matched_keywords,tr("Gefunden", "Found"),"matched"], [quality.missing_keywords,tr("Nicht im Lebenslauf", "Missing from resume"),"missing"]]) {
+    const list = document.createElement("div"); list.className = "keyword-list " + kind; list.append(document.createTextNode(label + ": "));
+    words.forEach(word=>{const span=document.createElement("span");span.textContent=word;list.append(span);}); details.append(list);
   }
-  if (!quality.missing_keywords.length) missing.append(document.createTextNode(tr("Keine gefunden.", "None found.")));
-  root.append(missing);
+  root.append(details);
+  if (quality.checks.short_letters?.length) {
+    const warning = document.createElement("p");
+    warning.textContent = tr("Sehr kurze Schreiben prüfen: ", "Review very short letters: ", "Kontrollo letrat shumë të shkurtra: ") + quality.checks.short_letters.map(k => tr(...docLabels[k])).join(", ");
+    root.append(warning);
+  }
   if (quality.checks.placeholders || quality.checks.new_metrics.length) {
     const note = document.createElement("p");
     note.textContent = tr("Pr\xFCfung n\xF6tig: ", "Needs review: ") + (quality.checks.placeholders ? tr("Platzhalter erg\xE4nzen. ", "Fill in placeholders. ") : "") + (quality.checks.new_metrics.length ? tr("Neue Kennzahlen kontrollieren: ", "Check new metrics: ") + quality.checks.new_metrics.join(", ") : "");
@@ -302,11 +358,11 @@ function renderQuality() {
 async function generatePayload(body) {
   if (body.demo) {
     usage("demo.generate");
-    return { documents: demoPackage(body.profile, body.job, body.language), is_demo: true, model: "demo", provider: body.provider };
+    return { documents: demoPackage(body.profile, body.job, body.language, body.wishes), is_demo: true, model: "demo", provider: body.provider };
   }
   if (!BROWSER_ONLY) return api("/api/package", body);
   const config = PROVIDERS.find((p) => p.id === body.provider);
-  const documents = body.demo ? demoPackage(body.profile, body.job, body.language) : validatePackage((await callProvider(body.provider, body.keys[config.key], applicationPrompt(body.language), [{ role: "user", content: JSON.stringify({ confirmed_profile: body.profile, job: body.job, preferences: body.wishes }) }], body)).content);
+  const documents = body.demo ? demoPackage(body.profile, body.job, body.language, body.wishes) : validatePackage((await callProvider(body.provider, body.keys[config.key], applicationPrompt(body.language), [{ role: "user", content: JSON.stringify({ confirmed_profile: body.profile, job: body.job, preferences: body.wishes }) }], body)).content);
   return { documents, is_demo: body.demo, model: body.demo ? "demo" : body.model || config.default_model, provider: body.provider };
 }
 function usePackage(result) {
@@ -322,13 +378,16 @@ function usePackage(result) {
 }
 async function generate(demo) {
   validateInputs(!demo);
-  await busy(tr(demo ? "Demo-Mappe wird erstellt \u2026" : "Deine Bewerbungsmappe entsteht \u2026", demo ? "Creating demo package \u2026" : "Creating your application package \u2026"), async () => {
+  await busy(tr(demo ? "Demo-Mappe wird erstellt \u2026" : "Deine Bewerbungsmappe entsteht \u2026", demo ? "Creating demo package \u2026" : "Creating your application package \u2026"), async (report) => {
     const result = await generatePayload(requestBody(demo));
+    report(50, tr("Antwort erhalten · Dokumente werden geprüft", "Response received · Checking documents"));
+    result.documents = validatePackage(result.documents);
+    report(75, tr("Dokumente geprüft · Vorschau wird aufgebaut", "Documents checked · Building preview"));
     state.projectId = null;
     comparisonResults = [];
     $("#comparisonChoices").hidden = true;
     usePackage(result);
-  });
+  }, true);
 }
 async function comparePackages() {
   validateInputs(true);
@@ -457,7 +516,7 @@ function openProject(raw, id = null) {
   state.projectId = id;
   state.savedProject = true;
   state.versions = [];
-  $("#outputLanguage").value = value.language === "en" ? "en" : "de";
+  $("#outputLanguage").value = ["de","en","sq"].includes(value.language) ? value.language : "de";
   $("#projectTitle").value = value.title || "";
   $("#projectStatus").value = value.status || "draft";
   $("#projectNotes").value = value.notes || "";
@@ -582,7 +641,11 @@ async function scanPhoto(file) {
   await busy(tr("Scan wird lokal erkannt \u2026", "Recognizing scan locally \u2026"), async () => {
     const { recognizeImage } = await import("./core/ocr.js");
     const text = await recognizeImage(file, $("#outputLanguage").value, (message) => {
-      if (message.status === "recognizing text") $("#busyTitle").textContent = tr("Texterkennung: ", "Text recognition: ") + Math.round(message.progress * 100) + "%";
+      if (message.status === "recognizing text") {
+        const percent = Math.round(message.progress * 100);
+        $("#busyProgress").value = percent;
+        $("#busyPercent").textContent = tr("Texterkennung: ", "Text recognition: ") + percent + "%";
+      }
     });
     fillProfile(parseProfile(text));
     $("#fileStatus").textContent = tr("OCR-Ergebnis: bitte jeden Namen, jede Zahl und jedes Datum pr\xFCfen.", "OCR result: verify every name, number and date.");
@@ -600,7 +663,7 @@ async function init() {
     span.textContent = value[0];
     const input = document.createElement(["experience", "education", "skills", "languages"].includes(key) ? "textarea" : "input");
     input.id = "profile-" + key;
-    input.maxLength = key === "experience" ? 12e3 : ["education", "skills"].includes(key) ? 6e3 : key === "languages" ? 1e3 : 300;
+    input.maxLength = key === "experience" ? 6e4 : ["education", "skills"].includes(key) ? 6e3 : key === "languages" ? 1e3 : 300;
     if (input.tagName === "TEXTAREA") input.rows = 3;
     else input.type = key === "email" ? "email" : "text";
     input.addEventListener("input", () => $("#confirmed").checked = false);
@@ -625,10 +688,17 @@ async function init() {
       showStep(2);
     }
   });
-  $("#language").addEventListener("click", () => {
-    state.language = state.language === "de" ? "en" : "de";
+  $("#language").addEventListener("change", () => {
+    state.language = $("#language").value;
+    const url = new URL(location.href); url.searchParams.set("lang",state.language); history.replaceState(null,"",url);
     applyLanguage();
   });
+  $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());
+  $("#toggleEditor").addEventListener("click", () => { editorMode = !editorMode; editorView(); });
+  $("#copyDocument").addEventListener("click", action(async () => {
+    await navigator.clipboard.writeText(state.documents[state.document]);
+    notify(tr("Text kopiert.", "Text copied."));
+  }));
   $("#provider").addEventListener("change", () => {
     collectProvider();
     state.provider = $("#provider").value;
@@ -671,21 +741,26 @@ async function init() {
   }));
   $("#example").addEventListener("click", () => {
     fillProfile(parseProfile(SAMPLE[state.language].cv));
-    fillJob({ description: SAMPLE[state.language].job, title: "Frontend Developer", company: "Example Company" });
+    fillJob({ description: SAMPLE[state.language].job, title: state.language === "sq" ? "Zhvillues Frontend" : "Frontend Developer", company: state.language === "sq" ? "Kompania Shembull" : state.language === "de" ? "Beispielfirma" : "Example Company" });
     $("#outputLanguage").value = state.language;
     showStep(1);
     $("#workspace").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     notify(tr("Beispiel geladen. Pr\xFCfe und best\xE4tige die Angaben.", "Example loaded. Verify and confirm the details."));
   });
+  $("#jobDescription").addEventListener("change", () => {
+    const found = jobDetails($("#jobDescription").value);
+    for (const [key,id] of Object.entries({title:"jobTitle",company:"jobCompany",email:"jobEmail"})) if (!$("#"+id).value && found[key]) $("#"+id).value = found[key];
+  });
   $("#importJob").addEventListener("click", action(async () => {
     if (BROWSER_ONLY) throw new Error(tr("Stellenlink-Import ben\xF6tigt den Server. Kopiere die Beschreibung in das Textfeld.", "Job URL import requires server mode. Paste the description into the text field."));
     const result = await busy(tr("Stellenanzeige wird gelesen \u2026", "Reading job posting \u2026"), () => api("/api/job/import", { url: $("#jobUrl").value.trim() }));
-    fillJob({ ...job(), ...result });
+    const found = jobDetails(result.description);
+    fillJob({ ...job(), ...result, title:result.title || found.title || job().title, company:result.company || found.company || job().company, email:result.email || found.email || job().email });
     $("#jobImportStatus").textContent = tr("Importiert. Pr\xFCfe Position, Firma und Stellentext.", "Imported. Verify role, company and job text.") + (result.truncated ? tr(" Text wurde auf 20.000 Zeichen begrenzt.", " Text was limited to 20,000 characters.") : "");
   }));
   $("#checkKey").addEventListener("click", action(async () => {
     const options = collectProvider(), key = state.keys[state.provider];
-    if (!key) throw new Error("API-Key fehlt / missing API key");
+    if (!key) throw new Error(tr("API-Key fehlt", "Missing API key", "Mungon çelësi API"));
     await busy(tr("API-Zugriff wird gepr\xFCft \u2026", "Testing API access \u2026"), async () => {
       if (BROWSER_ONLY) await callProvider(state.provider, key, "Return only OK.", [{ role: "user", content: "Connection test. Return OK." }], options);
       else await api("/api/provider/test", { ...options, keys: keysBody() });
@@ -706,6 +781,7 @@ async function init() {
     const button = event.target.closest("[data-document]");
     if (button) {
       state.document = button.dataset.document;
+      $("#preview").scrollTop = 0;
       renderDocument();
     }
   });
@@ -715,6 +791,7 @@ async function init() {
     let index = DOCUMENTS.indexOf(state.document);
     index = event.key === "Home" ? 0 : event.key === "End" ? 3 : (index + (event.key === "ArrowRight" ? 1 : -1) + 4) % 4;
     state.document = DOCUMENTS[index];
+    $("#preview").scrollTop = 0;
     renderDocument();
     $("#tab-" + state.document).focus();
   });
@@ -749,7 +826,7 @@ async function init() {
   $("#openEmail").addEventListener("click", action(() => {
     const email = job().email;
     if (email && !/^[^\s@?&]+@[^\s@?&]+\.[^\s@?&]+$/.test(email)) throw new Error("Empf\xE4ngeradresse pr\xFCfen / check recipient");
-    const lines = state.documents.email.split("\n"), subject = lines[0].replace(/^(?:Subject|Betreff):\s*/i, "");
+    const lines = state.documents.email.split("\n"), subject = lines[0].replace(/^(?:Subject|Betreff|Subjekti):\s*/i, "");
     const value = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.slice(1).join("\n").trim())}`;
     if (value.length > 16e3) throw new Error(tr("E-Mail zu lang. Bitte kopieren.", "Email too long. Copy the text instead."));
     location.href = value;
@@ -857,7 +934,8 @@ ${info.operator_email}` : tr("Betreiberangaben noch nicht hinterlegt. Vor \xF6ff
   scanButton.className = "button outline";
   scanButton.dataset.de = "Foto / Scan einlesen (lokale OCR)";
   scanButton.dataset.en = "Read photo / scan (local OCR)";
-  scanButton.textContent = tr(scanButton.dataset.de, scanButton.dataset.en);
+  scanButton.dataset.sq = "Lexo foto / skanim (OCR lokal)";
+  scanButton.textContent = tr(scanButton.dataset.de, scanButton.dataset.en, scanButton.dataset.sq);
   const scanInput = document.createElement("input");
   scanInput.type = "file";
   scanInput.accept = "image/png,image/jpeg,image/webp";

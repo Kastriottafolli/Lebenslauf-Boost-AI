@@ -1,0 +1,37 @@
+{
+  "route": "sq/cv-me-ia",
+  "language": "sq",
+  "title": "CV me inteligjencë artificiale: fakte të sakta dhe aplikime të qarta",
+  "description": "Përshtat CV-në me shpalljen e punës duke përdorur përvojë të verifikuar, strukturë të lexueshme dhe dokumente të redaktueshme.",
+  "eyebrow": "UDHËZUES PËR APLIKIME",
+  "heading": "Bëje përvojën tënde të kuptueshme.",
+  "cta": "Krijo CV-në →",
+  "back": "Kthehu në studion e aplikimeve",
+  "alternates": {
+    "de": "de/lebenslauf-mit-ki",
+    "en": "en/ai-resume-builder",
+    "sq": "sq/cv-me-ia"
+  },
+  "sections": [
+    {
+      "heading": "Si të ndihmon IA",
+      "html": "<p>Inteligjenca artificiale mund të shkurtojë përshkrime të gjata, të qartësojë përgjegjësitë dhe të nxjerrë në pah përvojën përkatëse. Nuk mund të zëvendësojë kualifikimet që mungojnë. Përdor shpalljen si udhëzim dhe historinë tënde reale të punës si burim.</p>"
+    },
+    {
+      "heading": "Përgatit të dhëna të sakta",
+      "html": "<ol><li>Importo CV-në në PDF, Word ose tekst.</li><li>Kontrollo kontaktet, punëdhënësit, datat, arsimimin dhe aftësitë.</li><li>Shto përgjegjësi konkrete dhe rezultate që mund t’i vërtetosh.</li><li>Ngjit shpalljen e punës dhe kontrollo tekstin e importuar.</li><li>Krijo draftin dhe kontrollo çdo fjali përpara dërgimit.</li></ol>"
+    },
+    {
+      "heading": "Strukturë e lexueshme për ATS",
+      "html": "<p>Një strukturë e thjeshtë dhe e qëndrueshme i ndihmon sistemet e rekrutimit gjatë leximit. Përdor tituj të qartë, tekst të vërtetë dhe data të njëtrajtshme. Përqindja e fjalëve kyçe tregon mbivendosje fjalësh dhe nuk garanton vlerësim nga një sistem i caktuar ose ftesë për intervistë.</p>"
+    },
+    {
+      "heading": "Zgjidh gjuhën e duhur",
+      "html": "<p>Ndiq gjuhën dhe kërkesat e shpalljes. Boosty AI mbështet gjermanishten, anglishten dhe shqipen. Në demonstrim, teksti burimor i CV-së ruhet në gjuhën origjinale; për përkthim përdor IA dhe kontrollo çdo fakt. Fotografia është opsionale.</p>"
+    },
+    {
+      "heading": "Përgatit aplikimin e plotë",
+      "html": "<p>Boosty AI përgatit edhe letrën e aplikimit, letrën e motivimit dhe draftin e email-it. Shto arsyet e tua për kompaninë dhe kontrollo të gjitha pretendimet. <a href=\"../leter-aplikimi-me-ia/\">Lexo udhëzuesin për letrën e aplikimit</a>.</p>"
+    }
+  ]
+}

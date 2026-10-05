@@ -68,3 +68,6 @@ def init_db() -> None:
             )
     if engine.dialect.name == "sqlite" and database_path not in (None, "", ":memory:"):
         Path(database_path).chmod(0o600)
+    from backend.language_migration import migrate_session_languages
+
+    migrate_session_languages(engine)

@@ -119,6 +119,8 @@ def guide(language: str, slug: str):
         ("en", "ai-resume-builder"),
         ("de", "anschreiben-mit-ki"),
         ("en", "ai-cover-letter"),
+        ("sq", "cv-me-ia"),
+        ("sq", "leter-aplikimi-me-ia"),
     }
     if (language, slug) not in allowed:
         raise HTTPException(404)

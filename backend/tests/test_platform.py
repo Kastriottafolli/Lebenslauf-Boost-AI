@@ -477,3 +477,100 @@ def test_app_shell_assets_and_worker_share_a_version():
     assert f"app.js?v={version}" in worker
     assert "clients.claim" in worker
     assert "endsWith('/admin')" in worker
+
+
+def test_albanian_session_documents_and_job_grounding():
+    client = TestClient(app)
+    response = client.post("/api/session?language=sq", json={})
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert data["language"] == "sq"
+    client.headers["X-Session-Token"] = data["session_token"]
+    profile = application_service.parse_profile(
+        "# Alex Shembull\nalex@example.com\n\n## Përvoja profesionale\n"
+        "- Zhvillimi i ndërfaqeve responsive me React dhe TypeScript.\n"
+        "- Integrimi i REST API dhe testeve të automatizuara.\n"
+    )
+    assert "React" in profile["experience"]
+    profile["confirmed"] = True
+    job = {
+        "title": "Zhvillues Frontend",
+        "company": "Studio Shembull",
+        "description": "Zhvillimi i ndërfaqeve të aksesueshme me React dhe TypeScript.\n"
+        "Integrimi i REST API dhe testeve të automatizuara.\nKubernetes kërkohet.",
+    }
+    response = client.post(
+        "/api/package",
+        json={
+            "session_id": data["session_id"],
+            "profile": profile,
+            "job": job,
+            "language": "sq",
+            "demo": True,
+            "provider": "openai",
+            "wishes": "Dëshiroj të punoj në produkte të aksesueshme.",
+        },
+    )
+    assert response.status_code == 200, response.text
+    docs = response.json()["documents"]
+    for key in ("cover_letter", "motivation_letter", "email"):
+        assert "Studio Shembull" in docs[key]
+        assert any(
+            fact in docs[key]
+            for fact in (
+                "Zhvillimi i ndërfaqeve responsive me React dhe TypeScript.",
+                "Integrimi i REST API dhe testeve të automatizuara.",
+            )
+        )
+    assert len(docs["motivation_letter"].split()) > 200
+    assert "Dëshiroj të punoj në produkte të aksesueshme." in docs["motivation_letter"]
+    assert docs["email"].startswith("Subjekti:")
+    assert "Kubernetes" not in docs["cv"]
+    assert "Albanian" in application_service.system_prompt("sq")
+
+
+def test_long_verified_experience_does_not_block_package_creation():
+    client = TestClient(app)
+    body = package_body(client)
+    body["profile"]["source_text"] = (
+        "# Alex Example\n\n## Experience\n"
+        + "- Built accessible React interfaces with automated tests.\n" * 300
+    )
+    body["profile"]["experience"] = (
+        "- Built accessible React interfaces with automated tests.\n" * 300
+    )
+    assert len(body["profile"]["experience"]) > 12000
+    response = client.post("/api/package", json=body)
+    assert response.status_code == 200, response.text
+    assert response.json()["documents"]["cv"].count("Built accessible React") == 300
+
+
+def test_albanian_legacy_prompts():
+    from backend.llm import prompts
+
+    assert "shqip" in prompts.system_prompt("sq")
+    message = prompts.build_user_message(
+        job_description="Synthetic job",
+        wishes="",
+        cv_context=["Verified facts"],
+        language="sq",
+        technique="auto",
+    )
+    assert "Synthetic job" in message and "Verified facts" in message
+    assert "Përvoja profesionale" in message
+
+
+def test_job_html_heading_and_contact_are_available_to_letters(monkeypatch):
+    monkeypatch.setattr(
+        job_service,
+        "fetch_page",
+        lambda url: (
+            "<main><h1>Frontend <span>Developer</span></h1><p>Build accessible React interfaces and write automated tests.</p><p>Apply to jobs@example.com</p></main>",
+            url,
+        ),
+    )
+    result = job_service.import_job("https://example.com/job")
+    assert result["title"] == "Frontend Developer"
+    assert result["email"] == "jobs@example.com"
+    assert result["company"] == ""  # portal name must never be invented as employer
+    assert result["needs_review"] is True

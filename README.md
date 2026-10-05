@@ -1,19 +1,21 @@
 # Boosty AI · Lebenslauf Boost AI
 
-Bewerbungswerkstatt auf Deutsch und Englisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist ein vorläufiger Produktname. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
+Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist die vom Betreiber gewählte Produktmarke. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
 
 ## Was funktioniert
 
 - PDF/DOCX/TXT importieren, Kontaktdaten und erkannte Abschnitte prüfen. Originaltext und Profil bleiben editierbar.
-- Fotos/Scans lokal mit Tesseract erkennen; deutsches und englisches Sprachmodell liegen im Projekt. Kein OCR-Dienst erhält deine Bilder.
+- Fotos/Scans lokal mit Tesseract erkennen; deutsches, englisches und albanisches Sprachmodell liegen im Projekt. Kein OCR-Dienst erhält deine Bilder.
 - Öffentliche HTTPS-Stellenlinks serverseitig importieren: bevorzugt `JobPosting`, sonst HTML. Private IPs, unzulässige Redirects und große Antworten werden blockiert. Für gesperrte Portale gibt es den Text-Eingang.
 - OpenAI, Anthropic Claude, Google Gemini, xAI Grok und Microsoft Azure OpenAI: eigene API-Keys, Modell-/Deployment-Feld, Links zur Key-Erstellung und kostenpflichtiger Zugriffstest. Kein generischer Copilot-Key.
 - Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail gemeinsam erstellen. Dokumente separat bearbeiten und mit vollständigem Quellkontext nachbearbeiten.
+- Begrenzte Dokumentvorschau mit eigenem Scrollbereich, direkt erreichbare Exportleiste und mobile Umschaltung zwischen Text und Vorschau. Sichtbare Keyword-Abdeckung mit gefundenen und fehlenden Begriffen; keine Einstellungschance.
+- Boosty als Logo, animierte Begleitung und Hilfe; Erstellung zeigt vier bestätigte Phasen mit Tipps statt einer erfundenen Zeitprognose.
 - Zwei KI-Anbieter vergleichen und einen Entwurf selbst auswählen. Kein behaupteter KI-Gewinner aus einer Keyword-Zahl.
 - Sechs PDF-/Word-Designs, optionales Foto nur im Lebenslauf, komplette Mappe als ZIP. E-Mail kopieren oder als `mailto:`-Entwurf öffnen; kein automatischer Versand.
 - Konto mit Passwort und einmaligem Wiederherstellungscode; Bewerbungen speichern, Status und Notizen pflegen, Projekte laden/löschen, Konto löschen.
 - Ohne Konto: Projektdatei selbst herunterladen und wieder öffnen. Keys und Fotos sind nicht Teil dieser Projektdatei.
-- Installierbare PWA, DE-/EN-Ratgeber, responsive Oberfläche, Tastaturbedienung und reduzierte Bewegung.
+- Installierbare PWA, DE-/EN-/SQ-Ratgeber, responsive Oberfläche, Tastaturbedienung und reduzierte Bewegung.
 - Capacitor-Projekte für Android/iOS mit Kamera, lokalem OCR, Datei-/Share-Export und Deep Links. Android empfängt außerdem geteilte HTTPS-Stellenlinks.
 
 ## Lokal starten

@@ -3,6 +3,7 @@
 import http.client
 import ipaddress
 import json
+import re
 import socket
 import ssl
 import time
@@ -16,17 +17,23 @@ class TextParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.parts, self.scripts, self.script, self.ignore = [], [], None, 0
+        self.headings, self.heading = [], None
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         if tag in ("script", "style", "nav", "footer", "header"):
             self.ignore += 1
+        if tag == "h1" and not self.ignore:
+            self.heading = []
         if tag == "script" and attrs.get("type") == "application/ld+json":
             self.script = ""
         if tag in ("p", "div", "li", "br", "h1", "h2", "h3") and not self.ignore:
             self.parts.append("\n")
 
     def handle_endtag(self, tag):
+        if tag == "h1" and self.heading is not None:
+            self.headings.append("".join(self.heading).strip())
+            self.heading = None
         if tag == "script" and self.script is not None:
             self.scripts.append(self.script)
             self.script = None
@@ -38,6 +45,8 @@ class TextParser(HTMLParser):
             self.script += data
         elif not self.ignore:
             self.parts.append(data)
+            if self.heading is not None:
+                self.heading.append(data)
 
 
 def plain_html(value):
@@ -191,7 +200,8 @@ def import_job(url):
         company = str(employer.get("name", ""))[:200] if isinstance(employer, dict) else ""
     else:
         text = plain_html(html)
-        title, company = "", ""
+        title = parser.headings[0][:200] if parser.headings else ""
+        company = ""
     if len(text) < 30:
         raise HTTPException(
             422,
@@ -202,6 +212,11 @@ def import_job(url):
         "description": text[:20000],
         "title": title,
         "company": company,
+        "email": (
+            re.search(r"[\w.+-]+@[\w.-]+\.[a-z]{2,}", text, re.I).group()
+            if re.search(r"[\w.+-]+@[\w.-]+\.[a-z]{2,}", text, re.I)
+            else ""
+        ),
         "method": "JobPosting" if posting else "HTML",
         "needs_review": True,
         "truncated": len(text) > 20000,

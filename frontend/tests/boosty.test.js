@@ -16,3 +16,10 @@ test('Boosty tours cover every workflow step and AI has no action permissions',(
   assert.match(BOOSTY_SYSTEM,/cannot take actions/);
   assert.match(BOOSTY_SYSTEM,/Never ask for a password, API key or recovery code/);
 });
+
+test('Boosty answers Albanian intents and provides a complete Albanian tour',()=>{
+ assert.match(boostyAnswer('Ku mund të marr një çelës API?','sq').content,/konsolën zyrtare/);
+ assert.match(boostyAnswer('Si ta ruaj aplikimin?','sq').content,/Ruaj në llogari/);
+ assert.match(boostyAnswer('Sa është përqindja?','sq').content,/Nuk është probabilitet punësimi/);
+ assert.ok(TOUR.every(t=>t.sq));
+});

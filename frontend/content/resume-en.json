@@ -1,1 +1,37 @@
-{"route":"en/ai-resume-builder","language":"en","title":"AI resume builder: accurate facts and clear applications","description":"Tailor your resume to a job posting using verified experience, readable formatting and editable documents. Keep every claim grounded in your background.","eyebrow":"APPLICATION GUIDES","heading":"Make your experience easy to understand.","cta":"Build your resume →","back":"Back to the application studio","alternates":{"de":"de/lebenslauf-mit-ki","en":"en/ai-resume-builder"},"sections":[{"heading":"What AI can help with","html":"<p>AI can shorten long descriptions, clarify responsibilities and highlight relevant experience. It cannot replace missing qualifications. Use the job posting as guidance and your actual work history as the source.</p>"},{"heading":"Prepare accurate source information","html":"<ol><li>Import a readable PDF, Word document or text resume.</li><li>Verify contact details, employers, dates, education and skills.</li><li>Add concrete responsibilities and verifiable results.</li><li>Paste the job description and review any imported content.</li><li>Generate a draft and check every sentence before sending.</li></ol>"},{"heading":"Understand ATS-friendly formatting","html":"<p>A simple, consistent structure helps recruiting systems read your details. Use clear section headings, real text and consistent dates. Keyword coverage shows word overlap; it is not a guaranteed score for a particular applicant tracking system.</p>"},{"heading":"Choose the right language and conventions","html":"<p>Follow the language and requirements of the job posting. For an international application, switch the document language to English. Photos and other personal information depend on the target market and the employer’s instructions. Photos are optional in the app.</p>"},{"heading":"Build the full application","html":"<p>Boosty AI also prepares a cover letter, a motivation letter and an email draft. Add your own reasons for choosing the company, and verify all claims. <a href=\"../ai-cover-letter/\">Read the cover letter guide</a>.</p>"}]}
+{
+  "route": "en/ai-resume-builder",
+  "language": "en",
+  "title": "AI resume builder: accurate facts and clear applications",
+  "description": "Tailor your resume to a job posting using verified experience, readable formatting and editable documents. Keep every claim grounded in your background.",
+  "eyebrow": "APPLICATION GUIDES",
+  "heading": "Make your experience easy to understand.",
+  "cta": "Build your resume →",
+  "back": "Back to the application studio",
+  "alternates": {
+    "de": "de/lebenslauf-mit-ki",
+    "en": "en/ai-resume-builder",
+    "sq": "sq/cv-me-ia"
+  },
+  "sections": [
+    {
+      "heading": "What AI can help with",
+      "html": "<p>AI can shorten long descriptions, clarify responsibilities and highlight relevant experience. It cannot replace missing qualifications. Use the job posting as guidance and your actual work history as the source.</p>"
+    },
+    {
+      "heading": "Prepare accurate source information",
+      "html": "<ol><li>Import a readable PDF, Word document or text resume.</li><li>Verify contact details, employers, dates, education and skills.</li><li>Add concrete responsibilities and verifiable results.</li><li>Paste the job description and review any imported content.</li><li>Generate a draft and check every sentence before sending.</li></ol>"
+    },
+    {
+      "heading": "Understand ATS-friendly formatting",
+      "html": "<p>A simple, consistent structure helps recruiting systems read your details. Use clear section headings, real text and consistent dates. Keyword coverage shows word overlap; it is not a guaranteed score for a particular applicant tracking system.</p>"
+    },
+    {
+      "heading": "Choose the right language and conventions",
+      "html": "<p>Follow the language and requirements of the job posting. For an international application, switch the document language to English. Photos and other personal information depend on the target market and the employer’s instructions. Photos are optional in the app.</p>"
+    },
+    {
+      "heading": "Build the full application",
+      "html": "<p>Boosty AI also prepares a cover letter, a motivation letter and an email draft. Add your own reasons for choosing the company, and verify all claims. <a href=\"../ai-cover-letter/\">Read the cover letter guide</a>.</p>"
+    }
+  ]
+}

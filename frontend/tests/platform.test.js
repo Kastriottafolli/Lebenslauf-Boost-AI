@@ -17,3 +17,20 @@ test('profile and complete demo package retain all source facts and expose place
  const profile=parseProfile(SAMPLE.de.cv);assert.equal(profile.name,'Alex Beispiel');assert.equal(profile.email,'alex@example.com');assert.equal(profile.confirmed,false);assert.equal(profile.location,'');const job={description:'Kubernetes Terraform frontend',title:'Frontend Developer',company:'Example'};const documents=demoPackage(profile,job);for(const line of SAMPLE.de.cv.split('\n').filter(Boolean))assert.ok(documents.cv.includes(line),line);assert.ok(!documents.cv.includes('Kubernetes'));assert.deepEqual(Object.keys(validatePackage(documents)),['cv','cover_letter','motivation_letter','email']);assert.equal(assessPackage(documents,job,SAMPLE.de.cv).checks.placeholders,true);assert.ok(applicationPrompt('en').includes('Never invent'));assert.ok(profileSource(profile).includes(SAMPLE.de.cv));assert.throws(()=>validatePackage({cv:'incomplete'}),/incomplete/);
 });
 test('ZIP bundles can be read back without losing Unicode document content',()=>{const documents=demoPackage(parseProfile(SAMPLE.de.cv),{description:SAMPLE.de.job});const bytes=zipSync(Object.fromEntries(Object.entries(documents).map(([key,value])=>[key+'.txt',strToU8(value)])));const contents=unzipSync(bytes);assert.equal(new TextDecoder().decode(contents['cv.txt']),documents.cv);});
+
+test('letters use real job tasks and candidate evidence in DE/EN/SQ without invented CV skills',()=>{
+ for(const language of ['de','en','sq']) {
+  const profile=parseProfile(SAMPLE[language].cv);
+  const job={title:'Frontend Developer',company:'Studio Example',description:SAMPLE[language].job+'\nKubernetes Terraform deployment is required.'};
+  const documents=demoPackage(profile,job,language,'I want to work on accessible products.');
+  for(const key of ['cover_letter','motivation_letter','email']) {
+   assert.ok(documents[key].includes(job.title)); assert.ok(documents[key].includes(job.company));
+   assert.ok(documents[key].includes('React')); assert.ok(documents[key].includes('alex@example.com'));
+  }
+  assert.ok(documents.motivation_letter.split(/\s+/).length>200);
+  assert.ok(documents.cover_letter.includes('I want to work on accessible products.'));
+  assert.ok(documents.motivation_letter.includes('I want to work on accessible products.'));
+  assert.ok(!documents.cv.includes('Kubernetes')); assert.notEqual(documents.cover_letter,documents.motivation_letter);
+  assert.match(applicationPrompt(language),new RegExp({de:'German',en:'English',sq:'Albanian'}[language]));
+ }
+});
