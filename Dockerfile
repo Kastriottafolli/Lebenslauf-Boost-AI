@@ -1,7 +1,10 @@
 FROM node:22-bookworm-slim AS frontend
 WORKDIR /app
+# Public-page rendering uses Python's standard library and legal_service.
+RUN apt-get update && apt-get install -y --no-install-recommends python3 && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
 RUN npm ci --ignore-scripts
+COPY backend backend
 COPY frontend frontend
 COPY static static
 COPY scripts scripts

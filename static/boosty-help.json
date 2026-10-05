@@ -1,4 +1,19 @@
 {
+  "greeting": {
+    "de": "Hallo! Ich bin Boosty, dein KI-Helfer für tafolliboost.com. Ich begleite dich von deinem Lebenslauf bis zur fertigen Bewerbungsmappe. Womit möchtest du starten? Du kannst zum Beispiel fragen: „Wie lade ich meinen Lebenslauf hoch?“",
+    "en": "Hello! I’m Boosty, your AI helper for tafolliboost.com. I can guide you from your resume to your application documents. Where would you like to start? Try asking: “How do I upload my resume?”",
+    "sq": "Përshëndetje! Jam Boosty, ndihmësi yt me IA për tafolliboost.com. Të udhëzoj nga CV-ja deri te dokumentet e aplikimit. Me çfarë dëshiron të fillosh? Mund të pyesësh: “Si ta ngarkoj CV-në?”"
+  },
+  "wellbeing": {
+    "de": "Danke der Nachfrage! Ich bin als KI-Helfer bereit, dich bei deiner Bewerbung zu unterstützen. Geht es gerade um deinen Lebenslauf, eine Stellenanzeige oder den Download deiner Unterlagen?",
+    "en": "Thanks for asking! As an AI helper, I’m ready to support you with your application. Are you working on your resume, a job posting or downloading your documents?",
+    "sq": "Faleminderit që pyet! Si ndihmës me IA, jam gati të të ndihmoj me aplikimin. Të duhet ndihmë me CV-në, shpalljen e punës apo shkarkimin e dokumenteve?"
+  },
+  "thanks": {
+    "de": "Gern! Wenn du beim nächsten Schritt Hilfe brauchst, frag mich einfach. Vor dem Versenden deiner Bewerbung solltest du alle Angaben und Unterlagen noch einmal prüfen.",
+    "en": "You’re welcome! Ask me whenever you need help with the next step. Before sending your application, review all details and documents once more.",
+    "sq": "Me kënaqësi! Më pyet kur të duhet ndihmë me hapin tjetër. Para se ta dërgosh aplikimin, kontrollo edhe një herë të dhënat dhe dokumentet."
+  },
   "key": {
     "de": "Du brauchst keinen eigenen API-Key und kein ChatGPT-Abo. OpenAI wird vom Betreiber bereitgestellt. Tageslimits begrenzen die Nutzung; bei erreichtem Limit kannst du deine Texte weiterhin direkt bearbeiten.",
     "en": "You do not need an API key or ChatGPT subscription. The operator provides OpenAI. Daily limits apply; you can still edit your texts directly after reaching the limit.",
@@ -45,9 +60,9 @@
     "sq": "Krijo llogari ose hyr. Katër hapa: ngarko CV-në dhe kontrollo profilin; ngjit linkun e punës; konfirmo gjuhën dhe dërgimin te OpenAI; kontrollo dhe shkarko dokumentet."
   },
   "unknown": {
-    "de": "Ich helfe ausschließlich bei der Bedienung von tafolliboost.com: Profil, Stellenanzeige, KI-Auswahl, Dokumente, Export und Konto. Programmieraufträge oder andere Themen übernehme ich nicht. Ich kann deine Daten weder sehen noch ändern.",
-    "en": "I only help you use tafolliboost.com: profile, job posting, AI selection, documents, export and account. I cannot take programming assignments or answer unrelated questions, see or change your data.",
-    "sq": "Ndihmoj vetëm me përdorimin e tafolliboost.com: profilin, shpalljen, IA-në, dokumentet, eksportin dhe llogarinë. Nuk kryej programim ose kërkesa jashtë aplikacionit dhe nuk shoh ose ndryshoj të dhënat e tua."
+    "de": "Dabei kann ich dir hier leider nicht helfen. Mein Bereich ist deine Bewerbung mit tafolliboost.com. Frag mich zum Beispiel: „Wie importiere ich eine Stellenanzeige?“ oder „Wo lade ich meine Bewerbungsmappe herunter?“ Ich kann deine persönlichen Daten weder sehen noch ändern.",
+    "en": "I’m afraid I can’t help with that here. I help you prepare applications with tafolliboost.com. Try asking: “How do I import a job posting?” or “Where can I download my application documents?” I cannot see or change your personal data.",
+    "sq": "Për këtë nuk mund të të ndihmoj këtu. Ndihmoj me aplikimin tënd në tafolliboost.com. Mund të pyesësh: “Si ta importoj shpalljen e punës?” ose “Ku t’i shkarkoj dokumentet e aplikimit?” Nuk mund t’i shoh apo ndryshoj të dhënat e tua personale."
   },
   "profile": {
     "de": "Kontrolliere in Schritt 1 Name, Kontaktdaten, Berufserfahrung, Ausbildung und Kenntnisse. OCR kann Zeichen verwechseln. Korrigiere die Angaben und bestätige sie erst danach. Ergänze keine Erfahrungen, die du nicht belegen kannst.",
@@ -65,9 +80,9 @@
     "sq": "Në hapin 4 zgjidh CV, letër aplikimi, motivim ose email. Redakto dhe kopjo tekstin. Letrat kërkojnë përvojë reale dhe detyra konkrete nga shpallja. Shto motivimin personal në hapin 2 dhe krijo dosjen përsëri kur mungojnë të dhëna të rëndësishme."
   },
   "language": {
-    "de": "Mit DE, EN oder SQ oben in der Navigation wechselst du die Sprache der Oberfläche. In Schritt 3 wählst du unter „Sprache der Dokumente“ Deutsch, Englisch oder Albanisch. Die Demo lässt den Originaltext deines Lebenslaufs in seiner Sprache. Für eine Übersetzung deiner Bewerbung wählst du die Ausgabesprache und nutzt deinen KI-Anbieter. Prüfe danach Namen, Daten und Fachbegriffe.",
-    "en": "Use DE, EN or SQ in the top navigation to change the interface language. In step 3, choose German, English or Albanian under “Document language”. The demo preserves your resume’s original language. To translate an application, choose the output language and use your AI provider, then verify names, dates and professional terms.",
-    "sq": "Me DE, EN ose SQ sipër në navigim ndryshon gjuhën e ndërfaqes. Në hapin 3, te “Gjuha e dokumenteve”, zgjidh gjermanisht, anglisht ose shqip. Demonstrimi ruan gjuhën origjinale të CV-së. Për ta përkthyer aplikimin, zgjidh gjuhën dhe përdor ofruesin IA. Më pas kontrollo emrat, datat dhe termat profesionalë."
+    "de": "Oben wählst du mit den Schaltflächen „Deutsch“, „English“ oder „Shqip“ die Sprache der Webseite. Unabhängig davon legst du in Schritt 3 die Sprache deiner Bewerbungsunterlagen fest. OpenAI erstellt die Dokumente in dieser Sprache. Prüfe danach Namen, Daten und Fachbegriffe.",
+    "en": "Use the “Deutsch”, “English” or “Shqip” buttons at the top to change the website language. Separately, choose the language of your application documents in step 3. OpenAI generates your documents in that language. Then verify names, dates and professional terms.",
+    "sq": "Me butonat “Deutsch”, “English” ose “Shqip” sipër zgjedh gjuhën e faqes. Veçmas, në hapin 3, zgjedh gjuhën e dokumenteve të aplikimit. OpenAI i krijon dokumentet në atë gjuhë. Më pas kontrollo emrat, datat dhe termat profesionalë."
   },
   "demo": {
     "de": "Mit „Mit Beispiel ausprobieren“ im angemeldeten Editor lädst du fiktive Eingaben. Die KI-Erstellung erfolgt über OpenAI und zählt zum Tageslimit. Prüfe Beispielangaben und ersetze sie vor deiner Bewerbung.",

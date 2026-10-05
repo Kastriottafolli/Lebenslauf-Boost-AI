@@ -161,10 +161,10 @@ async function askBoosty(event) {
     // Credentials never belong in a help request, including accidental pastes.
     if (questionContainsSecret(question)) {
       value=helpForTopic("privacy",language);
-    } else if (state.account && boostyConfig.enabled) {
+    } else if (state.account && boostyConfig.enabled && !["greeting", "wellbeing", "thanks"].includes(value.topic)) {
       try {
         const result=await api("/api/assistant",{session_id:getSession().session_id,question,language,consent:true});
-        value=helpForTopic(result.topic,language);
+        value={topic:result.topic, content:result.content || helpForTopic(result.topic,language).content};
       } catch {
         value={...value,content:tr("Die KI-Hilfe ist gerade nicht erreichbar. Hier ist meine lokale Hilfe:\n\n","AI help is currently unavailable. Here is my local help:\n\n","Ndihma IA nuk është e arritshme. Ja ndihma lokale:\n\n")+value.content};
       }
@@ -317,7 +317,7 @@ function applyLanguage() {
   document.title = branding.name + " – " + tr("Lebenslauf und Bewerbung mit KI", "AI resume and application builder");
   $$("[data-de]").forEach((el) => el.textContent = el.dataset[state.language] ?? tr(el.dataset.de, el.dataset.en));
   $$("[data-placeholder-de]").forEach((el) => el.placeholder = el.dataset["placeholder" + ({de:"De",en:"En",sq:"Sq"}[state.language])]);
-  $("#language").value = state.language;
+  $$("[data-language]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.language === state.language)));
   $("#preview").setAttribute("aria-label", tr("Dokumentvorschau · separat scrollbar", "Document preview · scroll independently", "Parapamja e dokumentit · lëviz veçmas"));
   $("#boostyLauncher").setAttribute("aria-label", tr("Boosty fragen", "Ask Boosty"));
   $("#documentTabs").setAttribute("aria-label",tr("Dokumente","Documents","Dokumentet"));
@@ -703,11 +703,11 @@ function accountView() {
   $("#welcomeActions").hidden=!!state.account;
   $("#signedInWelcome").hidden=!state.account;
   $("#welcomeNote").hidden=!!state.account;
-  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konten und Cloud-Speicherung ben\xF6tigen den Server. Du kannst eine Projektdatei lokal herunterladen.", "Accounts and cloud storage require the server. You can download a local project file.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
+  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Die öffentliche Vorschau ist noch nicht mit dem App-Server verbunden. Deshalb kannst du hier noch kein Konto erstellen. Die Anmeldung ist im Serverbetrieb bereits verfügbar.", "This public preview is not connected to the application server yet, so accounts cannot be created here. Sign-in is already available in server mode.", "Pamja paraprake nuk është lidhur ende me serverin e aplikacionit. Prandaj nuk mund të krijosh llogari këtu. Hyrja është e disponueshme në versionin me server.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
   $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
   $("#signedInActions").hidden = !state.account;
-  $("#socialLogin").hidden=!!state.account;
-  $("#socialLoginNotice").hidden=!!state.account;
+  $("#socialLogin").hidden=BROWSER_ONLY || !!state.account;
+  $("#socialLoginNotice").hidden=BROWSER_ONLY || !!state.account;
   $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
 }
 function setAccountMode(mode) {
@@ -717,14 +717,24 @@ function setAccountMode(mode) {
   $("#accountPassword").autocomplete=mode==="register"?"new-password":"current-password";
   $("#accountSubmit").textContent=mode==="register"?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
 }
-function openAccount(mode="login") {setAccountMode(mode);$("#accountDialog").showModal();if(!state.account)$("#accountEmail").focus();}
+function openAccount(mode="login") {
+  setAccountMode(mode); accountView();
+  $("#accountError").hidden=true; $("#accountError").textContent="";
+  $("#accountDialog").showModal();
+  if(!state.account && !BROWSER_ONLY) $("#accountEmail").focus();
+}
 async function credentials(mode) {
   if (accountBusy || !$("#accountForm").reportValidity()) return;
+  if(BROWSER_ONLY) {openAccount(mode);return;}
   accountBusy=true;$("#accountForm").inert=true;
+  $("#accountForm").setAttribute("aria-busy","true");
+  $("#accountError").hidden=true; $("#accountError").textContent="";
+  $("#accountSubmit").disabled=true;
+  $("#accountSubmit").textContent=tr("Einen Moment …","One moment …","Një çast …");
   try {
   const body = { email: $("#accountEmail").value, password: $("#accountPassword").value };
   if (mode === "recover") body.recovery_code = $("#recoveryCode").value;
-  const result = await api("/api/account/" + mode, body);
+  const result = await api("/api/account/" + mode, body, "POST", {timeoutMs:20000});
   $("#accountPassword").value = "";
   $("#recoveryCode").value = "";
   if (result.recovery_code) {
@@ -733,14 +743,21 @@ async function credentials(mode) {
   if (result.email) {
     state.account = result.email;
     setLoginToken(result.access_token);
-    await newSession(state.language);
+    await newSession(state.language, {timeoutMs:15000});
     accountView();
     enterStudio();
     if(hasDraft())scheduleSave();
     if(mode!=="register"){$("#accountDialog").close();if(!hasDraft())await showProjects();}
     else $("#workspace").scrollIntoView({behavior:"instant",block:"start"});
   }
-  } finally {accountBusy=false;$("#accountForm").inert=false;}
+  } catch(error) {
+    $("#accountError").textContent=error.message || tr("Anmeldung fehlgeschlagen. Bitte erneut versuchen.","Sign-in failed. Please try again.","Hyrja dështoi. Provo përsëri.");
+    $("#accountError").hidden=false;
+  } finally {
+    accountBusy=false;$("#accountForm").inert=false;
+    $("#accountForm").removeAttribute("aria-busy");$("#accountSubmit").disabled=false;
+    setAccountMode(accountMode);
+  }
 }
 async function showProjects() {
   if (BROWSER_ONLY || !state.account) {
@@ -867,16 +884,17 @@ async function init() {
   $("#outputLanguage").value = state.language;
   applyLanguage();
   $("#pagesPreview").hidden = !BROWSER_ONLY;
-  $("#welcomeRegister").disabled = BROWSER_ONLY;
-  $("#welcomeLogin").disabled = BROWSER_ONLY;
+  accountView();
   window.addEventListener("sharedJob", (event) => {
     if (typeof event.detail?.url === "string") {
       $("#jobUrl").value = event.detail.url;
       showStep(2);
     }
   });
-  $("#language").addEventListener("change", () => {
-    state.language = $("#language").value;
+  $("#language").addEventListener("click", (event) => {
+    const choice = event.target.closest("[data-language]")?.dataset.language;
+    if (!["de", "en", "sq"].includes(choice)) return;
+    state.language = choice;
     const url = new URL(location.href); url.searchParams.set("lang",state.language); history.replaceState(null,"",url);
     applyLanguage();
   });
@@ -889,6 +907,7 @@ async function init() {
   $$("a.brand").forEach(link=>link.addEventListener("click",event=>{event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});}));
   $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
   $("#welcomeLogin").addEventListener("click",()=>openAccount());
+  $$("[data-open-account]").forEach(button => button.addEventListener("click", () => openAccount(button.dataset.openAccount)));
   $("#welcomeHistory").addEventListener("click",action(showProjects));
   $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});
   $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());
@@ -1152,19 +1171,19 @@ async function init() {
       else if (state.step > 1) showStep(state.step - 1);
     });
   }
-  await newSession(state.language);
+  await newSession(state.language, {timeoutMs:15000});
   if (!BROWSER_ONLY) {
-    const result = await api("/api/account");
+    const result = await api("/api/account", undefined, "GET", {timeoutMs:15000});
     state.account = result.email;
     accountView();
     if(state.account)enterStudio();
   }
-  if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config");} catch { /* Local help remains available. */ }}
+  if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config", undefined, "GET", {timeoutMs:15000});} catch { /* Local help remains available. */ }}
   if(!BROWSER_ONLY){
-    const config=await api("/api/hosted-config");
+    const config=await api("/api/hosted-config", undefined, "GET", {timeoutMs:15000});
     $("#aiCapacity").textContent=tr(`Bis zu ${config.daily_packages} Bewerbungs­mappen pro Tag. Deine Eingaben kannst du jederzeit bearbeiten.`,`Up to ${config.daily_packages} application packages per day. Edit your inputs anytime.`,`Deri në ${config.daily_packages} dosje aplikimi në ditë. Të dhënat mund t'i ndryshosh kurdo.`);
-    const providers=await api("/api/oauth/providers");
-    $("#socialLogin").replaceChildren(...providers.map(provider=>{const button=document.createElement("button");button.type="button";button.className="button outline";button.disabled=!provider.enabled;button.textContent=provider.name+(provider.enabled?"":tr(" · bald verfügbar"," · coming soon"," · së shpejti"));button.addEventListener("click",()=>{location.href=(API_BASE || location.origin).replace(/\/$/,"")+`/api/oauth/${provider.id}/start`;});return button;}));
+    const providers=await api("/api/oauth/providers", undefined, "GET", {timeoutMs:15000});
+    $("#socialLogin").replaceChildren(...providers.map(provider=>{const button=document.createElement("button");button.type="button";button.className="button outline";button.disabled=!provider.enabled;for(const [lang,suffix] of Object.entries({de:" · derzeit nicht verfügbar",en:" · currently unavailable",sq:" · aktualisht i padisponueshëm"}))button.dataset[lang]=provider.name+(provider.enabled?"":suffix);button.textContent=button.dataset[state.language];button.addEventListener("click",()=>{location.href=(API_BASE || location.origin).replace(/\/$/,"")+`/api/oauth/${provider.id}/start`;});return button;}));
   }
   boostyConnectionView();
   const params = new URLSearchParams(location.search);

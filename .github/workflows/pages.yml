@@ -32,9 +32,13 @@ jobs:
       - run: npm ci
       - run: npm test
       - uses: actions/configure-pages@v5
-      - name: Build functional browser app
+      - name: Build public pages and application shell
         env:
           SITE_URL: ${{ vars.SITE_URL || 'https://kastriottafolli.github.io/Lebenslauf-Boost-AI' }}
+          # Leave empty for a public preview. Only configure a reachable HTTPS backend.
+          PUBLIC_API_BASE: ${{ vars.PUBLIC_API_BASE }}
+          # Set / for a Pages custom domain; keep the project path for github.io hosting.
+          PUBLIC_BASE_PATH: ${{ vars.PUBLIC_BASE_PATH || '/Lebenslauf-Boost-AI/' }}
         run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

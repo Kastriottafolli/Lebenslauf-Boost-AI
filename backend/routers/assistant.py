@@ -1,4 +1,4 @@
-"""Only the dedicated operator key powers this opt-in software help endpoint."""
+"""Authenticated, bounded software help using the operator's server-only key."""
 
 import re
 
@@ -45,24 +45,14 @@ def ask(req: Question, request: Request, db=Depends(get_db), x_session_token: st
     from backend.config import get_settings
 
     if get_settings().hosted_ai_enabled:
-        import json
-
         from backend.services import hosted_ai
 
         account = hosted_ai.authenticated_session(db, request, sess)
-        schema = {
-            "type": "object",
-            "properties": {"topic": {"type": "string", "enum": list(boosty_service.HELP)}},
-            "required": ["topic"],
-            "additionalProperties": False,
-        }
         result = hosted_ai.Provider(db, account, "help").generate(
-            boosty_service.SYSTEM, [{"role": "user", "content": req.question}], schema=schema
+            boosty_service.help_system(req.language),
+            [{"role": "user", "content": req.question}],
+            schema=boosty_service.HELP_SCHEMA,
         )
-        try:
-            topic = json.loads(result.content)["topic"]
-        except (ValueError, KeyError, TypeError):
-            topic = "unknown"
-        return boosty_service.answer(topic, req.language)
+        return boosty_service.generated_answer(result.content, req.language)
     boosty_service.reserve(db, req.session_id)
     return boosty_service.answer(boosty_service.classify(req.question), req.language)
