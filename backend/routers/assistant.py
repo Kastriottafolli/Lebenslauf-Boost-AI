@@ -2,7 +2,7 @@
 
 import re
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.database import get_db
@@ -25,8 +25,8 @@ def config():
 
 
 @router.post("/api/assistant")
-def ask(req: Question, db=Depends(get_db), x_session_token: str = Header("")):
-    session_service.get_session(db, req.session_id, x_session_token)
+def ask(req: Question, request: Request, db=Depends(get_db), x_session_token: str = Header("")):
+    sess = session_service.get_session(db, req.session_id, x_session_token)
     if not req.consent:
         raise HTTPException(422, "Datenübermittlung zuerst bestätigen / confirm data sharing")
     if re.search(
@@ -42,5 +42,27 @@ def ask(req: Question, db=Depends(get_db), x_session_token: str = Header("")):
             503,
             "Boosty-KI noch nicht aktiviert. Lokale Hilfe ist verfügbar / local help available.",
         )
+    from backend.config import get_settings
+
+    if get_settings().hosted_ai_enabled:
+        import json
+
+        from backend.services import hosted_ai
+
+        account = hosted_ai.authenticated_session(db, request, sess)
+        schema = {
+            "type": "object",
+            "properties": {"topic": {"type": "string", "enum": list(boosty_service.HELP)}},
+            "required": ["topic"],
+            "additionalProperties": False,
+        }
+        result = hosted_ai.Provider(db, account, "help").generate(
+            boosty_service.SYSTEM, [{"role": "user", "content": req.question}], schema=schema
+        )
+        try:
+            topic = json.loads(result.content)["topic"]
+        except (ValueError, KeyError, TypeError):
+            topic = "unknown"
+        return boosty_service.answer(topic, req.language)
     boosty_service.reserve(db, req.session_id)
     return boosty_service.answer(boosty_service.classify(req.question), req.language)

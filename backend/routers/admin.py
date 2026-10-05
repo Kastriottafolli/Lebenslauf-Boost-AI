@@ -165,7 +165,17 @@ def overview(days: int = Query(30, ge=1, le=90), admin=Depends(protected), db=De
         .all()
     )
     admins.audit(db, admin, "overview.read")
+    from backend.models import AIBudget
+
+    ai = db.query(AIBudget).filter(AIBudget.day >= cutoff.date().isoformat()).all()
     return {
+        "ai_usage": {
+            "calls": sum(c.calls for c in ai),
+            "input_tokens": sum(c.input_tokens for c in ai),
+            "output_tokens": sum(c.output_tokens for c in ai),
+            "estimated_usd": sum(c.actual_microusd for c in ai) / 1000000,
+            "reserved_usd": sum(c.reserved_microusd for c in ai) / 1000000,
+        },
         "days": days,
         "totals": {
             "accounts": db.query(Account).count(),

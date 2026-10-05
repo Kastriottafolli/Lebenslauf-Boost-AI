@@ -1,3 +1,5 @@
+> Aktueller Stand: Pflichtkonto und ein zentraler Betreiber-OpenAI-Key für Bewerbungen und Boosty. Frühere Gast-/BYOK-/separate-Key-Beschreibungen in diesem Dokument sind überholt. Siehe [HOSTED-OPENAI.md](HOSTED-OPENAI.md).
+
 # Boosty: eigener OpenAI-Zugang, Softwarehilfe und Feldbegleitung
 
 Die Hilfe verwendet ausschließlich `BOOSTY_OPENAI_API_KEY`. Sie liest keine Benutzer-Keys aus Schritt 3 und keinen allgemeinen `OPENAI_API_KEY`. Dieser Betreiber-Key wird von Lebenslauf-, Brief-, Vergleichs- und Revisionsendpunkten nicht verwendet. Die lokale Hilfe bleibt ohne Key verfügbar. Der Browser erhält niemals den Betreiber-Key.

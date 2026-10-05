@@ -146,10 +146,10 @@ def demo_package(profile, job, language, wishes=""):
     )
 
 
-def build_package(req):
+def build_package(req, provider=None):
     if not req.profile.confirmed:
         raise HTTPException(422, "Profilangaben zuerst bestätigen / confirm profile first")
-    provider = llm_service.get_provider(
+    provider = provider or llm_service.get_provider(
         req.provider, req.keys.model_dump() if req.keys else {}, req.model, req.endpoint
     )
     if req.demo:
@@ -161,6 +161,20 @@ def build_package(req):
                 422,
                 "API-Key fehlt. Demo ausdrücklich auswählen / supply key or select demo.",
             )
+        from backend.services.hosted_ai import Provider
+
+        options = (
+            {
+                "schema": {
+                    "type": "object",
+                    "properties": {k: {"type": "string"} for k in DOCUMENTS},
+                    "required": list(DOCUMENTS),
+                    "additionalProperties": False,
+                }
+            }
+            if isinstance(provider, Provider)
+            else {}
+        )
         result = provider.generate(
             system_prompt(req.language),
             [
@@ -176,6 +190,7 @@ def build_package(req):
                     ),
                 }
             ],
+            **options,
         )
         try:
             documents = json.loads(result.content)

@@ -1,18 +1,18 @@
 {
   "key": {
-    "de": "In Schritt 3 wählst du deinen Anbieter. „API-Key holen“ führt zu dessen offizieller Konsole. Füge den Schlüssel nur ins API-Key-Feld ein. ChatGPT-, Claude- und Copilot-Abos enthalten keinen API-Zugang. Keys bleiben im Arbeitsspeicher; KI-Anfragen können Kosten beim Anbieter verursachen.",
-    "en": "Choose a provider in step 3. “Get an API key” opens its official console. Enter the key only in the API key field. ChatGPT, Claude and Copilot subscriptions do not include API access. Keys stay in memory; provider requests may incur charges.",
-    "sq": "Në hapin 3 zgjedh ofruesin. “Merr një çelës API” hap konsolën zyrtare. Vendose çelësin vetëm në fushën API-Key. Abonimet ChatGPT, Claude dhe Copilot nuk përfshijnë akses API. Çelësat mbeten në memorien e përkohshme; kërkesat mund të shkaktojnë kosto tek ofruesi."
+    "de": "Du brauchst keinen eigenen API-Key und kein ChatGPT-Abo. OpenAI wird vom Betreiber bereitgestellt. Tageslimits begrenzen die Nutzung; bei erreichtem Limit kannst du deine Texte weiterhin direkt bearbeiten.",
+    "en": "You do not need an API key or ChatGPT subscription. The operator provides OpenAI. Daily limits apply; you can still edit your texts directly after reaching the limit.",
+    "sq": "Nuk të duhet çelës API apo abonim ChatGPT. Operatori siguron OpenAI. Ka kufij ditorë; mund t’i redaktosh tekstet edhe pasi arrin kufirin."
   },
   "save": {
-    "de": "Auf der Startseite kannst du ein Konto erstellen, dich anmelden oder als Gast weitermachen. Mit Konto werden Profil, Stelle, Wünsche, Foto, Dokumente und Design automatisch gespeichert. Unter „Meine Bewerbungen“ findest du Firma, Position, Erstellungsdatum und Status auch nach dem nächsten Login. Markiere „Versendet“ selbst nach dem Versand. „Im Konto speichern“ speichert sofort. Bewahre deinen Wiederherstellungscode sicher auf. Als Gast kannst du eine Projektdatei herunterladen; API-Keys und Chattexte werden nie im Konto gespeichert.",
-    "en": "On the start page, create an account, sign in or continue as a guest. With an account, your profile, job, preferences, photo, documents and design are saved automatically. “My applications” shows company, role, generation date and status after your next sign-in. Mark “Sent” yourself after sending. Save application immediately using “Save to account”. Keep your recovery code safe. Guests can download project backups; API keys and chat messages are never saved to your account.",
-    "sq": "Në faqen fillestare krijo llogari, hyr ose vazhdo si vizitor. Me llogari ruhen automatikisht profili, puna, dëshirat, fotoja, dokumentet dhe dizajni. Te “Aplikimet e mia” gjen kompaninë, pozicionin, datën e krijimit dhe statusin edhe pas hyrjes tjetër. Shëno vetë “Dërguar” pas dërgimit. “Ruaj në llogari” ruan menjëherë. Ruaje kodin e rikuperimit. Si vizitor mund të shkarkosh projektin; çelësat API dhe bisedat nuk ruhen në llogari."
+    "de": "Deine Eingaben, Entwürfe und Bewerbungen werden automatisch gespeichert. Unter „Meine Bewerbungen“ findest du Firma, Stelle, Datum und Status. Nach dem nächsten Einloggen kannst du sie öffnen. Boosty-Chatfragen werden nicht gespeichert.",
+    "en": "Your account automatically saves inputs, drafts and applications. My applications shows company, role, date and status. Open them after your next login. Boosty questions are not stored.",
+    "sq": "Llogaria ruan automatikisht të dhënat, draftet dhe aplikimet. Aplikimet e mia tregon kompaninë, pozitën, datën dhe statusin. Hapi pas hyrjes së ardhshme. Pyetjet për Boosty nuk ruhen."
   },
   "privacy": {
-    "de": "API-Keys werden nicht gespeichert. Uploads werden im Serverbetrieb in einer geschützten Sitzung verarbeitet. Anonyme Sitzungen werden nach 30 Tagen bereinigt. Gespeicherte Bewerbungen bleiben bis zur Löschung. Der Betreiber kann für Support auf Inhalte zugreifen; Admin-Zugriffe werden protokolliert. Im Datenschutzdialog stehen die Speicherfristen. Ein separater Betreiber-Key kann die Boosty-Hilfe versorgen. Deine Frage geht nur nach Zustimmung an OpenAI; Lebenslauf und Dokumente werden dabei nicht mitgesendet.",
-    "en": "API keys are not stored. In server mode uploads are processed in a protected session. Anonymous sessions are cleared after 30 days. Saved applications remain until deleted. The operator can access content for support; admin access is audited. See the privacy dialog for retention details. A separate operator key may power Boosty help. Your question goes to OpenAI only with consent; your resume and documents are not included.",
-    "sq": "Çelësat API nuk ruhen. Në server, ngarkimet përpunohen në një sesion të mbrojtur. Sesionet anonime pastrohen pas 30 ditësh. Aplikimet e ruajtura mbeten deri në fshirje. Operatori mund t’i hapë përmbajtjet për mbështetje; aksesi i administratorit regjistrohet. Afatet janë në dialogun e privatësisë. Një çelës i veçantë i operatorit mund të furnizojë ndihmën Boosty. Pyetja dërgohet në OpenAI vetëm me pëlqim; CV-ja dhe dokumentet nuk dërgohen."
+    "de": "Dein Profil und deine Bewerbungen werden in deinem Konto gespeichert. Nach deiner Freigabe werden Angaben und Stellenbeschreibung zur Erstellung an OpenAI gesendet. Boosty übermittelt nur deine aktuelle Frage; niemals Passwörter oder Zugangsschlüssel eingeben. Du kannst Sitzung und Konto löschen. Details stehen unter Datenschutz.",
+    "en": "Your profile and applications are stored in your account. After permission, profile and job details are sent to OpenAI for generation. Boosty sends only your current question; never enter passwords or credentials. You can delete your session and account. Read Privacy for details.",
+    "sq": "Profili dhe aplikimet ruhen në llogari. Pas miratimit dërgohen te OpenAI për krijim. Boosty dërgon vetëm pyetjen aktuale; mos shkruaj fjalëkalime ose kredenciale. Mund të fshish seancën dhe llogarinë. Lexo Privatësinë për hollësi."
   },
   "export": {
     "de": "In Schritt 4 bearbeitest du die vier Dokumente. Wähle ein Design und PDF oder Word. Mit dem Mappe-Export erhältst du die Unterlagen als ZIP. Die E-Mail wird vorbereitet; du prüfst Empfänger, Anhänge und Inhalt und versendest sie selbst.",
@@ -40,9 +40,9 @@
     "sq": "Te /admin operatori përdor hyrjen e veçantë me fjalëkalim dhe kod Authenticator. Llogaritë normale nuk japin të drejta administratori. Konfigurimi privat përgatitet vetëm përmes serverit."
   },
   "start": {
-    "de": "1. Lebenslauf importieren und Profil prüfen. 2. Stellenlink oder Beschreibung ergänzen. 3. KI-Anbieter mit eigenem API-Key wählen oder die Demo ausprobieren. 4. Alle Dokumente prüfen, speichern und exportieren. Mit „Nächsten Schritt zeigen“ begleite ich dich durch die Felder.",
-    "en": "1. Import your resume and verify your profile. 2. Add the job URL or description. 3. Choose an AI provider with your API key, or try the demo. 4. Review, save and export the documents. “Show next step” walks you through the fields.",
-    "sq": "1. Importo CV-në dhe kontrollo profilin. 2. Shto linkun ose përshkrimin e punës. 3. Zgjidh ofruesin IA me çelësin tënd API, ose provo demonstrimin. 4. Kontrollo, ruaj dhe eksporto dokumentet. “Trego hapin tjetër” të udhëzon nëpër fushat."
+    "de": "Registriere dich oder logge dich ein. In vier Schritten erstellst du deine Bewerbung: Lebenslauf hochladen und Angaben prüfen, Stellenlink einfügen, Sprache und OpenAI-Freigabe bestätigen, Dokumente prüfen und herunterladen.",
+    "en": "Create an account or sign in. Four steps: upload your resume and verify the profile; paste the job link; confirm language and OpenAI data sharing; review and download your documents.",
+    "sq": "Krijo llogari ose hyr. Katër hapa: ngarko CV-në dhe kontrollo profilin; ngjit linkun e punës; konfirmo gjuhën dhe dërgimin te OpenAI; kontrollo dhe shkarko dokumentet."
   },
   "unknown": {
     "de": "Ich helfe ausschließlich bei der Bedienung von tafolliboost.com: Profil, Stellenanzeige, KI-Auswahl, Dokumente, Export und Konto. Programmieraufträge oder andere Themen übernehme ich nicht. Ich kann deine Daten weder sehen noch ändern.",
@@ -70,8 +70,8 @@
     "sq": "Me DE, EN ose SQ sipër në navigim ndryshon gjuhën e ndërfaqes. Në hapin 3, te “Gjuha e dokumenteve”, zgjidh gjermanisht, anglisht ose shqip. Demonstrimi ruan gjuhën origjinale të CV-së. Për ta përkthyer aplikimin, zgjidh gjuhën dhe përdor ofruesin IA. Më pas kontrollo emrat, datat dhe termat profesionalë."
   },
   "demo": {
-    "de": "Mit „Mit Beispiel ausprobieren“ lädst du ein fiktives Profil und eine Beispielstelle. Prüfe die Angaben und bestätige das Profil, gehe zu Schritt 3 und wähle „Demo-Mappe erstellen“. Die Demo verwendet Vorlagen, benötigt keinen API-Key und ruft keine externe KI auf. Erkennbare Platzhalter musst du selbst ergänzen. Eigene Lebenslaufdaten kannst du genauso im Demo-Modus verarbeiten.",
-    "en": "“Try an example” loads a fictional profile and job. Verify and confirm the profile, go to step 3 and choose “Create demo package”. The demo uses templates, needs no API key and makes no external AI call. Fill in marked placeholders yourself. You can also use your own resume in demo mode.",
-    "sq": "“Provo një shembull” ngarkon një profil dhe shpallje fiktive. Kontrollo dhe konfirmo profilin, shko te hapi 3 dhe zgjidh “Krijo dosjen demo”. Demonstrimi përdor modele teksti, nuk kërkon çelës API dhe nuk thërret IA të jashtme. Plotëso vetë vendet bosh. Mund të përdorësh edhe CV-në tënde në demonstrim."
+    "de": "Mit „Mit Beispiel ausprobieren“ im angemeldeten Editor lädst du fiktive Eingaben. Die KI-Erstellung erfolgt über OpenAI und zählt zum Tageslimit. Prüfe Beispielangaben und ersetze sie vor deiner Bewerbung.",
+    "en": "The signed-in editor offers fictional sample inputs. AI generation uses OpenAI and counts towards your daily limit. Replace sample facts before applying.",
+    "sq": "Redaktori pas hyrjes ofron të dhëna shembull fiktive. Krijimi me IA përdor OpenAI dhe numërohet në kufirin ditor. Zëvendëso faktet para aplikimit."
   }
 }

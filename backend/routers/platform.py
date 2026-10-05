@@ -46,6 +46,7 @@ class Job(BaseModel):
 
 
 class PackageRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     session_id: str
     profile: Profile
     job: Job
@@ -55,6 +56,7 @@ class PackageRequest(BaseModel):
     model: str = Field("", max_length=100)
     endpoint: str = Field("", max_length=300)
     keys: schemas.ApiKeys = Field(default_factory=schemas.ApiKeys)
+    consent: bool = False
     demo: bool = False
 
 
@@ -85,30 +87,55 @@ def import_job(req: URLRequest):
 @router.post("/api/package")
 def build_package(
     req: PackageRequest,
+    request: Request,
     db: DBSession = Depends(get_db),
     x_session_token: str = Header(""),
 ):
-    session_service.get_session(db, req.session_id, x_session_token)
+    from backend.config import get_settings
+    from backend.services import hosted_ai
+
+    sess = session_service.get_session(db, req.session_id, x_session_token)
+    if get_settings().hosted_ai_enabled:
+        account = hosted_ai.authenticated_session(db, request, sess)
+        if req.model_fields_set & {"provider", "model", "endpoint", "keys", "demo"}:
+            raise HTTPException(
+                422, "Anbieter und Schlüssel werden ausschließlich vom Betreiber verwaltet"
+            )
+        if not req.consent:
+            raise HTTPException(422, "Datenübermittlung an OpenAI zuerst bestätigen")
+        return applications.build_package(req, hosted_ai.Provider(db, account, "package"))
     return applications.build_package(req)
 
 
 @router.post("/api/package/refine")
 def refine_package(
     req: PackageRefine,
+    request: Request,
     db: DBSession = Depends(get_db),
     x_session_token: str = Header(""),
 ):
-    session_service.get_session(db, req.session_id, x_session_token)
+    from backend.config import get_settings
+    from backend.services import hosted_ai
+
+    sess = session_service.get_session(db, req.session_id, x_session_token)
     if not req.profile.confirmed:
         raise HTTPException(422, "Profil zuerst bestätigen / confirm profile")
-    if req.demo:
-        raise HTTPException(
-            422,
-            "Freie Umformulierungen benötigen einen API-Key. Text direkt bearbeiten / edit text directly in demo.",
+    if get_settings().hosted_ai_enabled:
+        account = hosted_ai.authenticated_session(db, request, sess)
+        if (
+            req.model_fields_set & {"provider", "model", "endpoint", "keys", "demo"}
+            or not req.consent
+        ):
+            raise HTTPException(
+                422, "OpenAI-Datenübermittlung bestätigen; Anbieter werden zentral verwaltet"
+            )
+        provider = hosted_ai.Provider(db, account, "refine")
+    else:
+        if req.demo:
+            raise HTTPException(422, "Text direkt bearbeiten / edit text directly in demo")
+        provider = llm_service.get_provider(
+            req.provider, req.keys.model_dump(), req.model, req.endpoint
         )
-    provider = llm_service.get_provider(
-        req.provider, req.keys.model_dump(), req.model, req.endpoint
-    )
     if not provider.available():
         raise HTTPException(422, "API-Key fehlt / missing key")
     result = provider.generate(
@@ -471,3 +498,17 @@ def usage(
     db.add(Activity(event=req.event, outcome=200, account_id=account.id if account else None))
     db.commit()
     return {"ok": True}
+
+
+@router.get("/api/hosted-config")
+def hosted_config():
+    from backend.config import get_settings
+    from backend.services.hosted_ai import configured
+
+    s = get_settings()
+    return {
+        "provider": "openai",
+        "ready": configured(),
+        "account_required": True,
+        "daily_packages": s.ai_account_daily_packages,
+    }

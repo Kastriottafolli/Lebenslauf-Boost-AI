@@ -2,9 +2,8 @@ import { DESIGNS, designFor } from "./core/document-designs.js";
 import { parseLines } from "./browser/export.js";
 import { jobDetails } from "./core/job.js";
 import { LANGUAGES, translate } from "./core/locale.js";
-import { PROVIDERS, callProvider } from "./core/providers.js";
 import { DOCUMENTS, parseProfile, profileSource, applicationPrompt, demoPackage, validatePackage, assessPackage } from "./core/application.js";
-import { BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core/client.js";
+import { API_BASE, BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core/client.js";
 import { SAMPLE } from "./browser/demo.js";
 import { readDocument } from "./browser/import.js";
 import branding from "../../static/branding.json" with { type: "json" };
@@ -30,9 +29,10 @@ function boostyTip() {
   $("#boostyTip").textContent = tip[state.language];
 }
 function labelsForStep(step) {
-  return ({1:["Dein Profil","Your profile","Profili yt"],2:["Deine Stelle","Your opportunity","Vendi yt i punës"],3:["Deine KI","Your AI","IA jote"],4:["Deine Mappe","Your application","Dosja jote"]})[step];
+  return ({1:["Dein Profil","Your profile","Profili yt"],2:["Deine Stelle","Your opportunity","Vendi yt i punës"],3:["Prüfen & erstellen","Review & create","Kontrollo & krijo"],4:["Deine Mappe","Your application","Dosja jote"]})[step];
 }
 function enterStudio({guide=true}={}) {
+  if(!state.account){openAccount();return;}
   studioEntered=true;
   document.body.dataset.view="studio";
   $("#how").hidden=true;
@@ -73,7 +73,7 @@ function guideTo(index) {
   tourTarget?.classList.remove("boosty-tour-target");
   const tip = TOUR[index];
   if (tip.step === 4 && !state.documents) {
-    notify(tr("Erstelle zuerst eine Mappe mit der Demo oder deiner KI. Danach begleite ich dich zum Export.", "Create an application using demo or AI first. Then I can guide you to export."));
+    notify(tr("Erstelle zuerst deine Bewerbungsmappe. Danach begleite ich dich zum Export.", "Create your application first. Then I can guide you to export."));
     return;
   }
   showStep(tip.step);
@@ -118,8 +118,8 @@ function setBoostyAnswer(value, target = null) {
 function showBoostyTarget() {
   $("#boostyDialog").close();
   if(!studioEntered && !["admin","privacy","save"].includes(boostyTopic)) {
-    notify(tr("Wähle zuerst: Konto erstellen, einloggen oder als Gast weitermachen.","Choose create account, sign in or continue as guest first.","Zgjidh fillimisht: krijo llogari, hyr ose vazhdo si vizitor."));
-    $("#welcomeGuest").focus();return;
+    notify(tr("Erstelle zuerst ein Konto oder logge dich ein.","Create an account or sign in first.","Krijo llogari ose hyr fillimisht."));
+    $("#welcomeLogin").focus();return;
   }
   if(!studioEntered && boostyTopic==="admin") {notify(helpForTopic("admin",state.language).content);return;}
   if (boostyTopic === "admin" || boostyTopic === "privacy" || boostyTopic === "save") {
@@ -161,7 +161,7 @@ async function askBoosty(event) {
     // Credentials never belong in a help request, including accidental pastes.
     if (questionContainsSecret(question)) {
       value=helpForTopic("privacy",language);
-    } else if ($("#boostyAi").checked && boostyConfig.enabled) {
+    } else if (state.account && boostyConfig.enabled) {
       try {
         const result=await api("/api/assistant",{session_id:getSession().session_id,question,language,consent:true});
         value=helpForTopic(result.topic,language);
@@ -307,8 +307,7 @@ function editorView() {
   $("#toggleEditor").setAttribute("aria-pressed", String(editorMode));
 }
 function boostyConnectionView() {
-  $("#boostyAi").disabled=!boostyConfig.enabled;
-  $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit · Separat vom Lebenslauf", "OpenAI software help ready · Separate from resume AI", "Ndihma OpenAI gati · Veç IA-së për CV") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
+  $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit", "OpenAI software help ready", "Ndihma OpenAI gati") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
 }
 function applyLanguage() {
   document.documentElement.lang = state.language;
@@ -324,13 +323,11 @@ function applyLanguage() {
   $("#documentTabs").setAttribute("aria-label",tr("Dokumente","Documents","Dokumentet"));
   $("#steps").setAttribute("aria-label",tr("Bewerbungsschritte","Application steps","Hapat e aplikimit"));
   $$("[data-close]").forEach(el=>el.setAttribute("aria-label",tr("Schließen","Close","Mbyll")));
-  $("#keyEye").setAttribute("aria-label",tr("API-Key anzeigen oder ausblenden","Show or hide API key","Shfaq ose fshih çelësin API"));
   Object.entries(labels).forEach(([key, value]) => $("#profile-" + key).previousElementSibling.textContent = tr(...value));
   renderTabs();
   editorView();
-  providerView(false);
-  $("#runtimeNotice").textContent = BROWSER_ONLY ? tr("Browserbetrieb: Import, Demo und Export laufen lokal. KI-Anfragen gehen direkt an den Anbieter. Stellenlink-Import und Konten ben\xF6tigen den Server.", "Browser mode: import, demo and export run locally. AI requests go directly to your provider. Job URL import and accounts require the server.") : tr("Serverbetrieb: Datei-Import und Stellenlinks werden auf diesem Server verarbeitet. API-Keys werden nicht gespeichert.", "Server mode: file imports and job links are processed on this server. API keys are not stored.");
-  $("#privacyExplanation").textContent = BROWSER_ONLY ? tr("Ohne Konto bleiben die Angaben bis zum Neuladen im Arbeitsspeicher des Browsers. Beim Export entstehen pers\xF6nliche Dateien auf deinem Ger\xE4t. Mit API-Key werden Profil und Stellenbeschreibung an den gew\xE4hlten KI-Anbieter gesendet. Dessen Regeln zur Speicherung gelten zus\xE4tzlich.", "Without an account, details remain in browser memory until reload. Exports create personal files on your device. With an API key, your profile and posting are sent to that provider; their retention rules also apply.") : tr("Datei-Uploads werden auf diesem Server verarbeitet und in deiner gesch\xFCtzten Sitzung gespeichert. Nach der Anmeldung werden Eingaben, Entwürfe und Bewerbungen automatisch im Konto gespeichert. Fotos werden mitgespeichert. API-Keys und der Boosty-Chat bleiben im Arbeitsspeicher. Du kannst Sitzung und Konto l\xF6schen. F\xFCr KI-Anfragen gelten zus\xE4tzlich die Datenschutzregeln des gew\xE4hlten Anbieters.", "Uploads are processed on this server and stored in your protected session. After signing in, inputs, drafts and applications are automatically saved to your account, including photos. API keys and the Boosty chat stay in memory. You can delete your session or account. AI provider privacy rules additionally apply.");
+  $("#runtimeNotice").textContent=tr("Deine Bewerbung wird mit OpenAI auf unserem Server erstellt. Du brauchst keinen eigenen API-Key.","Our server creates your application with OpenAI. No personal API key needed.","Serveri ynë krijon aplikimin me OpenAI. Nuk të duhet çelës API.");
+  $("#privacyExplanation").textContent=tr("Deine Entwürfe und Bewerbungen werden in deinem Konto gespeichert. Mit deiner Freigabe senden wir Profil und Stellenbeschreibung an OpenAI. Chatfragen werden nicht als Verlauf gespeichert. Du kannst deine Daten und dein Konto löschen.","Drafts and applications are saved in your account. With your permission we send your profile and job description to OpenAI. Help questions are not stored as chat history. You can delete your data and account.","Draftet dhe aplikimet ruhen në llogari. Me miratimin tënd dërgojmë profilin dhe shpalljen te OpenAI. Pyetjet nuk ruhen si historik bisede. Mund të fshish të dhënat dhe llogarinë.");
   $("#guideLink").href = new URL(({de:"de/lebenslauf-mit-ki/",en:"en/ai-resume-builder/",sq:"sq/cv-me-ia/"}[state.language]), baseURL()).href;
   accountView();
   setAccountMode(accountMode);
@@ -364,26 +361,16 @@ function job() {
 function fillJob(value) {
   for (const [key, id] of Object.entries({ title: "jobTitle", company: "jobCompany", recipient: "jobRecipient", email: "jobEmail", url: "jobUrl", description: "jobDescription" })) $("#" + id).value = value[key] || "";
 }
-function collectProvider() {
-  state.keys[state.provider] = $("#apiKey").value.trim();
-  state.models[state.provider] = $("#model").value.trim();
-  return { provider: state.provider, model: state.models[state.provider], endpoint: $("#azureEndpoint").value.trim() };
-}
-function keysBody() {
-  return Object.fromEntries(PROVIDERS.map((p) => [p.key, state.keys[p.id] || ""]));
-}
-function requestBody(demo = false) {
-  const options = collectProvider();
-  return { session_id: getSession().session_id, profile: readProfile(), job: job(), wishes: $("#wishes").value.trim(), language: $("#outputLanguage").value, ...options, keys: keysBody(), demo };
+function requestBody() {
+  return {session_id:getSession().session_id,profile:readProfile(),job:job(),wishes:$("#wishes").value.trim(),language:$("#outputLanguage").value,consent:$("#aiConsent").checked};
 }
 function validateInputs(ai = false) {
   const profile = readProfile();
   if (profile.source_text.length < 10) throw new Error(tr("Bitte den Lebenslauf importieren oder Text einf\xFCgen.", "Import or paste your resume."));
   if (!profile.confirmed) throw new Error(tr("Bitte deine Profilangaben pr\xFCfen und best\xE4tigen.", "Please verify and confirm your profile."));
   if (job().description.length < 10) throw new Error(tr("Bitte die Stellenbeschreibung erg\xE4nzen.", "Please add the job description."));
-  collectProvider();
-  if (ai && !$("#aiConsent").checked) throw new Error(tr("Bitte die Daten\xFCbermittlung an deinen KI-Anbieter best\xE4tigen.", "Please confirm sending your details to the AI provider."));
-  if (ai && !state.keys[state.provider]) throw new Error(tr("Bitte einen API-Key eingeben oder die Demo ausw\xE4hlen.", "Enter an API key or select demo."));
+  if (ai && !$("#aiConsent").checked) {showStep(3);$("#aiConsent").focus();throw new Error(tr("Bitte die Datenübermittlung an OpenAI bestätigen.", "Please confirm sending your details to OpenAI.","Konfirmo dërgimin e të dhënave te OpenAI."));}
+  if(!state.account)throw new Error(tr("Bitte anmelden.","Please sign in.","Hyr në llogari."));
 }
 function showStep(step) {
   if (step === 4 && !state.documents) {
@@ -403,24 +390,6 @@ function showStep(step) {
   if(studioEntered)$(".studio-content").scrollIntoView({behavior:"instant",block:"start"});
   followStep();
   scheduleSave();
-}
-function providerView(reset = true) {
-  const provider = PROVIDERS.find((p) => p.id === state.provider);
-  if (reset) {
-    $("#model").value = state.models[state.provider] ?? provider.default_model;
-    $("#apiKey").value = state.keys[state.provider] || "";
-    $("#apiKey").type = "password";
-    $("#keyStatus").textContent = "";
-    $("#aiConsent").checked = false;
-  }
-  $("#modelOptions").replaceChildren(...provider.models.map((m) => {
-    const option = document.createElement("option");
-    option.value = m;
-    return option;
-  }));
-  $("#azureField").hidden = state.provider !== "azure";
-  $("#keyLink").href = provider.key_url;
-  $("#modelLink").href = provider.docs_url;
 }
 async function importResume(file) {
   if (!file) return;
@@ -545,32 +514,28 @@ function renderQuality() {
   }
 }
 async function generatePayload(body) {
-  if (body.demo) {
-    usage("demo.generate");
-    return { documents: demoPackage(body.profile, body.job, body.language, body.wishes), is_demo: true, model: "demo", provider: body.provider };
-  }
-  if (!BROWSER_ONLY) return api("/api/package", body);
-  const config = PROVIDERS.find((p) => p.id === body.provider);
-  const documents = body.demo ? demoPackage(body.profile, body.job, body.language, body.wishes) : validatePackage((await callProvider(body.provider, body.keys[config.key], applicationPrompt(body.language), [{ role: "user", content: JSON.stringify({ confirmed_profile: body.profile, job: body.job, preferences: body.wishes }) }], body)).content);
-  return { documents, is_demo: body.demo, model: body.demo ? "demo" : body.model || config.default_model, provider: body.provider };
+  if(BROWSER_ONLY)throw new Error(tr("Die KI-Erstellung benötigt den Server.","AI generation requires the server.","Krijimi me IA kërkon serverin."));
+  return api("/api/package",body);
 }
 function usePackage(result) {
+  state.models.openai=result.model;
   state.documents = result.documents;
   state.savedProject = false;
   state.isDemo = result.is_demo;
   state.versions = [];
   state.document = "cv";
-  $("#generationInfo").textContent = result.is_demo ? tr("DEMO \xB7 Regelbasierte Vorlagen. Platzhalter selbst erg\xE4nzen.", "DEMO \xB7 Rule-based templates. Fill in placeholders yourself.") : `${PROVIDERS.find((p) => p.id === result.provider).name} \xB7 ${result.model}`;
+  $("#generationInfo").textContent = result.is_demo ? tr("DEMO \xB7 Regelbasierte Vorlagen. Platzhalter selbst erg\xE4nzen.", "DEMO \xB7 Rule-based templates. Fill in placeholders yourself.") : `OpenAI · ${result.model}`;
   $("#projectTitle").value = [job().company,job().title].filter(Boolean).join(" · ").slice(0,200);
   $("#projectStatus").value="draft";
   showStep(4);
   renderDocument();
   scheduleSave();
 }
-async function generate(demo) {
+async function generate() {
+  const demo=false;
   if(generationPending)return;generationPending=true;
   try {
-  validateInputs(!demo);
+  validateInputs(true);
   await flushSave();
   const existingPackage=!!state.documents;
   await busy(tr(demo ? "Demo-Mappe wird erstellt \u2026" : "Deine Bewerbungsmappe entsteht \u2026", demo ? "Creating demo package \u2026" : "Creating your application package \u2026"), async (report) => {
@@ -585,53 +550,13 @@ async function generate(demo) {
   }, true);
   } finally {generationPending=false;}
 }
-async function comparePackages() {
-  if(generationPending)return;generationPending=true;
-  try {
-  validateInputs(true);
-  await flushSave();
-  const second = $("#compareProvider").value;
-  if (second === state.provider) throw new Error(tr("Zwei unterschiedliche Anbieter w\xE4hlen.", "Choose two different providers."));
-  if (!state.keys[second]) throw new Error(tr("Bitte auch beim zweiten Anbieter einen API-Key hinterlegen.", "Enter an API key for the second provider too."));
-  const existingPackage=!!state.documents;
-  const body = requestBody(false);
-  await busy(tr("Zwei Bewerbungsentw\xFCrfe entstehen \u2026", "Creating two application drafts \u2026"), async () => {
-    const outcomes = await Promise.allSettled([generatePayload(body), generatePayload({ ...body, provider: second, model: state.models[second] || PROVIDERS.find((p) => p.id === second).default_model })]);
-    comparisonResults = outcomes.filter((r) => r.status === "fulfilled").map((r) => r.value);
-    if (!comparisonResults.length) throw new Error(outcomes.map((r) => r.reason.message).join(" "));
-    if(existingPackage){cancelSave();state.projectId=null;}
-    const root = $("#comparisonChoices");
-    root.replaceChildren();
-    root.hidden = false;
-    for (const result of comparisonResults) {
-      const button = document.createElement("button");
-      button.className = "button outline";
-      button.textContent = PROVIDERS.find((p) => p.id === result.provider).name + " \xB7 " + result.model;
-      button.addEventListener("click", () => {
-        usePackage(result);
-        notify(tr("Entwurf ausgew\xE4hlt. API-Anbieter zum Nachbearbeiten separat einstellen.", "Draft selected. Choose your revision provider in settings."));
-      });
-      root.append(button);
-    }
-    usePackage(comparisonResults[0]);
-    const warnings = outcomes.filter((r) => r.status === "rejected").map((r) => r.reason.message);
-    if (warnings.length) notify(warnings.join(" "), true);
-    else notify(tr("Vergleiche Stil und Fakten. Es gibt keinen automatisch gew\xE4hlten Gewinner.", "Compare wording and facts. No winner is chosen automatically."));
-  });
-  } finally {generationPending=false;}
-}
 async function refine() {
   validateInputs(true);
   const instruction = $("#revision").value.trim();
   if (instruction.length < 2) throw new Error(tr("Bitte die gew\xFCnschte \xC4nderung eingeben.", "Enter your revision instruction."));
   await busy(tr("Dokument wird angepasst \u2026", "Revising document \u2026"), async () => {
     const body = { ...requestBody(false), document: state.document, current_content: state.documents[state.document], instruction };
-    let content;
-    if (BROWSER_ONLY) {
-      content = (await callProvider(state.provider, state.keys[state.provider], applicationPrompt(body.language, state.document), [{ role: "user", content: JSON.stringify({ confirmed_profile: body.profile, job: body.job, current_draft: body.current_content, revision: instruction }) }], collectProvider())).content;
-    } else {
-      content = (await api("/api/package/refine", body)).content;
-    }
+    const content = (await api("/api/package/refine", body)).content;
     state.versions.push({ ...state.documents });
     state.documents[state.document] = content;
     state.isDemo = false;
@@ -693,11 +618,11 @@ async function download(all = false) {
   });
 }
 function projectData() {
-  return { session_id:getSession().session_id, title:($("#projectTitle").value.trim() || [job().company,job().title].filter(Boolean).join(" · ") || tr("Neue Bewerbung","New application","Aplikim i ri")).slice(0,200), status:$("#projectStatus").value, profile:readProfile(), job:job(), documents:state.documents, language:$("#outputLanguage").value, design:$("#design").value, notes:$("#projectNotes").value, wishes:$("#wishes").value, step:state.step, provider:state.provider, model:$("#model").value, photo:state.photo && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(state.photo) ? state.photo : null, revision:state.projectRevision || null };
+  return { session_id:getSession().session_id, title:($("#projectTitle").value.trim() || [job().company,job().title].filter(Boolean).join(" · ") || tr("Neue Bewerbung","New application","Aplikim i ri")).slice(0,200), status:$("#projectStatus").value, profile:readProfile(), job:job(), documents:state.documents, language:$("#outputLanguage").value, design:$("#design").value, notes:$("#projectNotes").value, wishes:$("#wishes").value, step:state.step, provider:state.provider, model:state.models.openai || "", photo:state.photo && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(state.photo) ? state.photo : null, revision:state.projectRevision || null };
 }
 function hasDraft() {return !!(readProfile().source_text || Object.keys(labels).some(k=>state.profile[k]) || Object.values(job()).some(Boolean) || state.documents || $("#wishes").value || $("#projectNotes").value || state.photo);}
 function saveNotice(kind) {
-  const texts={guest:["Gastmodus · Kein Kontoverlauf. Projektdateien kannst du herunterladen.","Guest mode · No account history. You can download project files.","Modalitet vizitori · Pa historik në llogari. Mund të shkarkosh skedarët."],ready:["Automatisches Speichern aktiv · API-Keys bleiben nur im Arbeitsspeicher.","Autosave active · API keys stay only in memory.","Ruajtja automatike aktive · Çelësat API mbeten vetëm në memorie."],pending:["Änderungen werden gespeichert …","Saving changes …","Po ruhen ndryshimet …"],saved:["✓ In deinem Konto gespeichert","✓ Saved to your account","✓ Ruajtur në llogarinë tënde"],error:["Speichern fehlgeschlagen. Daten bleiben im offenen Tab. Erneut speichern oder Projektdatei sichern.","Save failed. Data remains in this open tab. Retry saving or download a project file.","Ruajtja dështoi. Të dhënat mbeten në skedën e hapur. Provo përsëri ose shkarko projektin."]};
+  const texts={guest:["Bitte anmelden, um Bewerbungen zu erstellen.","Sign in to create applications.","Hyr për të krijuar aplikime."],ready:["Automatisches Speichern aktiv.","Autosave active.","Ruajtja automatike aktive."],pending:["Änderungen werden gespeichert …","Saving changes …","Po ruhen ndryshimet …"],saved:["✓ In deinem Konto gespeichert","✓ Saved to your account","✓ Ruajtur në llogarinë tënde"],error:["Speichern fehlgeschlagen. Daten bleiben im offenen Tab. Erneut speichern oder Projektdatei sichern.","Save failed. Data remains in this open tab. Retry saving or download a project file.","Ruajtja dështoi. Të dhënat mbeten në skedën e hapur. Provo përsëri ose shkarko projektin."]};
   $("#saveStatus").textContent=tr(...texts[kind]);
 }
 function scheduleSave() {
@@ -759,7 +684,7 @@ function openProject(raw, id = null) {
   state.projectRevision = value._revision || null;
   state.photo = typeof value.photo === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value.photo) ? value.photo : null;
   $("#wishes").value = value.wishes || "";
-  if(PROVIDERS.some(p=>p.id===value.provider)){state.provider=value.provider;state.models[value.provider]=value.model || PROVIDERS.find(p=>p.id===value.provider).default_model;$("#provider").value=value.provider;providerView();}
+  state.provider="openai";state.models.openai=value.model || "";
   state.savedProject = true;
   state.versions = [];
   $("#outputLanguage").value = ["de","en","sq"].includes(value.language) ? value.language : "de";
@@ -781,6 +706,8 @@ function accountView() {
   $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konten und Cloud-Speicherung ben\xF6tigen den Server. Du kannst eine Projektdatei lokal herunterladen.", "Accounts and cloud storage require the server. You can download a local project file.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
   $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
   $("#signedInActions").hidden = !state.account;
+  $("#socialLogin").hidden=!!state.account;
+  $("#socialLoginNotice").hidden=!!state.account;
   $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
 }
 function setAccountMode(mode) {
@@ -867,7 +794,6 @@ function clearPersonalMemory() {
   stopGuide();
   $("#boostyAnswer").textContent = "";
   $("#boostyQuestion").value = "";
-  $("#boostyAi").checked = false;
   state.keys = {};
   state.models = {};
   state.documents = null;
@@ -882,7 +808,7 @@ function clearPersonalMemory() {
   $("#projectStatus").value="draft";
   for(const id of ["cvFile","photo","projectFile","scanInput","accountPassword","recoveryCode","accountEmail"])if($("#"+id))$("#"+id).value="";
   $("#generationInfo").textContent="";$("#quality").replaceChildren();
-  for (const id of ["apiKey", "documentEditor", "wishes", "projectNotes", "projectTitle", "fileStatus", "jobImportStatus"]) {
+  for (const id of ["documentEditor", "wishes", "projectNotes", "projectTitle", "fileStatus", "jobImportStatus"]) {
     const field = $("#" + id);
     if ("value" in field) field.value = "";
     else field.textContent = "";
@@ -890,7 +816,6 @@ function clearPersonalMemory() {
   for (const id of ["preview", "projectList", "comparisonChoices"]) $("#" + id).replaceChildren();
   $("#comparisonChoices").hidden = true;
   $("#aiConsent").checked = false;
-  providerView();
   showStep(1);
 }
 async function deleteData() {
@@ -940,16 +865,6 @@ async function init() {
     $("#profileFields").append(label);
   }
   $("#outputLanguage").value = state.language;
-  for (const provider of PROVIDERS) {
-    const option = document.createElement("option");
-    option.value = provider.id;
-    option.textContent = provider.name;
-    $("#provider").append(option);
-    const second = option.cloneNode(true);
-    $("#compareProvider").append(second);
-  }
-  $("#compareProvider").value = "claude";
-  providerView();
   applyLanguage();
   window.addEventListener("sharedJob", (event) => {
     if (typeof event.detail?.url === "string") {
@@ -962,12 +877,11 @@ async function init() {
     const url = new URL(location.href); url.searchParams.set("lang",state.language); history.replaceState(null,"",url);
     applyLanguage();
   });
-  $("#workspace").addEventListener("input",event=>{if(!["apiKey","aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
-  $("#workspace").addEventListener("change",event=>{if(!["apiKey","aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
+  $("#workspace").addEventListener("input",event=>{if(!["aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
+  $("#workspace").addEventListener("change",event=>{if(!["aiConsent","followBoosty"].includes(event.target.id))scheduleSave();});
   $("#workspace").addEventListener("click",()=>queueMicrotask(scheduleSave));
   $("#followBoosty").addEventListener("change",()=>$("#followBoosty").checked?followStep():stopGuide());
   $("#newApplication").addEventListener("click",action(async()=>{if(!await leaveCurrent())return;if(!state.account&&hasDraft()&&!confirm(tr("Gastdaten verwerfen und neu beginnen? Sichere vorher deine Projektdatei.","Discard guest data and start again? Download your project first.","Fshi të dhënat e vizitorit dhe fillo sërish? Ruaj fillimisht projektin.")))return;clearPersonalMemory();accountView();followStep();}));
-  $("#welcomeGuest").addEventListener("click",()=>enterStudio());
   $("#infoBtn").addEventListener("click",()=>$("#infoDialog").showModal());
   $$("a.brand").forEach(link=>link.addEventListener("click",event=>{event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});}));
   $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
@@ -980,21 +894,6 @@ async function init() {
     await navigator.clipboard.writeText(state.documents[state.document]);
     notify(tr("Text kopiert.", "Text copied."));
   }));
-  $("#provider").addEventListener("change", () => {
-    collectProvider();
-    state.provider = $("#provider").value;
-    providerView();
-  });
-  $("#apiKey").addEventListener("input", () => {
-    $("#keyStatus").textContent = "";
-  });
-  $("#model").addEventListener("input", () => {
-    $("#keyStatus").textContent = "";
-  });
-  $("#azureEndpoint").addEventListener("input", () => {
-    $("#keyStatus").textContent = "";
-  });
-  $("#keyEye").addEventListener("click", () => $("#apiKey").type = $("#apiKey").type === "password" ? "text" : "password");
   $("#steps").addEventListener("click", (event) => {
     const button = event.target.closest("[data-step]");
     if (button) showStep(Number(button.dataset.step));
@@ -1040,19 +939,8 @@ async function init() {
     scheduleSave();
     $("#jobImportStatus").textContent = tr("Importiert. Pr\xFCfe Position, Firma und Stellentext.", "Imported. Verify role, company and job text.") + (result.truncated ? tr(" Text wurde auf 20.000 Zeichen begrenzt.", " Text was limited to 20,000 characters.") : "");
   }));
-  $("#checkKey").addEventListener("click", action(async () => {
-    const options = collectProvider(), key = state.keys[state.provider];
-    if (!key) throw new Error(tr("API-Key fehlt", "Missing API key", "Mungon çelësi API"));
-    await busy(tr("API-Zugriff wird gepr\xFCft \u2026", "Testing API access \u2026"), async () => {
-      if (BROWSER_ONLY) await callProvider(state.provider, key, "Return only OK.", [{ role: "user", content: "Connection test. Return OK." }], options);
-      else await api("/api/provider/test", { ...options, keys: keysBody() });
-      $("#keyStatus").textContent = tr("\u2713 Zugriff erfolgreich gepr\xFCft.", "\u2713 Access verified successfully.");
-    });
-  }));
   $("#generate").addEventListener("click", action(() => generate(false)));
-  $("#demo").addEventListener("click", action(() => generate(true)));
   $("#refine").addEventListener("click", action(refine));
-  $("#compare").addEventListener("click", action(comparePackages));
   $("#undo").addEventListener("click", () => {
     if (state.versions.length) {
       state.documents = state.versions.pop();
@@ -1269,8 +1157,15 @@ async function init() {
     if(state.account)enterStudio();
   }
   if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config");} catch { /* Local help remains available. */ }}
+  if(!BROWSER_ONLY){
+    const config=await api("/api/hosted-config");
+    $("#aiCapacity").textContent=tr(`Bis zu ${config.daily_packages} Bewerbungs­mappen pro Tag. Deine Eingaben kannst du jederzeit bearbeiten.`,`Up to ${config.daily_packages} application packages per day. Edit your inputs anytime.`,`Deri në ${config.daily_packages} dosje aplikimi në ditë. Të dhënat mund t'i ndryshosh kurdo.`);
+    const providers=await api("/api/oauth/providers");
+    $("#socialLogin").replaceChildren(...providers.map(provider=>{const button=document.createElement("button");button.type="button";button.className="button outline";button.disabled=!provider.enabled;button.textContent=provider.name+(provider.enabled?"":tr(" · bald verfügbar"," · coming soon"," · së shpejti"));button.addEventListener("click",()=>{location.href=(API_BASE || location.origin).replace(/\/$/,"")+`/api/oauth/${provider.id}/start`;});return button;}));
+  }
   boostyConnectionView();
   const params = new URLSearchParams(location.search);
+  if(params.get("auth")==="failed")notify(tr("Die Anmeldung konnte nicht abgeschlossen werden. Nutze deine E-Mail-Anmeldung oder versuche es erneut.","Sign-in could not be completed. Use email sign-in or try again.","Hyrja nuk u përfundua. Përdor email-in ose provo sërish."),true);
   if (params.has("jobUrl")) {
     $("#jobUrl").value = params.get("jobUrl");
     showStep(2);

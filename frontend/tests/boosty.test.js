@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {boostyAnswer, TOUR, BOOSTY_SYSTEM} from '../js/core/boosty.js';
 
 test('Boosty gives bilingual help without keys and does not pretend to perform actions',()=>{
-  assert.match(boostyAnswer('Wo bekomme ich einen API-Key?').content,/offizieller Konsole/);
-  assert.match(boostyAnswer('How do I save?', 'en').content,/Save application/);
-  assert.match(boostyAnswer('privacy','en').content,/admin access is audited/);
+  assert.match(boostyAnswer('Wo bekomme ich einen API-Key?').content,/keinen eigenen API-Key/);
+  assert.match(boostyAnswer('How do I save?', 'en').content,/automatically saves/);
+  assert.match(boostyAnswer('privacy','en').content,/Read Privacy/);
   assert.match(boostyAnswer('admin').content,/keine Adminrechte/);
   assert.equal(boostyAnswer('Wie ändere ich die Sprache?').topic,'language');
   assert.equal(boostyAnswer('Si ta provoj demonstrimin?','sq').topic,'demo');
@@ -20,8 +20,8 @@ test('Boosty tours cover every workflow step and AI has no action permissions',(
 });
 
 test('Boosty answers Albanian intents and provides a complete Albanian tour',()=>{
- assert.match(boostyAnswer('Ku mund të marr një çelës API?','sq').content,/konsolën zyrtare/);
- assert.match(boostyAnswer('Si ta ruaj aplikimin?','sq').content,/Ruaj në llogari/);
+ assert.match(boostyAnswer('Ku mund të marr një çelës API?','sq').content,/Nuk të duhet çelës API/);
+ assert.match(boostyAnswer('Si ta ruaj aplikimin?','sq').content,/Llogaria ruan automatikisht/);
  assert.match(boostyAnswer('Sa është përqindja?','sq').content,/Nuk është probabilitet punësimi/);
  assert.ok(TOUR.every(t=>t.sq));
 });

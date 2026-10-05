@@ -261,7 +261,53 @@ class AuthAttempt(Base):
 
 class AssistantQuota(Base):
     """Daily request counts only; no questions, keys or account association."""
+
     __tablename__ = "assistant_quota"
     day = Column(String(10), primary_key=True)
     bucket = Column(String(36), primary_key=True)
     calls = Column(Integer, nullable=False, default=0)
+
+
+class AICall(Base):
+    __tablename__ = "ai_calls"
+    id = Column(String(36), primary_key=True, default=_uuid)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    day = Column(String(10), nullable=False, index=True)
+    kind = Column(String(12), nullable=False)
+    model = Column(String(100), nullable=False)
+    status = Column(String(12), nullable=False, default="reserved")
+    reserved_microusd = Column(Integer, nullable=False)
+    input_tokens = Column(Integer, nullable=False, default=0)
+    output_tokens = Column(Integer, nullable=False, default=0)
+    actual_microusd = Column(Integer, nullable=False, default=0)
+
+
+class SocialIdentity(Base):
+    __tablename__ = "social_identities"
+    provider = Column(String(12), primary_key=True)
+    subject = Column(String(255), primary_key=True)
+    account_id = Column(
+        String(36), ForeignKey("accounts.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+
+
+class OAuthState(Base):
+    __tablename__ = "oauth_states"
+    state_hash = Column(String(64), primary_key=True)
+    browser_hash = Column(String(64), nullable=False)
+    provider = Column(String(12), nullable=False)
+    verifier = Column(String(128), nullable=False)
+    nonce = Column(String(64), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+
+
+class AIBudget(Base):
+    __tablename__ = "ai_budgets"
+    day = Column(String(10), primary_key=True)
+    calls = Column(Integer, nullable=False, default=0)
+    reserved_microusd = Column(Integer, nullable=False, default=0)
+    actual_microusd = Column(Integer, nullable=False, default=0)
+    input_tokens = Column(Integer, nullable=False, default=0)
+    output_tokens = Column(Integer, nullable=False, default=0)

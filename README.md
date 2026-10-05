@@ -1,13 +1,16 @@
-# Boosty AI · Lebenslauf Boost AI
+# tafolliboost.com · Bewerbung mit OpenAI
 
-Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Boosty AI ist die vom Betreiber gewählte Produktmarke. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die gekaufte App-Domain ist **[tafolliboost.com](https://tafolliboost.com)**.
+Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch mit Pflichtkonto und zentral bereitgestellter OpenAI-KI. Boosty ist das Maskottchen und der Softwareassistent. Betreiber: **Kastriot Tafolli**, **info@tafolli.net**, **[www.tafolli.net](https://www.tafolli.net)**.
+
+**Aktueller Betriebsmodus und Einrichtung:** [Zentrale OpenAI-KI, Pflichtkonto, Kostenlimits und Social-Login](docs/product/HOSTED-OPENAI.md). Ältere BYOK-/Demo-Beispiele weiter unten beschreiben ausschließlich den deaktivierten Kompatibilitätsmodus; die aktuelle Oberfläche bietet keine Gast- oder Nutzer-Key-Funktion.
+
 
 ## Was funktioniert
 
 - PDF/DOCX/TXT importieren, Kontaktdaten und erkannte Abschnitte prüfen. Originaltext und Profil bleiben editierbar.
 - Fotos/Scans lokal mit Tesseract erkennen; deutsches, englisches und albanisches Sprachmodell liegen im Projekt. Kein OCR-Dienst erhält deine Bilder.
 - Öffentliche HTTPS-Stellenlinks serverseitig importieren: bevorzugt `JobPosting`, sonst HTML. Private IPs, unzulässige Redirects und große Antworten werden blockiert. Für gesperrte Portale gibt es den Text-Eingang.
-- OpenAI, Anthropic Claude, Google Gemini, xAI Grok und Microsoft Azure OpenAI: eigene API-Keys, Modell-/Deployment-Feld, Links zur Key-Erstellung und kostenpflichtiger Zugriffstest. Kein generischer Copilot-Key.
+- Zentraler OpenAI-Zugang auf dem Server, ohne Nutzer-API-Key. Tageskontingente und Token-/Kostenzähler. Google, Apple, Facebook und X als konfigurierte Social-Login-Optionen vorbereitet.
 - Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail gemeinsam erstellen. Dokumente separat bearbeiten und mit vollständigem Quellkontext nachbearbeiten.
 - Begrenzte Dokumentvorschau mit eigenem Scrollbereich, direkt erreichbare Exportleiste und mobile Umschaltung zwischen Text und Vorschau. Sichtbare Keyword-Abdeckung mit gefundenen und fehlenden Begriffen; keine Einstellungschance.
 - Boosty als Logo, animierte Begleitung und Hilfe; Erstellung zeigt vier bestätigte Phasen mit Tipps statt einer erfundenen Zeitprognose.

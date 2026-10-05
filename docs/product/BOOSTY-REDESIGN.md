@@ -1,3 +1,5 @@
+> Aktueller Stand: Pflichtkonto und ein zentraler Betreiber-OpenAI-Key für Bewerbungen und Boosty. Frühere Gast-/BYOK-/separate-Key-Beschreibungen in diesem Dokument sind überholt. Siehe [HOSTED-OPENAI.md](HOSTED-OPENAI.md).
+
 # Boosty: Design, Chat und Kontoverlauf
 
 ## Abgearbeiteter Workflow

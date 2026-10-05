@@ -3,6 +3,7 @@
 import os
 from pathlib import Path
 
+from fastapi import Request
 from sqlalchemy import create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -39,10 +40,15 @@ if engine.dialect.name == "sqlite":
         cursor.close()
 
 
-def get_db():
+def get_db(request: Request):
     """FastAPI-Dependency: liefert eine DB-Session und schließt sie sauber."""
     db = SessionLocal()
     try:
+        if get_settings().hosted_ai_enabled:
+            from backend.services.account_service import current_account
+
+            account = current_account(db, request)
+            db.info["authenticated_account_id"] = account.id if account else None
         yield db
     finally:
         db.close()

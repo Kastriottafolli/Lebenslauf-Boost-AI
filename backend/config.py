@@ -1,13 +1,24 @@
 """Zentrale Konfiguration, geladen aus .env (pydantic-settings)."""
 
+import os
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(
+            ".env",
+            os.environ.get(
+                "TAFOLLIBOOST_SECRET_FILE", str(Path.home() / ".config/tafolliboost/secrets.env")
+            ),
+        ),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     # ── Anthropic Claude (Anbieter 1) ──
     anthropic_api_key: str = ""
@@ -40,6 +51,28 @@ class Settings(BaseSettings):
     operator_name: str = "Kastriot Tafolli"
     operator_address: str = "Hauptstraße 1\n18609 Ostseebad Binz\nDeutschland"
     operator_email: str = "info@tafolli.net"
+
+    # Hosted service: only server credentials and operator-selected models.
+    hosted_ai_enabled: bool = True
+    hosted_openai_model: str = "gpt-4.1-mini"
+    hosted_help_model: str = "gpt-4.1-mini"
+    ai_global_daily_calls: int = Field(300, ge=1, le=10000)
+    ai_account_daily_packages: int = Field(3, ge=1, le=100)
+    ai_account_daily_refines: int = Field(10, ge=1, le=100)
+    ai_account_daily_help: int = Field(30, ge=1, le=200)
+    ai_daily_budget_usd: float = Field(5.0, gt=0, le=1000)
+    ai_input_usd_per_million: float = Field(0.4, ge=0)
+    ai_output_usd_per_million: float = Field(1.6, ge=0)
+    oauth_base_url: str = ""
+    oauth_google_client_id: str = ""
+    oauth_google_client_secret: str = ""
+    oauth_apple_client_id: str = ""
+    oauth_apple_client_secret: str = ""
+    oauth_facebook_client_id: str = ""
+    oauth_facebook_client_secret: str = ""
+    oauth_x_client_id: str = ""
+    oauth_x_client_secret: str = ""
+    oauth_facebook_version: str = "v25.0"
 
     # ── App ──
     app_name: str = "tafolliboost.com"

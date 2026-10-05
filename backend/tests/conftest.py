@@ -1,5 +1,9 @@
 import os
 
+os.environ["HOSTED_AI_ENABLED"] = "false"
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["BOOSTY_OPENAI_API_KEY"] = ""
+
 import pytest
 
 from backend.security import _buckets

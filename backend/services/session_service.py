@@ -31,6 +31,14 @@ def get_session(db: DBSession, session_id: str, token=""):
     sess = db.get(Session, session_id)
     if not sess:
         raise HTTPException(404, "Sitzung nicht gefunden / session not found")
+    from backend.config import get_settings
+
+    if get_settings().hosted_ai_enabled and (
+        not sess.owner_id or sess.owner_id != db.info.get("authenticated_account_id")
+    ):
+        raise HTTPException(
+            403, "Sitzung gehört nicht zu deinem Konto / session ownership mismatch"
+        )
     if (
         not token
         or not sess.owner_token_hash

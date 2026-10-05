@@ -15,7 +15,7 @@
       ],
       [
         "Nutzerkonto und gespeicherte Bewerbungen",
-        "Für ein Konto verarbeiten wir E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes, Anmeldezeitpunkte sowie ablaufende Sitzungstoken. Nach deiner Anmeldung speichern wir Eingaben und Bewerbungen automatisch in deinem Konto: Profil, Stellenanzeige, Wünsche, Dokumente, gewähltes Design, optionales Foto, Bearbeitungsschritt, Status, Notizen sowie Erstellungs- und Änderungszeitpunkte. Angefangene Entwürfe und generierte Bewerbungen erscheinen im Kontoverlauf. API-Keys und Boosty-Chattexte werden nicht im Konto gespeichert. Im Gastmodus gibt es keinen dauerhaften Kontoverlauf. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO zur Bereitstellung der von dir angeforderten Kontofunktionen. Die normale Anmeldung läuft nach sieben Tagen ab. Du kannst gespeicherte Bewerbungen und dein Konto selbst löschen. Ohne Konto bleiben serverseitige Arbeitssitzungen nicht dauerhaft unbegrenzt gespeichert."
+        "Für die App ist ein Konto erforderlich. Wir verarbeiten E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes sowie ablaufende Anmeldetoken. Nach der Anmeldung speichern wir Profil, Stellenbeschreibung, Wünsche, Dokumente, Design, optionales Foto, Status, Notizen und Zeitpunkte automatisch. Boosty-Chattexte werden nicht gespeichert. Bei optionaler Anmeldung über Google, Apple, Facebook oder X verarbeiten wir die Anbieterkennung, eine stabile Nutzerkennung und, soweit übermittelt, deine E-Mail-Adresse. Ohne E-Mail verwenden wir bei X/Facebook eine interne Kontokennung; sie ist keine erreichbare E-Mail-Adresse. Zugangstoken der Anmeldedienste werden nur vorübergehend zur Prüfung verarbeitet. Anmeldevorgänge speichern einen einmaligen Prüfzustand für höchstens zehn Minuten. Rechtsgrundlage für Kontofunktionen ist Art. 6 Abs. 1 lit. b DSGVO. Anmeldung läuft nach sieben Tagen ab. Gespeicherte Bewerbungen und das Konto können gelöscht werden."
       ],
       [
         "Lebensläufe, Stellenanzeigen und Dokumenterstellung",
@@ -26,12 +26,12 @@
         "Beim Import ruft der Server die von dir eingegebene öffentliche HTTPS-Adresse auf. Die angesprochene Stellenplattform erhält dabei technische Verbindungsdaten des Servers und die angeforderte URL; dein Lebenslauf wird nicht an die Stellenplattform übermittelt. Verwende keine Links mit privaten Zugangstoken oder vertraulichen Parametern. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für den angeforderten Import."
       ],
       [
-        "KI-Anbieter für Bewerbungsunterlagen",
-        "Die Demo benötigt keinen KI-Dienst. Bei ausdrücklicher Auswahl einer KI und bestätigter Datenübermittlung gehen Profil, Quellenkontext, Stellenbeschreibung und Bearbeitungsanweisung an den gewählten Anbieter: OpenAI, Anthropic, Google Gemini, xAI oder Microsoft Azure OpenAI. Rechtsgrundlage für die optionale Weitergabe ist Art. 6 Abs. 1 lit. a DSGVO. Anbieter behandeln Daten nach ihren Verträgen und Datenschutzregeln. Eigene Benutzer-API-Keys werden für den Aufruf verarbeitet und in dieser App nicht dauerhaft gespeichert; sie bleiben in der laufenden Browser-/Serververarbeitung. Chat-Abos und API-Abrechnung sind getrennt."
+        "OpenAI für Bewerbungsunterlagen",
+        "Nach deiner bestätigten Freigabe werden Profil, Lebenslaufquelle, Stellenbeschreibung, Wünsche und Bearbeitungsanweisung an OpenAI übermittelt, um Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail zu erstellen oder zu überarbeiten. Rechtsgrundlage für die optionale Weitergabe ist Art. 6 Abs. 1 lit. a DSGVO. Der Betreiber bezahlt und verwaltet den API-Zugang ausschließlich auf dem Server. Nutzer müssen keine Zugangsschlüssel hinterlegen. API-Antworten werden mit store=false angefordert; dies beseitigt nicht automatisch sämtliche Aufbewahrung bei OpenAI. OpenAI verarbeitet Daten nach seinen Verträgen und Datenschutzregeln. Die vor dem öffentlichen Betrieb zu prüfenden Auftragsverarbeitungs- und Drittlandregelungen bleiben erforderlich."
       ],
       [
-        "Boosty: Softwarehilfe mit separatem OpenAI-Zugang",
-        "Boosty erklärt ausschließlich die Bedienung der Software und kann freigegebene Felder hervorheben und zu ihnen scrollen. Die lokale Hilfe benötigt keine externe KI. Wird die KI-Hilfe vom Betreiber aktiviert und von dir ausdrücklich erlaubt, werden ausschließlich deine aktuelle Frage und eine feste Themenbeschreibung an OpenAI übertragen; kein Profil, Lebenslauf, Dokument, Kontodatensatz oder früherer Chat wird automatisch beigefügt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO. Bitte schreibe keine Passwörter, API-Keys oder personenbezogenen Lebenslaufdaten in die Frage. Der Betreiber verwendet hierfür einen separaten serverseitigen Key; dieser wird dem Browser nicht offengelegt. Fragen werden nicht in der App-Datenbank gespeichert. Antworten im Browser verschwinden beim Neuladen bzw. Löschen der Sitzung. Zur Kostenbegrenzung werden Tageszähler mit Sitzungskennung bis zu 30 Tage gespeichert (Art. 6 Abs. 1 lit. f DSGVO; Missbrauchs- und Kostenschutz). Der Chatverlauf wird ausschließlich im Arbeitsspeicher des geöffneten Tabs angezeigt und bei Abmeldung geleert."
+        "Boosty: Softwarehilfe mit OpenAI",
+        "Boosty beantwortet ausschließlich Fragen zur App und bietet freigegebene Navigationshinweise. Nach der Anmeldung übermittelt das Absenden einer Frage ausschließlich diese Frage und eine feste Software-Themenbeschreibung an OpenAI. Lebenslauf, Kontodaten, Dokumente und früherer Chat werden nicht beigefügt. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für die angeforderte Softwarehilfe. Bitte keine Passwörter, Zugangsschlüssel oder personenbezogenen Lebenslaufdaten eingeben. Der zentrale Betreiber-Key wird dem Browser nicht offengelegt. Fragen werden nicht in der App-Datenbank gespeichert; der Chat bleibt bis zur Abmeldung bzw. zum Neuladen im Arbeitsspeicher. Zur Missbrauchs- und Kostenbegrenzung speichern wir bis zu 30 Tage kontobezogene Aufrufzähler, Modellnamen, Tokenanzahlen und Kostenschätzungen, ohne Prompts oder Antworten (Art. 6 Abs. 1 lit. f DSGVO). Kontolöschung entfernt die kontobezogenen Aufzeichnungen. Summierte Tagesbudgets ohne Personenbezug bleiben bis zu 30 Tage erhalten."
       ],
       [
         "KI-Datenschutz und mögliche Drittlandverarbeitung",
@@ -96,6 +96,10 @@
   "en": {
     "privacy": [
       [
+        "OpenAI & account login",
+        "An account is required. Optional Google, Apple, Facebook and X login processes a provider identifier, stable subject and email if available. Some services use an internal account alias instead of email. One-time login state expires after ten minutes. Verified profiles and job postings are sent to centrally funded OpenAI only after your permission. Help sends only the current question after sign-in, never your CV or chat history. The operator key never reaches the browser. Requests use store=false; this does not remove all provider retention. Account drafts and applications are saved automatically. Help text is not saved. AI call metadata, tokens and estimated costs are retained up to 30 days for abuse and cost prevention; aggregate daily budgets contain no personal data. Account deletion removes account-linked records. See the German notice for legal bases and provider/hosting requirements."
+      ],
+      [
         "Controller and contact",
         "{operator_name}, {operator_address}. Privacy requests: {operator_email}."
       ],
@@ -105,7 +109,7 @@
       ],
       [
         "Documents, AI and Boosty",
-        "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. The demo uses no AI service. Optional application AI sends sources, profile, posting and instructions to your chosen provider only after consent (Art. 6(1)(a)). Boosty help sends only your current question and fixed help topics to OpenAI with separate consent. No CV, account data or chat history is attached; questions are not saved in the app database. The dedicated operator key never reaches the browser."
+        "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. Application AI sends sources, profile, posting and instructions to OpenAI only after permission (Art. 6(1)(a)). Boosty help sends only your current question and fixed help topics to OpenAI after sign-in and submission. No CV, account data or chat history is attached; questions are not saved in the app database. The central operator key never reaches the browser."
       ],
       [
         "Provider processing",
@@ -121,7 +125,7 @@
       ],
       [
         "Rights and choice",
-        "Subject to legal conditions you have access, rectification, erasure, restriction, portability, objection and withdrawal rights (GDPR Arts. 15–21). Contact {operator_email}; requests are generally answered within one month. Complain to a supervisory authority, including https://www.datenschutz-mv.de/ for the currently recorded operator location. No automated employment decision is made. AI and accounts are optional for the demo. The complete German notice is available under Deutsch; hosting and operator details require confirmation. Updated {updated}."
+        "An account is required. Optional Google, Apple, Facebook and X login processes a provider identifier, stable subject and email if available. Some services use an internal account alias instead of email. One-time login state expires after ten minutes. Verified profiles and job postings are sent to centrally funded OpenAI only after your permission. Help sends only the current question after sign-in, never your CV or chat history. The operator key never reaches the browser. Requests use store=false; this does not remove all provider retention. Account drafts and applications are saved automatically. Help text is not saved. AI call metadata, tokens and estimated costs are retained up to 30 days for abuse and cost prevention; aggregate daily budgets contain no personal data. Account deletion removes account-linked records. See the German notice for legal bases and provider/hosting requirements."
       ]
     ],
     "legal": [
@@ -138,6 +142,10 @@
   "sq": {
     "privacy": [
       [
+        "OpenAI & hyrja në llogari",
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+      ],
+      [
         "Përgjegjësi dhe kontakti",
         "{operator_name}, {operator_address}. Kërkesat për privatësinë: {operator_email}."
       ],
@@ -147,7 +155,7 @@
       ],
       [
         "Dokumentet, IA dhe Boosty",
-        "Skedarët, profili dhe shpallja përpunohen për funksionet e kërkuara (neni 6(1)(b)). OCR lokal nuk dërgon imazhe tek një shërbim OCR. Demonstrimi nuk përdor IA të jashtme. IA për aplikime dërgon profilin, burimet, shpalljen dhe udhëzimet tek ofruesi i zgjedhur vetëm me pëlqim (neni 6(1)(a)). Ndihma Boosty dërgon vetëm pyetjen aktuale dhe temat e ndihmës në OpenAI, me pëlqim të veçantë. CV-ja, llogaria dhe historia e bisedës nuk shtohen. Pyetjet nuk ruhen në bazën e aplikacionit. Çelësi i veçantë i operatorit nuk shfaqet në shfletues."
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
       ],
       [
         "Ofruesit dhe transferimet",
@@ -163,7 +171,7 @@
       ],
       [
         "Të drejtat dhe zgjedhja",
-        "Sipas kushteve ligjore ke të drejtë për akses, korrigjim, fshirje, kufizim, transferim, kundërshtim dhe tërheqje pëlqimi (nenet 15–21 GDPR). Kontakto {operator_email}; përgjigjja jepet zakonisht brenda një muaji. Mund të ankohesh tek një autoritet mbikëqyrës, përfshirë https://www.datenschutz-mv.de/ për adresën aktuale të operatorit. Nuk merren vendime automatike punësimi. IA dhe llogaria janë opsionale për demonstrimin. Teksti i plotë gjerman gjendet te Deutsch. Hosting-u dhe të dhënat e operatorit duhen konfirmuar. Përditësuar: {updated}."
+        "Kërkohet llogari. Hyrja opsionale me Google, Apple, Facebook dhe X përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
       ]
     ],
     "legal": [

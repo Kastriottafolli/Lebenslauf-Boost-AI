@@ -18,11 +18,13 @@ from backend.routers import (
     generations,
     platform,
     sessions,
+    social,
     system,
 )
 
 ALL_ROUTERS = [
     system.router,
+    social.router,
     platform.router,
     admin.router,
     assistant.router,

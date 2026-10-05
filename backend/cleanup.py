@@ -31,6 +31,10 @@ def cleanup():
         db.query(DailyMetric).filter(
             DailyMetric.day < (now - timedelta(days=90)).date().isoformat()
         ).delete()
+        from backend.models import AIBudget, AICall, OAuthState
+        db.query(OAuthState).filter(OAuthState.expires_at <= datetime.now(UTC).replace(tzinfo=None)).delete()
+        db.query(AICall).filter(AICall.day < (now - timedelta(days=30)).date().isoformat()).delete()
+        db.query(AIBudget).filter(AIBudget.day < (now - timedelta(days=30)).date().isoformat()).delete()
         db.query(Login).filter(Login.expires_at <= datetime.now(UTC).replace(tzinfo=None)).delete()
         sessions = (
             db.query(Session).filter(Session.owner_id.is_(None), Session.created_at < cutoff).all()

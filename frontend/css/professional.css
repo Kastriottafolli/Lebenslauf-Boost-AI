@@ -1369,3 +1369,5 @@ body[data-view="welcome"] footer {gap:8px;}
 #infoDialog .value-grid {margin-top:22px;}
 body[data-view="studio"] .workspace {padding-top:32px;}
 @media(max-width:700px){body[data-view="welcome"] .hero{padding:18px 0 26px;gap:16px;}body[data-view="welcome"] main{min-height:calc(100dvh - 180px);}#infoDialog .value-grid{grid-template-columns:1fr;}body[data-view="welcome"] .topbar nav{gap:10px;}body[data-view="welcome"] .hero h1{font-size:36px;}}
+
+.entry-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px;list-style:none;padding:0;margin:8px 0 24px;font-size:12px;color:var(--ink)}.entry-steps li{padding:10px;background:#edf5ff;border-radius:9px}.social-login{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.social-login button:disabled{opacity:.55;cursor:default}@media(max-width:400px){.entry-steps{gap:6px;font-size:11px}.social-login{grid-template-columns:1fr}}

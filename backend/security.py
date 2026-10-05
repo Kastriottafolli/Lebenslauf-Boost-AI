@@ -49,6 +49,41 @@ def install_security(app):
 
     @app.middleware("http")
     async def boundaries(request, call_next):
+        path = request.url.path
+        if (
+            settings.hosted_ai_enabled
+            and path.startswith("/api/")
+            and not path.startswith("/api/admin/")
+        ):
+            public = {
+                "/api/session",
+                "/api/status",
+                "/api/public-config",
+                "/api/hosted-config",
+                "/api/account",
+                "/api/account/register",
+                "/api/account/login",
+                "/api/account/recover",
+                "/api/assistant/config",
+                "/api/oauth/providers",
+                "/api/usage",
+            }
+            allowed_public = path in public and not (
+                path == "/api/account" and request.method == "DELETE"
+            )
+            if not allowed_public and not path.startswith("/api/oauth/"):
+                from backend.database import SessionLocal
+                from backend.services.account_service import current_account
+
+                with SessionLocal() as db:
+                    if not current_account(db, request):
+                        return JSONResponse(
+                            {"detail": "Bitte zuerst anmelden / sign in first"}, status_code=401
+                        )
+            if path in {"/api/generate", "/api/refine", "/api/provider/test"}:
+                return JSONResponse(
+                    {"detail": "Diese alte Anbieter-Funktion ist deaktiviert"}, status_code=410
+                )
         origin = request.headers.get("origin")
         is_admin = request.url.path.startswith("/api/admin/")
         if (
@@ -62,10 +97,15 @@ def install_security(app):
         )
         if is_admin and origin and origin not in admin_origins:
             return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
-        if request.url.path.startswith("/api/") and request.method not in (
-            "GET",
-            "HEAD",
-            "OPTIONS",
+        if (
+            request.url.path.startswith("/api/")
+            and not (path == "/api/oauth/apple/callback" and request.method == "POST")
+            and request.method
+            not in (
+                "GET",
+                "HEAD",
+                "OPTIONS",
+            )
         ):
             if origin and origin not in origins and origin != str(request.base_url).rstrip("/"):
                 return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
