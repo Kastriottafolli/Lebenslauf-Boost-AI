@@ -1,8 +1,10 @@
 """SQLite-Datenbank-Setup (SQLAlchemy)."""
 
 import os
+from pathlib import Path
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine, event, inspect, text
+from sqlalchemy.engine import make_url
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from backend.config import get_settings
@@ -12,6 +14,9 @@ settings = get_settings()
 # Sicherstellen, dass die Datenverzeichnisse existieren.
 os.makedirs("data", exist_ok=True)
 os.makedirs(settings.upload_dir, exist_ok=True)
+database_path = make_url(settings.database_url).database
+if settings.database_url.startswith("sqlite") and database_path not in (None, "", ":memory:"):
+    Path(database_path).parent.mkdir(parents=True, exist_ok=True, mode=0o700)
 
 engine = create_engine(
     settings.database_url,
@@ -21,6 +26,17 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
+
+
+if engine.dialect.name == "sqlite":
+
+    @event.listens_for(engine, "connect")
+    def sqlite_options(connection, _record):
+        cursor = connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA busy_timeout=5000")
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.close()
 
 
 def get_db():
@@ -50,3 +66,5 @@ def init_db() -> None:
                     "INSERT INTO generations_v2 SELECT * FROM generations WHERE id NOT IN (SELECT id FROM generations_v2)"
                 )
             )
+    if engine.dialect.name == "sqlite" and database_path not in (None, "", ":memory:"):
+        Path(database_path).chmod(0o600)

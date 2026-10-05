@@ -1,6 +1,6 @@
 # Candidaro · Lebenslauf Boost AI
 
-Bewerbungswerkstatt auf Deutsch und Englisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Candidaro ist ein vorläufiger Markenname; eine Domain ist nicht registriert.
+Bewerbungswerkstatt auf Deutsch und Englisch: geprüftes Profil → Stellenanzeige → KI-Anbieter → vollständige, editierbare Bewerbungsmappe. Candidaro ist ein vorläufiger Produktname. Betreiber ist **Kastriot Tafolli**, verbunden mit **[www.tafolli.net](https://www.tafolli.net)** und **info@tafolli.net**. Die separate öffentliche App-Adresse ist noch festzulegen.
 
 ## Was funktioniert
 
@@ -70,7 +70,7 @@ Der Demo-Modus ist ausdrücklich regelbasiert. Er kopiert keine fehlenden Anford
 
 Sitzungen benötigen zusätzlich zur ID einen `X-Session-Token`; dieser wird nicht in localStorage geschrieben. Kontozugriff läuft über ein ablaufendes HttpOnly-Cookie bzw. einen Bearer-Token im Arbeitsspeicher für mobile Clients. Passwörter verwenden scrypt, Login-/Recovery-Tokens werden gehasht. Kein E-Mail-Verifikationsdienst ist eingerichtet: Nutzer bewahren den einmalig angezeigten Recovery-Code selbst auf.
 
-Anonyme Upload-Sitzungen werden beim Serverstart nach `RETENTION_DAYS` bereinigt. Zusätzlich täglich ausführen:
+Anonyme Upload-Sitzungen werden beim Serverstart und stündlich nach `RETENTION_DAYS` bereinigt. Abgelaufene Login-Tokens werden ebenfalls entfernt; Konten und gespeicherte Bewerbungen bleiben erhalten. Bei Bedarf manuell ausführen:
 
 ```sh
 .venv/bin/python -m backend.cleanup
@@ -110,3 +110,9 @@ API-Tests laufen offline mit synthetischen Daten und gemockten KI-Antworten. Sie
 Domainkauf, Betreiberanschrift, Datenschutzerklärung für den tatsächlichen Hostingbetrieb, Live-KI-Tests mit eigenen Keys, mobile Builds/Signierung und Store-Einreichung sind noch erforderlich. Es gibt kein eingebautes Bezahlsystem; die erste Version setzt auf eigene API-Keys.
 
 Die ausdrücklich gewählte Demo erstellt Dokumente lokal auch im Serverbetrieb. Nach dem ersten vollständigen Laden kann die gecachte PWA dafür genutzt werden; KI, Konten und Stellenimport benötigen eine Verbindung. OCR- und PDF-Worker müssen für Offline-Nutzung bereits geladen worden sein.
+
+## Betreiber und dauerhafte Konten
+
+Die lokale Konfiguration aus `.env.example` verwendet `data/tafolli.db`. Initialisieren und eine geprüfte Sicherung erstellen: `python -m backend.manage_database init` bzw. `python -m backend.manage_database backup`. Registrierung und gespeicherte Bewerbungen bleiben nach einem Serverneustart erhalten. Der Prüflauf testet dies mit zwei unabhängigen Prozessen.
+
+Für die öffentliche Verbindung zu tafolli.net sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage sieht zunächst `bewerbung.tafolli.net` vor; keine DNS-Änderung wurde durchgeführt. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).

@@ -2,11 +2,12 @@
 
 ## Automatisiert
 
-- Backend: 22 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext.
+- Backend: 24 Tests für API, Sitzungsbesitz, Konten/Recovery, Projektspeicherung, Dateigrenzen, Body-Limit ohne Content-Length, HTTPS-Stellenimport, Anbieterfehler und vollständigen Revisionskontext. Ein zusätzlicher Test registriert und speichert in einem Prozess und prüft Anmeldung/Projektzugriff nach einem echten Prozessneustart einschließlich einer geprüften SQLite-Sicherung. Retention-Test: abgelaufene anonyme Daten und Login-Tokens entfernt, Konten/Bewerbungen erhalten.
 - Frontend: 13 Tests für Demo-Fakten, Anbieter-Verträge, Import-/Exportgrenzen, sechs PDF-Layouts mit Unicode, lesbare Word-Dateien und ZIP-Inhalte.
 - `ruff check backend` und `git diff --check`: erfolgreich.
 - `npm run build` und `npx cap sync`: erfolgreich für Browser, Server, Android und iOS.
 - Apple Info.plist, PrivacyInfo.xcprivacy und project.pbxproj: `plutil -lint` erfolgreich.
+- Produktions-Konfiguration: GitHub-CI prüft Compose und Caddy syntaktisch, ohne öffentlichen Serverstart oder DNS-Änderung.
 - `npm audit --omit=dev` und `pip-audit -r requirements.txt` einschließlich aufgelöster Python-Abhängigkeiten: keine bekannten gemeldeten Schwachstellen. Dies ist keine Garantie, dass keine unbekannten Schwachstellen vorhanden sind.
 
 ## Im Browser mit synthetischen Daten
@@ -25,6 +26,6 @@ Eine mobile Breite wurde angefordert und die tatsächlich gemessene Browserbreit
 - Android/iOS: native Quellen synchronisiert, aber keine APK/AAB/IPA erstellt. JDK/Android SDK bzw. vollständiges Xcode fehlen.
 - Docker-Image: Konfiguration erstellt, Docker ist hier nicht verfügbar; Image-Build nicht durchgeführt.
 - Endor Dependency Reviewer: Skill gelesen, Endor-MCP/CLI nicht verfügbar. Zusätzliche Endor-Risiko-, Lizenz- und Maintenance-Bewertung **UNKNOWN**, nicht bestanden behauptet. npm/pip-Audits sind davon unabhängige Prüfungen.
-- Öffentliche Veröffentlichung, Markenfreigabe, Domainkauf, SMTP, Checkout und Store-Freigabe: nicht erfolgt.
+- Öffentliche Veröffentlichung, Markenfreigabe, Domainkauf, SMTP, Checkout und Store-Freigabe: nicht erfolgt. www.tafolli.net und info@tafolli.net sind als Betreiberverbindung hinterlegt; keine bestehende Website ersetzt und kein DNS-Eintrag verändert.
 
 Die verbleibenden Betriebs- und Ausbaupunkte stehen in RELEASE.md und MOBILE.md. Der Stand ist eine prüfbare Beta.

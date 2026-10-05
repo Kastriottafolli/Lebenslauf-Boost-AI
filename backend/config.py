@@ -30,9 +30,9 @@ class Settings(BaseSettings):
     secure_cookies: bool = False
     retention_days: int = 30
     site_url: str = ""
-    operator_name: str = ""
-    operator_address: str = ""
-    operator_email: str = ""
+    operator_name: str = "Kastriot Tafolli"
+    operator_address: str = "Hauptstraße 1\n18609 Ostseebad Binz\nDeutschland"
+    operator_email: str = "info@tafolli.net"
 
     # ── App ──
     app_name: str = "Candidaro"

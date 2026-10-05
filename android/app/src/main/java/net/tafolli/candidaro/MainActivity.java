@@ -1,4 +1,4 @@
-package app.candidaro.mobile;
+package net.tafolli.candidaro;
 
 import android.content.Intent;
 import android.os.Bundle;

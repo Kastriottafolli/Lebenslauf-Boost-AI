@@ -1197,3 +1197,5 @@ dialog .close {
     scroll-behavior: auto !important;
   }
 }
+
+.owner-footer { flex-basis: 100%; font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.8; overflow-wrap: anywhere; }

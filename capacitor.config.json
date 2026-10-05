@@ -1,7 +1,13 @@
 {
-  "appId": "app.candidaro.mobile",
+  "appId": "net.tafolli.candidaro",
   "appName": "Candidaro",
   "webDir": "_site",
-  "server": {"androidScheme": "https"},
-  "plugins": {"CapacitorHttp": {"enabled": true}}
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
 }

@@ -3,6 +3,7 @@ import json
 import socket
 import uuid
 import zipfile
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi import HTTPException
@@ -277,6 +278,41 @@ def test_owned_project_crud_recovery_and_account_deletion():
     )
     assert owner.delete("/api/account").status_code == 200
     assert owner.get("/api/projects").status_code == 401
+
+
+def test_cleanup_removes_expired_anonymous_data_but_keeps_account_projects():
+    from backend.cleanup import cleanup
+    from backend.database import SessionLocal
+    from backend.models import Account, Login, Session
+
+    owner = TestClient(app)
+    account = register(owner)
+    body = package_body(owner)
+    documents = owner.post("/api/package", json=body).json()["documents"]
+    project = {
+        "session_id": body["session_id"],
+        "profile": body["profile"],
+        "job": body["job"],
+        "documents": documents,
+        "title": "Retained account application",
+        "status": "draft",
+    }
+    pid = owner.post("/api/projects", json=project).json()["id"]
+    anonymous_id = session(TestClient(app))
+    expired = datetime.now(UTC).replace(tzinfo=None) - timedelta(days=40)
+    with SessionLocal() as db:
+        db.get(Session, anonymous_id).created_at = expired
+        db.get(Session, body["session_id"]).created_at = expired
+        account_id = db.query(Account).filter_by(email=account["email"]).one().id
+        db.add(Login(token_hash="expired-test-token", account_id=account_id, expires_at=expired))
+        db.commit()
+    cleanup()
+    with SessionLocal() as db:
+        assert db.get(Session, anonymous_id) is None
+        assert db.get(Session, body["session_id"]) is not None
+        assert db.get(Login, "expired-test-token") is None
+    assert owner.get("/api/projects/" + pid).status_code == 200
+    assert owner.delete("/api/account").status_code == 200
 
 
 def test_public_job_import_rejects_internal_networks(monkeypatch):

@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from pydantic import BaseModel, Field
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session as DBSession
 
 from backend import schemas
@@ -156,7 +157,14 @@ def register(req: Credentials, response: Response, db: DBSession = Depends(get_d
         recovery_hash=session_service.token_hash(recovery),
     )
     db.add(account)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            409,
+            "Registrierung nicht möglich. Anmelden oder Wiederherstellung nutzen / sign in or recover account.",
+        ) from None
     token = accounts.login_cookie(db, account, response)
     return {"email": email, "recovery_code": recovery, "access_token": token}
 

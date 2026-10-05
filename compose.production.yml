@@ -1,0 +1,38 @@
+# Dedicated server deployment. App port stays internal; only Caddy is exposed.
+services:
+  app:
+    build:
+      context: .
+      args:
+        SITE_URL: ${SITE_URL:?Configure the public HTTPS app URL}
+    env_file: .env.production
+    expose:
+      - "8000"
+    command: ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+    volumes:
+      - app-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/status', timeout=5)"]
+      interval: 30s
+      timeout: 8s
+      retries: 3
+  proxy:
+    image: caddy:2-alpine
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Configure the app domain}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  app-data:
+  caddy-data:
+  caddy-config:

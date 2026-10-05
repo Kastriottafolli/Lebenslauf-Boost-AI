@@ -15,7 +15,11 @@ shutil.copytree(ROOT / 'frontend/css', OUT / 'assets/css')
 shutil.copytree(ROOT / 'static', OUT / 'static')
 css = OUT / 'assets/css/professional.css'
 css.write_text(css.read_text().replace("url('/static/", "url('../../static/"))
-brand = json.loads((ROOT / 'static/branding.json').read_text())['name']
+branding = json.loads((ROOT / 'static/branding.json').read_text())
+brand = branding['name']
+owner = html.escape(branding['operator']['operator_name'])
+owner_email = html.escape(branding['operator']['operator_email'], quote=True)
+home_url = html.escape(branding['home_url'], quote=True)
 base = os.environ.get('PUBLIC_BASE_PATH', '/Lebenslauf-Boost-AI/').strip('/')
 base = '/' + base + '/' if base else '/'
 site = os.environ.get('SITE_URL', '').rstrip('/')
@@ -45,7 +49,7 @@ for path in sorted((ROOT / 'frontend/content').rglob('*.json')):
     alt = ''.join(f'<link rel="alternate" hreflang="{lang}" href="{site}/{value}/">' for lang, value in page['alternates'].items()) if site else ''
     paragraphs = ''.join(f'<section><h2>{html.escape(s["heading"])}</h2>{s["html"]}</section>' for s in page['sections'])
     # No JSON-LD until a real site URL/operator has been configured; no invented ratings.
-    value = f'''<!doctype html><html lang="{page['language']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(page['title'])} | {html.escape(brand)}</title><meta name="description" content="{html.escape(page['description'], quote=True)}">{canonical}{alt}<link rel="stylesheet" href="{prefix}assets/css/professional.css"><link rel="icon" href="{prefix}static/icon.svg"></head><body><header class="topbar"><a class="brand" href="{prefix}"><span class="brand-symbol">↗</span>{html.escape(brand)}</a><a href="{prefix}{page['alternates']['en' if page['language']=='de' else 'de']}/">{'English' if page['language']=='de' else 'Deutsch'}</a></header><main class="guide"><p class="eyebrow">{page['eyebrow']}</p><h1>{html.escape(page['heading'])}</h1><p>{html.escape(page['description'])}</p><a class="button primary" href="{prefix}?lang={page['language']}#workspace">{page['cta']}</a>{paragraphs}<p><a href="{prefix}">{page['back']}</a></p></main></body></html>'''
+    value = f'''<!doctype html><html lang="{page['language']}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(page['title'])} | {html.escape(brand)}</title><meta name="description" content="{html.escape(page['description'], quote=True)}">{canonical}{alt}<link rel="stylesheet" href="{prefix}assets/css/professional.css"><link rel="icon" href="{prefix}static/icon.svg"></head><body><header class="topbar"><a class="brand" href="{prefix}"><span class="brand-symbol">↗</span>{html.escape(brand)}</a><a href="{prefix}{page['alternates']['en' if page['language']=='de' else 'de']}/">{'English' if page['language']=='de' else 'Deutsch'}</a></header><main class="guide"><p class="eyebrow">{page['eyebrow']}</p><h1>{html.escape(page['heading'])}</h1><p>{html.escape(page['description'])}</p><a class="button primary" href="{prefix}?lang={page['language']}#workspace">{page['cta']}</a>{paragraphs}<p><a href="{prefix}">{page['back']}</a></p></main><footer><span>{owner}</span><a href="{home_url}">www.tafolli.net</a><a href="mailto:{owner_email}">{owner_email}</a></footer></body></html>'''
     (target / 'index.html').write_text(value)
     urls.append(route)
 robots = 'User-agent: *\nAllow: /\nDisallow: ' + base + 'api/\n'

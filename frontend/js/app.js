@@ -410,7 +410,7 @@ function openProject(raw, id = null) {
   renderDocument();
 }
 function accountView() {
-  $("#accountInfo").textContent = state.account ? state.account : BROWSER_ONLY ? tr("Konten und Cloud-Speicherung ben\xF6tigen den Server. Du kannst eine Projektdatei lokal herunterladen.", "Accounts and cloud storage require the server. You can download a local project file.") : tr("Speichere deine Bewerbungen auf diesem Server. Bewahre den Wiederherstellungscode sicher auf.", "Save applications on this server. Keep your recovery code safe.");
+  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konten und Cloud-Speicherung ben\xF6tigen den Server. Du kannst eine Projektdatei lokal herunterladen.", "Accounts and cloud storage require the server. You can download a local project file.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
   $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
   $("#signedInActions").hidden = !state.account;
   $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
@@ -428,6 +428,7 @@ async function credentials(mode) {
   if (result.email) {
     state.account = result.email;
     setLoginToken(result.access_token);
+    await newSession(state.language);
     accountView();
   }
 }
@@ -476,6 +477,28 @@ function showInfo(title, text) {
   p.textContent = text;
   $("#infoContent").replaceChildren(p);
   $("#infoDialog").showModal();
+}
+function clearPersonalMemory() {
+  state.keys = {};
+  state.models = {};
+  state.documents = null;
+  state.photo = null;
+  state.projectId = null;
+  state.versions = [];
+  state.savedProject = false;
+  comparisonResults = [];
+  fillProfile(parseProfile(""));
+  fillJob({});
+  for (const id of ["apiKey", "documentEditor", "wishes", "projectNotes", "projectTitle", "fileStatus", "jobImportStatus"]) {
+    const field = $("#" + id);
+    if ("value" in field) field.value = "";
+    else field.textContent = "";
+  }
+  for (const id of ["preview", "projectList", "comparisonChoices"]) $("#" + id).replaceChildren();
+  $("#comparisonChoices").hidden = true;
+  $("#aiConsent").checked = false;
+  providerView();
+  showStep(1);
 }
 async function deleteData() {
   if (!confirm(tr("Diese Sitzung und die aktuell ge\xF6ffneten Daten l\xF6schen? Gespeicherte Bewerbungen dieser Sitzung werden ebenfalls gel\xF6scht.", "Delete this session and its open data? Saved applications in this session will also be deleted."))) return;
@@ -706,14 +729,18 @@ async function init() {
     await api("/api/account/logout", {});
     setLoginToken("");
     state.account = null;
+    clearPersonalMemory();
+    await newSession(state.language);
     $("#accountResult").textContent = "";
     accountView();
+    notify(tr("Abgemeldet. Gespeicherte Bewerbungen bleiben in deinem Konto erhalten.", "Signed out. Saved applications remain in your account."));
   }));
   $("#deleteAccount").addEventListener("click", action(async () => {
     if (!confirm(tr("Konto und alle Bewerbungen endg\xFCltig l\xF6schen?", "Permanently delete your account and every application?"))) return;
     await api("/api/account", null, "DELETE");
     setLoginToken("");
     state.account = null;
+    clearPersonalMemory();
     $("#accountDialog").close();
     accountView();
     await newSession(state.language);
@@ -722,7 +749,10 @@ async function init() {
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   $("#clearData").addEventListener("click", action(deleteData));
   $("#helpBtn").addEventListener("click", () => notify(tr("Schreibe konkrete, belegbare Erfahrungen. Erg\xE4nze Kennzahlen nur, wenn sie stimmen. Eine L\xFCcke ist besser als eine erfundene F\xE4higkeit.", "Describe specific, verifiable experience. Add metrics only when accurate. A gap is better than an invented skill.")));
-  $("#privacyBtn").addEventListener("click", () => showInfo(tr("Datenschutz", "Privacy"), $("#privacyExplanation").textContent + "\n\n" + tr("Keine Werbe-Tracker. Keine API-Keys in gespeicherten Projekten. Pers\xF6nliche Daten werden nicht im Service Worker zwischengespeichert. Produktionsdetails und Betreiberkontakt m\xFCssen vor Ver\xF6ffentlichung vervollst\xE4ndigt werden.", "No advertising trackers. No API keys in saved projects. Personal data is never cached by the service worker. Production details and operator contact must be completed before launch.")));
+  $("#privacyBtn").addEventListener("click", action(async () => {
+    const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");
+    showInfo(tr("Datenschutz", "Privacy"), $("#privacyExplanation").textContent + "\n\n" + tr("Verantwortlicher: ", "Controller: ") + info.operator_name + "\n" + info.operator_address + "\n" + info.operator_email + "\n\n" + tr("Konten speichern deine E-Mail-Adresse und einen geschützten Passwort-Hash. Bewerbungen werden auf deinen Wunsch gespeichert und bleiben bis zur Löschung erhalten. Anonyme Uploads werden nach ", "Accounts store your email and a protected password hash. Applications are saved when you choose and remain until deleted. Anonymous uploads are removed after ") + (info.retention_days || 30) + tr(" Tagen bereinigt. Keine Werbe-Tracker oder gespeicherten API-Keys. Keine persönlichen Daten im Service-Worker-Cache. Exporte auf deinem Gerät und Daten beim KI-Anbieter werden durch eine Kontolöschung nicht entfernt. Details zu Hosting und Anbietervereinbarungen müssen vor dem öffentlichen Start ergänzt werden.", " days. No advertising trackers or stored API keys. Personal data is never cached by the service worker. Deleting an account does not remove exports on your device or data at AI providers. Hosting and provider agreements must be documented before public launch."));
+  }));
   $("#legalBtn").addEventListener("click", action(async () => {
     const info = BROWSER_ONLY ? branding.operator : await api("/api/public-config");
     showInfo(tr("Impressum", "Legal notice"), info.operator_name ? `${info.operator_name}

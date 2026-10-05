@@ -11,8 +11,8 @@ Profil-/Abschnittsimport, Faktenbestätigung, Stellenimport mit Textfallback, f�
 | Schritt | Was fehlt |
 |---|---|
 | Marke/Domain | Registrar-Kauf und finale Namens-/Markenprüfung; keine Domain ist reserviert |
-| Öffentlicher Server | Hosting/HTTPS, finale Host-/Origin-Liste, verschlüsselte Backups und täglicher Cleanup |
-| Betreiber/Datenschutz | Tatsächlicher Name, Anschrift, Kontakt sowie auf Hosting und Anbieter abgestimmte Datenschutzangaben |
+| Öffentlicher Server | Hosting/HTTPS, finale Host-/Origin-Liste, verschlüsselte externe Backups; Cleanup beim Start und stündlich integriert |
+| Betreiber/Datenschutz | Kastriot Tafolli, Anschrift und info@tafolli.net hinterlegt; auf Hosting und Anbieter abgestimmte Datenschutzangaben noch vervollständigen |
 | Live-KI | Eigene gültige Keys, Guthaben und Modellzugriff; bisher Vertragstests mit Mocks |
 | Android | JDK/SDK, Geräteprüfung, Signierung, Play-Console-Konto und Store-Angaben |
 | iOS | Vollständiges Xcode, Geräteprüfung, Apple-Team/Signierung, Store-/Datenschutzangaben |

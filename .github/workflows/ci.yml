@@ -55,3 +55,15 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm audit --omit=dev
+
+  deployment_config:
+    name: Deployment configuration (Compose and Caddy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate production Compose configuration
+        run: |
+          cp .env.production.example .env.production
+          docker compose --env-file .env.production -f compose.production.yml config --quiet
+      - name: Validate Caddy configuration without starting a server
+        run: docker run --rm -e APP_DOMAIN=bewerbung.tafolli.net -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2-alpine caddy adapt --config /etc/caddy/Caddyfile --validate > /dev/null
