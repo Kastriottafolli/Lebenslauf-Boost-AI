@@ -45,9 +45,9 @@
     "sq": "1. Importo CV-në dhe kontrollo profilin. 2. Shto linkun ose përshkrimin e punës. 3. Zgjidh ofruesin IA me çelësin tënd API, ose provo demonstrimin. 4. Kontrollo, ruaj dhe eksporto dokumentet. “Trego hapin tjetër” të udhëzon nëpër fushat."
   },
   "unknown": {
-    "de": "Ich helfe ausschließlich bei der Bedienung von Boosty AI: Profil, Stellenanzeige, KI-Auswahl, Dokumente, Export und Konto. Programmieraufträge oder andere Themen übernehme ich nicht. Ich kann deine Daten weder sehen noch ändern.",
-    "en": "I only help you use Boosty AI: profile, job posting, AI selection, documents, export and account. I cannot take programming assignments or answer unrelated questions, see or change your data.",
-    "sq": "Ndihmoj vetëm me përdorimin e Boosty AI: profilin, shpalljen, IA-në, dokumentet, eksportin dhe llogarinë. Nuk kryej programim ose kërkesa jashtë aplikacionit dhe nuk shoh ose ndryshoj të dhënat e tua."
+    "de": "Ich helfe ausschließlich bei der Bedienung von tafolliboost.com: Profil, Stellenanzeige, KI-Auswahl, Dokumente, Export und Konto. Programmieraufträge oder andere Themen übernehme ich nicht. Ich kann deine Daten weder sehen noch ändern.",
+    "en": "I only help you use tafolliboost.com: profile, job posting, AI selection, documents, export and account. I cannot take programming assignments or answer unrelated questions, see or change your data.",
+    "sq": "Ndihmoj vetëm me përdorimin e tafolliboost.com: profilin, shpalljen, IA-në, dokumentet, eksportin dhe llogarinë. Nuk kryej programim ose kërkesa jashtë aplikacionit dhe nuk shoh ose ndryshoj të dhënat e tua."
   },
   "profile": {
     "de": "Kontrolliere in Schritt 1 Name, Kontaktdaten, Berufserfahrung, Ausbildung und Kenntnisse. OCR kann Zeichen verwechseln. Korrigiere die Angaben und bestätige sie erst danach. Ergänze keine Erfahrungen, die du nicht belegen kannst.",

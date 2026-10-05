@@ -3,7 +3,7 @@
     "privacy": [
       [
         "Verantwortlicher und Kontakt",
-        "Verantwortlich für tafolliboost.com und Boosty AI ist {operator_name}, {operator_address}. Fragen zum Datenschutz und Anträge zur Ausübung deiner Rechte kannst du an {operator_email} senden."
+        "Verantwortlich für tafolliboost.com ist {operator_name}, {operator_address}. Fragen zum Datenschutz und Anträge zur Ausübung deiner Rechte kannst du an {operator_email} senden."
       ],
       [
         "Welche Funktionen diese Erklärung umfasst",
@@ -73,7 +73,7 @@
     "legal": [
       [
         "Anbieterkennzeichnung nach § 5 DDG",
-        "Boosty AI auf tafolliboost.com\n{operator_name}\n{operator_address}"
+        "tafolliboost.com\n{operator_name}\n{operator_address}"
       ],
       [
         "Kontakt",
@@ -81,7 +81,7 @@
       ],
       [
         "Inhalte und Bewerbungen",
-        "Boosty AI unterstützt die Erstellung und Bearbeitung von Bewerbungsunterlagen. Nutzer prüfen und versenden ihre Unterlagen selbst. Es werden keine Einstellungschancen oder rechtliche Eignung einzelner Dokumente zugesichert. Gesetzliche Ansprüche werden dadurch nicht ausgeschlossen."
+        "tafolliboost.com unterstützt die Erstellung und Bearbeitung von Bewerbungsunterlagen. Nutzer prüfen und versenden ihre Unterlagen selbst. Es werden keine Einstellungschancen oder rechtliche Eignung einzelner Dokumente zugesichert. Gesetzliche Ansprüche werden dadurch nicht ausgeschlossen."
       ],
       [
         "Urheberrecht",
@@ -105,7 +105,7 @@
       ],
       [
         "Documents, AI and Boosty",
-        "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. The demo uses no AI service. Optional application AI sends sources, profile, posting and instructions to your chosen provider only after consent (Art. 6(1)(a)). Boosty AI help sends only your current question and fixed help topics to OpenAI with separate consent. No CV, account data or chat history is attached; questions are not saved in the app database. The dedicated operator key never reaches the browser."
+        "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. The demo uses no AI service. Optional application AI sends sources, profile, posting and instructions to your chosen provider only after consent (Art. 6(1)(a)). Boosty help sends only your current question and fixed help topics to OpenAI with separate consent. No CV, account data or chat history is attached; questions are not saved in the app database. The dedicated operator key never reaches the browser."
       ],
       [
         "Provider processing",
@@ -127,7 +127,7 @@
     "legal": [
       [
         "Provider information under German DDG § 5",
-        "Boosty AI · tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nOperator website: https://www.tafolli.net"
+        "tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nOperator website: https://www.tafolli.net"
       ],
       [
         "Service",
@@ -169,7 +169,7 @@
     "legal": [
       [
         "Të dhënat e ofruesit sipas § 5 DDG gjerman",
-        "Boosty AI · tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nFaqja e operatorit: https://www.tafolli.net"
+        "tafolliboost.com\n{operator_name}\n{operator_address}\nEmail: {operator_email}\nFaqja e operatorit: https://www.tafolli.net"
       ],
       [
         "Shërbimi",

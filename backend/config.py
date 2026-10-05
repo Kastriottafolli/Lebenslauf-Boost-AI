@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     operator_email: str = "info@tafolli.net"
 
     # ── App ──
-    app_name: str = "Boosty AI"
+    app_name: str = "tafolliboost.com"
     admin_key_file: str = "./data/admin-secrets.key"
     database_url: str = "sqlite:///./data/app.db"
     upload_dir: str = "./data/uploads"
