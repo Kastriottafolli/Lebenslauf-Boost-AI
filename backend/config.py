@@ -106,6 +106,8 @@ class Settings(BaseSettings):
     # ── App ──
     app_name: str = "tafolliboost.com"
     admin_key_file: str = "./data/admin-secrets.key"
+    # Only the server operator can change the admin sign-in policy.
+    admin_require_totp: bool = True
     database_url: str = "sqlite:///./data/app.db"
     upload_dir: str = "./data/uploads"
     max_upload_mb: int = 10

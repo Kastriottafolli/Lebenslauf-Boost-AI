@@ -125,7 +125,7 @@ Für die Veröffentlichung auf tafolliboost.com sind `.env.production.example`, 
 
 Die Webseite heißt tafolliboost.com. Boosty ist das Maskottchen und führt durch die Bewerbung. Seine Softwarehilfe nutzt den zentralen serverseitigen OpenAI-Zugang und lokal verfügbare Bedienhinweise.
 
-Unter `/admin` und über **Admin** in der App stehen separate MFA-Anmeldung, Konten, Nutzungsverlauf, Tagesstatistiken, gespeicherte Inhalte und Datenbankstatus bereit. Keine öffentliche Vergabe von Adminrechten und kein Standardpasswort. Einrichtung und Schutzgrenzen: [ADMIN.md](docs/product/ADMIN.md).
+Unter `/admin` und über **Admin** in der App stehen separate Admin-Anmeldung mit serverseitig konfigurierbarer TOTP-Prüfung, Konten, Nutzungsverlauf, Tagesstatistiken, gespeicherte Inhalte und Datenbankstatus bereit. Keine öffentliche Vergabe von Adminrechten und kein Standardpasswort. Einrichtung und Schutzgrenzen: [ADMIN.md](docs/product/ADMIN.md).
 
 ```sh
 python -m backend.manage_admin --email DEINE-ADMIN-EMAIL

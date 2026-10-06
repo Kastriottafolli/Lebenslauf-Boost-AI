@@ -101,9 +101,14 @@ def provision(db, email, directory, reset_existing=False):
         db.query(Login).filter_by(account_id=account.id).delete()
         db.add(AdminAudit(admin_id=account.id, action="admin.cli.reset"))
     fd = os.open(destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    auth_instruction = (
+        "Lege dein eigenes Passwort fest und verbinde deine Authenticator-App."
+        if get_settings().admin_require_totp
+        else "Lege dein eigenes Passwort mit mindestens 14 Zeichen fest. Die Anmeldung verwendet E-Mail und Passwort."
+    )
     with os.fdopen(fd, "w") as output:
         output.write(
-            f"Boosty AI – private Admin-Einrichtung\nE-Mail: {email}\nEinrichtungscode: {token}\n\nÖffne /admin und wähle Ersteinrichtung. Gib E-Mail und Einrichtungscode ein.\nLege dein eigenes Passwort fest und verbinde deine Authenticator-App.\nDer Code ist einmalig und läuft nach 24 Stunden ab. Nicht teilen.\n"
+            f"Boosty AI – private Admin-Einrichtung\nE-Mail: {email}\nEinrichtungscode: {token}\n\nÖffne /admin und wähle Ersteinrichtung. Gib E-Mail und Einrichtungscode ein.\n{auth_instruction}\nDer Code ist einmalig und läuft nach 24 Stunden ab. Nicht teilen.\n"
         )
     db.commit()
     return destination
@@ -184,7 +189,7 @@ def current_admin(db, request):
     login = db.get(AdminLogin, token_hash(token)) if token else None
     if not login or login.expires_at <= now():
         raise HTTPException(
-            401, "Admin-Anmeldung mit Zwei-Faktor-Code erforderlich / admin sign-in required"
+            401, "Admin-Anmeldung erforderlich / admin sign-in required"
         )
     access = db.get(AdminAccess, login.account_id)
     if not access or not access.enabled:

@@ -50,9 +50,9 @@
     "sq": "Përqindja tregon sa fjalë kyçe të shpalljes gjenden në CV. Nuk është probabilitet punësimi. Hap “Fjalët e analizuara” për të parë fjalët e gjetura dhe ato që mungojnë. Shto vetëm aftësi që mund t’i vërtetosh."
   },
   "admin": {
-    "de": "Unter /admin nutzt der Betreiber seine separate Anmeldung mit Passwort und Authenticator-Code. Ein normales Konto erhält keine Adminrechte. Die private Ersteinrichtung wird nur über den Server vorbereitet.",
-    "en": "At /admin the operator uses a separate password and authenticator sign-in. A normal account never grants admin access. Private setup is prepared only on the server.",
-    "sq": "Te /admin operatori përdor hyrjen e veçantë me fjalëkalim dhe kod Authenticator. Llogaritë normale nuk japin të drejta administratori. Konfigurimi privat përgatitet vetëm përmes serverit."
+    "de": "Unter /admin nutzt der Betreiber seine separate Anmeldung mit E-Mail-Adresse und Passwort. Je nach serverseitiger Einstellung ist zusätzlich ein Authenticator-Code erforderlich. Ein normales Konto erhält keine Adminrechte. Die private Ersteinrichtung wird nur über den Server vorbereitet.",
+    "en": "At /admin the operator uses a separate email and password sign-in. Depending on the server configuration, an authenticator code may also be required. A normal account never grants admin access. Private setup is prepared only on the server.",
+    "sq": "Te /admin operatori përdor hyrjen e veçantë me adresë email-i dhe fjalëkalim. Sipas konfigurimit të serverit, mund të kërkohet edhe një kod Authenticator. Llogaritë normale nuk japin të drejta administratori. Konfigurimi privat përgatitet vetëm përmes serverit."
   },
   "start": {
     "de": "Registriere dich oder logge dich ein. In vier Schritten erstellst du deine Bewerbung: Lebenslauf hochladen und Angaben prüfen, Stellenlink einfügen, Sprache und OpenAI-Freigabe bestätigen, Dokumente prüfen und herunterladen.",

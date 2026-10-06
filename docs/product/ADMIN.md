@@ -2,6 +2,12 @@
 
 Der Adminbereich steht im Serverbetrieb unter `/admin` und in der App über **Admin** zur Verfügung. Öffentlich registrierte Konten können keine Adminrechte bekommen. Die E-Mail-Adresse allein ist kein Berechtigungsnachweis. Die serverseitige Berechtigung wird bei jeder Datenabfrage geprüft.
 
+## Anmeldung und Server-Einstellung
+
+Auf **https://tafolliboost.com/admin** erfolgt die Betreiberanmeldung derzeit mit **info@tafolli.net** und dem bestehenden Passwort. Ein Authenticator-Code ist im produktiven Betrieb auf ausdrücklichen Betreiberwunsch nicht erforderlich. Konto-ID, Passwort, Berechtigungen und Daten bleiben erhalten.
+
+`ADMIN_REQUIRE_TOTP=false` schaltet die zusätzliche TOTP-Prüfung ausschließlich in der privaten Serverkonfiguration ab. Ohne diese ausdrückliche Einstellung gilt weiterhin `true`. Der Browser liest nur die erforderlichen Anmeldefelder aus `/api/admin/auth-options`; Benutzer können die Prüfung nicht selbst abschalten. Der Wechsel auf Passwort allein verringert den Schutz bei einem gestohlenen Passwort. Rate-Limits, Admin-Berechtigung, sichere Cookies, 15-Minuten-Sitzungen und Audit-Protokoll bleiben aktiv.
+
 ## Ersteinrichtung
 
 Auf dem vorgesehenen App-Server:
@@ -13,7 +19,7 @@ python -m backend.manage_admin --email info@tafolli.net
 
 Der Befehl erstellt ein deaktiviertes, reserviertes Adminkonto. Er zeigt nur den Pfad einer privaten Datei (Dateimodus 0600, außerhalb von Git und Webauslieferung). Darin steht der einmalige Einrichtungscode, gültig für 24 Stunden. Kein Standardpasswort und keine E-Mail mit Zugangsdaten.
 
-Öffne `/admin`, klappe **Ersteinrichtung mit privatem Einrichtungscode** auf und gib E-Mail und Einrichtungscode ein. Übertrage den angezeigten Base32-Schlüssel in eine Authenticator-App: TOTP, SHA-1, 6 Ziffern, 30 Sekunden. Lege ein eigenes Passwort mit mindestens 14 Zeichen fest und bestätige den aktuellen Code. Bewahre den Authenticator-Schlüssel in deinem Passwortmanager auf. Ein verwendeter Zeitcode kann nicht erneut eingesetzt werden; bei einer direkten erneuten Anmeldung auf den nächsten Code warten.
+Öffne `/admin`, klappe **Ersteinrichtung mit privatem Einrichtungscode** auf und gib E-Mail und Einrichtungscode ein. Lege ein eigenes Passwort mit mindestens 14 Zeichen fest. Bei `ADMIN_REQUIRE_TOTP=false` ist damit die Einrichtung abgeschlossen; der Server gibt keinen Authenticator-Schlüssel an den Browser aus. Bei `true` übertrage zusätzlich den angezeigten Base32-Schlüssel in eine Authenticator-App (TOTP, SHA-1, 6 Ziffern, 30 Sekunden) und bestätige den aktuellen Code. Bewahre diesen Schlüssel privat auf; verwendete Zeitcodes sind nicht wiederverwendbar.
 
 Die verbindliche Betreiber-, Support- und Admin-Adresse ist **info@tafolli.net**. Der produktive Adminbereich ist unter **https://tafolliboost.com/admin** erreichbar. Das Admin-Konto wird ausschließlich serverseitig eingerichtet; eine öffentliche Registrierung mit dieser Adresse vergibt keine Adminrechte. Zugangsdaten und Authenticator-Schlüssel gehören ausschließlich in die private Zugangsdokumentation und einen Passwortmanager.
 
@@ -34,7 +40,7 @@ python -m backend.manage_database backup
 python -m backend.manage_admin --rename-from BISHERIGE-ADMIN-EMAIL --email info@tafolli.net
 ```
 
-Konto-ID, Passwort, Wiederherstellungs-Hash, Authenticator-Schlüssel, MFA-Zähler und zugehörige Daten bleiben erhalten. Die Änderung beendet vorhandene Admin- und normale Anmeldungen und macht veraltete Bestätigungs- oder Zurücksetzungslinks ungültig. Anschließend mit **info@tafolli.net**, dem bisherigen Passwort und einem neuen Authenticator-Zeitcode anmelden. Vertragsnachrichten und Sicherheitshinweise werden nicht gelöscht. Die Änderung wird im Admin-Protokoll vermerkt.
+Konto-ID, Passwort, Wiederherstellungs-Hash, Authenticator-Schlüssel, MFA-Zähler und zugehörige Daten bleiben erhalten. Die Änderung beendet vorhandene Admin- und normale Anmeldungen und macht veraltete Bestätigungs- oder Zurücksetzungslinks ungültig. Anschließend mit **info@tafolli.net** und dem bisherigen Passwort anmelden; nur bei aktivierter TOTP-Prüfung zusätzlich einen neuen Authenticator-Zeitcode verwenden. Vertragsnachrichten und Sicherheitshinweise werden nicht gelöscht. Die Änderung wird im Admin-Protokoll vermerkt.
 
 Der Befehl lehnt fehlende oder noch nicht aktivierte Admin-Konten sowie belegte Zieladressen ab. Er führt keine Konten zusammen und erhebt normale Konten nicht zu Administratoren. `--rename-from` und `--reset-existing` schließen sich aus; zur reinen Adresskorrektur darf der Zurücksetzungsschalter nicht verwendet werden.
 
@@ -58,7 +64,7 @@ Funktionsereignisse werden 30 Tage gespeichert, Tagesaggregate und Admin-Protoko
 ## Schutzmechanismen
 
 - Separater Admin-Token (gehashte Speicherung), eigener HttpOnly-/SameSite-Strict-Cookie, im HTTPS-Betrieb Secure; maximal 15 Minuten. Normale Login-Tokens sind im Adminbereich wirkungslos.
-- MFA mit verschlüsseltem TOTP-Secret und atomarem Schutz gegen Code-Wiederverwendung. Fernet-Schlüssel liegt in `data/admin-secrets.key` bzw. `ADMIN_KEY_FILE`, Dateimodus 0600. Den Schlüssel separat und verschlüsselt sichern: eine reine DB-Sicherung reicht für eine Wiederherstellung der Admin-Anmeldung nicht.
+- Optionales MFA (`ADMIN_REQUIRE_TOTP=true`) mit verschlüsseltem TOTP-Secret und atomarem Schutz gegen Code-Wiederverwendung. Fernet-Schlüssel liegt in `data/admin-secrets.key` bzw. `ADMIN_KEY_FILE`, Dateimodus 0600. Den Schlüssel separat und verschlüsselt sichern: eine reine DB-Sicherung reicht für eine Wiederherstellung der Admin-Anmeldung nicht.
 - scrypt N=32768, r=8, p=3 (32 MiB), gesalzene versionierte Hashes. Bestehende schwächere Hashes werden bei erfolgreicher Anmeldung aktualisiert.
 - 10 Anmeldeversuche pro Identität und 15 Minuten in der Datenbank; zusätzlich HTTP-Limits pro Client/Prozess. Produktionsbetrieb mit einem Worker. Bei größerem Betrieb zentrale Limits und Edge-Schutz ergänzen.
 - Admin-API verlangt eigenen Request-Header und prüft den Origin. Native Origins werden kontrolliert zugelassen; die verlinkte Hauptwebsite erhält keinen browserseitigen Zugriff auf Admin-Daten.
@@ -75,4 +81,4 @@ Provider-Zugangsdaten bleiben ausschließlich auf dem Server. Die eingegebene Fr
 
 ## Vor öffentlicher Vermarktung noch offen
 
-DreamHost-Hosting, Domain und HTTPS sind in Betrieb. Bestätigungsmails, Passwort-Zurücksetzen, Admin-MFA, interne Betriebsstatistiken und verschlüsselte Backups sind eingerichtet und geprüft. Anbieter-Konfiguration für Social-Login und echte Zahlungen, fachliche Prüfung der Rechtstexte und Verträge sowie externe Angriffstests und Belastungstests stehen noch aus. Native Geräte-/Store-Prüfungen fehlen weiterhin. Der Stand ist keine Sicherheitszertifizierung oder vollständige kommerzielle Abnahme.
+DreamHost-Hosting, Domain und HTTPS sind in Betrieb. Bestätigungsmails, Passwort-Zurücksetzen, separate Admin-Anmeldung, interne Betriebsstatistiken und verschlüsselte Backups sind eingerichtet und geprüft. Anbieter-Konfiguration für Social-Login und echte Zahlungen, fachliche Prüfung der Rechtstexte und Verträge sowie externe Angriffstests und Belastungstests stehen noch aus. Native Geräte-/Store-Prüfungen fehlen weiterhin. Der Stand ist keine Sicherheitszertifizierung oder vollständige kommerzielle Abnahme.

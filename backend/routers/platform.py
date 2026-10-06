@@ -21,7 +21,7 @@ from backend.services import job_service, session_service
 
 router = APIRouter(tags=["Application platform"])
 
-# Admin payloads share validation, but retain their separate MFA lifecycle.
+# Admin payloads share validation, but retain their separate sign-in lifecycle.
 Credentials = schemas.AccountCredentials
 
 
