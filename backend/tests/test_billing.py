@@ -329,9 +329,11 @@ def test_restricted_stripe_key_is_accepted_only_for_its_mode(store, monkeypatch)
     monkeypatch.setattr(settings, "billing_environment", "live")
     monkeypatch.setattr(settings, "stripe_secret_key", "rk_live_synthetic")
     assert payments.providers()["stripe"] is True
+    assert payments.pricing()["environment"] == "live"
 
     monkeypatch.setattr(settings, "billing_environment", "sandbox")
     assert payments.providers()["stripe"] is False
+    assert payments.pricing()["environment"] == "sandbox"
 
     monkeypatch.setattr(settings, "stripe_secret_key", "rk_test_synthetic")
     assert payments.providers()["stripe"] is True
@@ -539,6 +541,7 @@ def test_http_pricing_balance_package_retries_and_inactive_callbacks(store, monk
         client = TestClient(app)
         assert client.get("/api/billing/pricing").status_code == 200
         assert client.get("/api/billing/pricing").json()["free_period"] == "calendar_week"
+        assert client.get("/api/billing/pricing").json()["environment"] == "sandbox"
         assert client.get("/api/billing/balance").status_code == 401
         for provider in ("stripe", "paypal"):
             assert (

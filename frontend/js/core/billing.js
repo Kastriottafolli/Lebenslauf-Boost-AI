@@ -11,7 +11,7 @@ export function readPricing(value) {
   const offers = ["single", "bundle10"].map(id => value.offers.find(offer => offer.id === id));
   if (offers.some(offer => !offer || !integer(offer.credits) || offer.credits < 1
       || !integer(offer.amount_cents) || offer.amount_cents < 1)) return null;
-  return { currency: "EUR", free_period: "calendar_week", free_timezone: "Europe/Berlin", terms_version: /^\d{4}-\d{2}-\d{2}$/.test(value.terms_version || "") ? value.terms_version : PLANNED_PRICING.terms_version, free_packages: value.free_packages,
+  return { currency: "EUR", environment: value.environment === "live" ? "live" : "sandbox", free_period: "calendar_week", free_timezone: "Europe/Berlin", terms_version: /^\d{4}-\d{2}-\d{2}$/.test(value.terms_version || "") ? value.terms_version : PLANNED_PRICING.terms_version, free_packages: value.free_packages,
     offers: offers.map(({ id, credits, amount_cents }) => ({ id, credits, amount_cents })),
     payments_enabled: value.payments_enabled === true,
     providers: { stripe: value.providers?.stripe === true, paypal: value.providers?.paypal === true } };

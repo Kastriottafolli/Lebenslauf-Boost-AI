@@ -57,7 +57,9 @@ function billingView() {
     card.querySelector('[data-offer-credits]').textContent=offer.credits;
     card.querySelector('[data-offer-unit]').textContent=offer.credits===1?tr('Bewerbung','application','aplikim'):tr('Bewerbungen','applications','aplikime');
     card.querySelector('[data-payment-state]').textContent=enabled.length
-      ? tr("Einmalzahlung · kein Abonnement","One-time payment · no subscription","Pagesë e vetme · pa abonim")
+      ? (pricing.environment==='sandbox'
+        ? tr("Testmodus · keine echte Abbuchung","Test mode · no real charge","Modalitet testimi · pa pagesë reale")
+        : tr("Einmalzahlung · kein Abonnement","One-time payment · no subscription","Pagesë e vetme · pa abonim"))
       : tr("Geplant · Zahlung noch nicht verfügbar","Planned · payments not available yet","Planifikuar · pagesat ende të padisponueshme");
     const actions=card.querySelector('[data-checkout-actions]');actions.hidden=!enabled.length;
     actions.replaceChildren(...enabled.map(provider=>{
@@ -68,7 +70,9 @@ function billingView() {
     }));
   });
   $$('[data-pricing-intro]').forEach(el=>el.textContent=enabled.length
-    ? tr("Drei kostenlose Bewerbungen pro Kalenderwoche und Konto. Danach entscheidest du, ob du weiteres Bewerbungsguthaben kaufen möchtest. Jede Bewerbung enthält alle vier Dokumente.","Three free applications per calendar week and account. Then choose whether to buy additional application credits. Each application includes all four documents.","Tre aplikime falas për javë kalendarike dhe llogari. Më pas vendos nëse dëshiron të blesh kredite të tjera. Çdo aplikim përfshin katër dokumentet.")
+    ? (pricing.environment==='sandbox'
+      ? tr("Stripe-Testmodus: Es wird kein echtes Geld abgebucht. Drei kostenlose Bewerbungen pro Kalenderwoche; danach kannst du Testkäufe durchführen. Jede Bewerbung enthält alle vier Dokumente.","Stripe test mode: no real money will be charged. Three free applications per calendar week; then you can try test purchases. Each application includes all four documents.","Modaliteti testues Stripe: nuk do të merret para reale. Tre aplikime falas në javë; më pas mund të provosh blerjet testuese. Çdo aplikim përfshin katër dokumentet.")
+      : tr("Drei kostenlose Bewerbungen pro Kalenderwoche und Konto. Danach entscheidest du, ob du weiteres Bewerbungsguthaben kaufen möchtest. Jede Bewerbung enthält alle vier Dokumente.","Three free applications per calendar week and account. Then choose whether to buy additional application credits. Each application includes all four documents.","Tre aplikime falas për javë kalendarike dhe llogari. Më pas vendos nëse dëshiron të blesh kredite të tjera. Çdo aplikim përfshin katër dokumentet."))
     : el.dataset[state.language]);
 }
 async function refreshBalance() {

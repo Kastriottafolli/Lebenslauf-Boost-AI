@@ -79,6 +79,7 @@ def pricing():
     enabled = providers()
     return {
         "currency": "EUR",
+        "environment": "live" if get_settings().billing_environment == "live" else "sandbox",
         "free_packages": get_settings().billing_free_packages,
         "free_period": "calendar_week",
         "free_timezone": billing.FREE_TIMEZONE,

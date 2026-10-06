@@ -17,6 +17,14 @@ test("planned pricing never enables a payment and invalid pricing fails closed",
   assert.equal(readBalance({ available: -1, reserved: 0, free_total: 3, used: 0 }), null);
 });
 
+test("pricing identifies sandbox mode so the UI can clearly warn before test checkout", () => {
+  const sandbox = readPricing({ ...PLANNED_PRICING, environment: "sandbox" });
+  const live = readPricing({ ...PLANNED_PRICING, environment: "live" });
+  assert.equal(sandbox.environment, "sandbox");
+  assert.equal(live.environment, "live");
+  assert.equal(readPricing({ ...PLANNED_PRICING, environment: "unknown" }).environment, "sandbox");
+});
+
 test("paid checkout needs all explicit acknowledgements and never accepts truthy text", () => {
   const agreed = {termsAccepted:true,immediatePerformance:true,withdrawalAcknowledged:true};
   assert.equal(purchaseAcknowledged(agreed),true);
