@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api/billing", tags=["Billing"])
 
 class CheckoutRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    offer_id: Literal["single", "bundle10"]
+    offer_id: Literal["single", "bundle10", "s1b1"]
     provider: Literal["stripe", "paypal"]
     request_id: UUID
     terms_version: str = Field(..., min_length=1, max_length=24)

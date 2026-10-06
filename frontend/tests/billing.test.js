@@ -98,7 +98,7 @@ test("public offer cards provide all pricing nodes before startup and use locali
   const html=await readFile('frontend/index.html','utf8');
   assert.match(html,/id="cartLauncher"[^>]*aria-controls="billingDialog"/);
   assert.match(html,/id="cartBadge"/);
-  assert.match(html,/Ein Paket pro Kauf/);
+  assert.match(html,/Mehrere Pakete kannst du zusammen/);
   const cards=[...html.matchAll(/<article\b[^>]*data-pricing-offer="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
   assert.deepEqual(cards.map(card=>card[1]),['single','bundle10']);
   for(const [,id,markup] of cards){
@@ -111,4 +111,6 @@ test("public offer cards provide all pricing nodes before startup and use locali
   assert.match(app,/data-cart-offer/);
   assert.match(app,/tafolliboost\.cartOffer/);
   assert.match(app,/\$\("#cartLauncher"\)\.addEventListener\('click',\(\)=>openPricing\(\)\)/);
+  assert.match(app,/selectedOffers\.reduce/);
+  assert.match(app,/cartItems\.length===2\?'s1b1'/);
 });

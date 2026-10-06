@@ -28,8 +28,10 @@ let chatEpoch = 0, chatPending = false;
 let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
 let accountData=null, accountSection="profile", pendingEmail="", emailFlow="verify", resetToken=null, accountActionBusy=false, selectedWithdrawal=null;
-let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false, cartOfferId=readSavedCart();
-function readSavedCart(){try{const id=localStorage.getItem('tafolliboost.cartOffer');return ['single','bundle10'].includes(id)?id:null;}catch{return null;}}
+let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false, cartItems=readSavedCart();
+function readSavedCart(){try{const value=JSON.parse(localStorage.getItem('tafolliboost.cartItems')||'null');if(Array.isArray(value))return [...new Set(value.filter(id=>['single','bundle10'].includes(id)))];const legacy=localStorage.getItem('tafolliboost.cartOffer');return ['single','bundle10'].includes(legacy)?[legacy]:[];}catch{return [];}}
+function saveCart(){try{localStorage.setItem('tafolliboost.cartItems',JSON.stringify(cartItems));localStorage.removeItem('tafolliboost.cartOffer');}catch{}}
+function cartOfferId(){return cartItems.length===2?'s1b1':cartItems[0]||null;}
 const packageRequests=new PackageRequests(), checkoutRequests=new PackageRequests();
 
 function billingView() {
@@ -47,11 +49,11 @@ function billingView() {
   $("#creditBalance").textContent=summary+(detail?' · '+detail:'');
   $("#billingBalance").textContent=summary+(detail?' · '+detail:'');
   const enabled=checkoutProviders(pricing);
-  const selectedOffer=pricing.offers.find(offer=>offer.id===cartOfferId);
+  const selectedOffers=pricing.offers.filter(offer=>cartItems.includes(offer.id));
   const cartBadge=$('#cartBadge');
-  if(cartBadge){cartBadge.hidden=!selectedOffer;cartBadge.textContent=selectedOffer?'1':'0';cartBadge.setAttribute('aria-label',selectedOffer?tr('1 Paket im Warenkorb','1 package in cart','1 paket në shportë'):tr('Warenkorb leer','Cart is empty','Shporta është bosh'));}
-  $('#cartLauncher')?.classList.toggle('has-items',!!selectedOffer);
-  $("#checkoutConsents").hidden=!enabled.length||!selectedOffer;
+  if(cartBadge){cartBadge.hidden=!selectedOffers.length;cartBadge.textContent=String(selectedOffers.length);cartBadge.setAttribute('aria-label',selectedOffers.length?tr(`${selectedOffers.length} Pakete im Warenkorb`,`${selectedOffers.length} packages in cart`,`${selectedOffers.length} paketa në shportë`):tr('Warenkorb leer','Cart is empty','Shporta është bosh'));}
+  $('#cartLauncher')?.classList.toggle('has-items',!!selectedOffers.length);
+  $("#checkoutConsents").hidden=!enabled.length||!selectedOffers.length;
   $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen pro Kalenderwoche und Konto.`,`${pricing.free_packages} free applications per calendar week and account.`,`${pricing.free_packages} aplikime falas për javë kalendarike dhe llogari.`);
   $$('[data-free-count]').forEach(el=>el.textContent=pricing.free_packages);
   $$('[data-free-action]').forEach(el=>el.hidden=!!state.account);
@@ -67,29 +69,32 @@ function billingView() {
         : tr("Einmalzahlung · kein Abonnement","One-time payment · no subscription","Pagesë e vetme · pa abonim"))
       : tr("Geplant · Zahlung noch nicht verfügbar","Planned · payments not available yet","Planifikuar · pagesat ende të padisponueshme");
     const actions=card.querySelector('[data-checkout-actions]');actions.hidden=!enabled.length;
-    card.classList.toggle('is-in-cart',cartOfferId===offer.id);
+    const inCart=cartItems.includes(offer.id);
+    card.classList.toggle('is-in-cart',inCart);
     const button=document.createElement('button');button.type='button';button.className='button outline';
-    button.disabled=!enabled.length||checkoutBusy;button.dataset.cartOffer=offer.id;button.setAttribute('aria-pressed',String(cartOfferId===offer.id));
-    button.textContent=cartOfferId===offer.id
-      ? tr("Im Warenkorb · Paket wechseln","In cart · change package","Në shportë · ndrysho paketën")
-      : tr("Paket auswählen","Choose package","Zgjidh paketën");
+    button.disabled=!enabled.length||checkoutBusy;button.dataset.cartOffer=offer.id;
+    button.setAttribute('aria-pressed',String(inCart));
+    button.textContent=inCart
+      ? tr("Im Warenkorb · entfernen","In cart · remove","Në shportë · hiqe")
+      : tr("In den Warenkorb","Add to cart","Shto në shportë");
     actions.replaceChildren(button);
   });
   const cart=$("#checkoutCart");
-  cart.hidden=!enabled.length||!selectedOffer;
-  $("#checkoutPay").hidden=!enabled.length||!selectedOffer;
-  $("#checkoutPay").disabled=checkoutBusy||!selectedOffer||!purchaseReady();
-  if(selectedOffer&&cart){
-    $("#checkoutCartName").textContent=tr(`${selectedOffer.credits} Bewerbung${selectedOffer.credits===1?'':'en'}`,`${selectedOffer.credits} application${selectedOffer.credits===1?'':'s'}`,`${selectedOffer.credits} aplikim${selectedOffer.credits===1?'':'e'}`);
+  cart.hidden=!enabled.length||!selectedOffers.length;
+  $("#checkoutPay").hidden=!enabled.length||!selectedOffers.length;
+  $("#checkoutPay").disabled=checkoutBusy||!selectedOffers.length||!purchaseReady();
+  if(selectedOffers.length&&cart){
+    const total=selectedOffers.reduce((sum,offer)=>sum+offer.amount_cents,0);
+    $("#checkoutCartName").textContent=selectedOffers.map(offer=>tr(`${offer.credits} Bewerbung${offer.credits===1?'':'en'}`,`${offer.credits} application${offer.credits===1?'':'s'}`,`${offer.credits} aplikim${offer.credits===1?'':'e'}`)).join(' + ');
     $("#checkoutCartDetail").textContent=tr("Lebenslauf, Anschreiben, Motivationsschreiben und Bewerbungs-E-Mail","Resume, cover letter, motivation letter and application email","CV, letër aplikimi, letër motivimi dhe email aplikimi");
-    $("#checkoutCartTotal").textContent=new Intl.NumberFormat({de:'de-DE',en:'en-IE',sq:'sq-AL'}[state.language],{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100);
+    $("#checkoutCartTotal").textContent=new Intl.NumberFormat({de:'de-DE',en:'en-IE',sq:'sq-AL'}[state.language],{style:'currency',currency:pricing.currency}).format(total/100);
     $("#checkoutCartMode").textContent=pricing.environment==='sandbox'
       ? tr("Stripe-Testmodus · Es wird kein echtes Geld abgebucht. Einmaliger Testkauf, kein Abonnement.","Stripe test mode · no real money will be charged. One-time test purchase, no subscription.","Modalitet testues Stripe · nuk do të merret para reale. Blerje testuese një herë, pa abonim.")
       : tr("Einmalzahlung · kein Abonnement.","One-time payment · no subscription.","Pagesë e vetme · pa abonim.");
     $("#checkoutCartRemove").hidden=checkoutBusy;
     $("#checkoutPay").textContent=pricing.environment==='sandbox'
-      ? tr(`Testzahlung fortsetzen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Continue test checkout · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Vazhdo pagesën testuese · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`)
-      : tr(`Sicher bezahlen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Continue to secure payment · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Vazhdo te pagesa e sigurt · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`);
+      ? tr(`Testzahlung fortsetzen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(total/100)}`,`Continue test checkout · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(total/100)}`,`Vazhdo pagesën testuese · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(total/100)}`)
+      : tr(`Sicher bezahlen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(total/100)}`,`Continue to secure payment · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(total/100)}`,`Vazhdo te pagesa e sigurt · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(total/100)}`);
   }
   $$('[data-pricing-intro]').forEach(el=>el.textContent=enabled.length
     ? (pricing.environment==='sandbox'
@@ -119,26 +124,27 @@ function purchaseReady() {
 }
 function chooseCartOffer(offerId) {
   if(!pricing.offers.some(offer=>offer.id===offerId))return;
-  cartOfferId=offerId;
-  try{localStorage.setItem('tafolliboost.cartOffer',offerId);}catch{}
+  cartItems=cartItems.includes(offerId)?cartItems.filter(id=>id!==offerId):[...cartItems,offerId];
+  saveCart();
+  for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).checked=false;
   $("#billingStatus").textContent='';
   billingView();
 }
 function openPricing(offerId=null) {
   for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).checked=false;
-  if(offerId!==null&&pricing.offers.some(offer=>offer.id===offerId)){cartOfferId=offerId;try{localStorage.setItem('tafolliboost.cartOffer',offerId);}catch{}}
-  if(!pricing.offers.some(offer=>offer.id===cartOfferId)){cartOfferId=null;try{localStorage.removeItem('tafolliboost.cartOffer');}catch{}}
+  if(offerId!==null&&pricing.offers.some(offer=>offer.id===offerId)){cartItems=cartItems.includes(offerId)?cartItems:[...cartItems,offerId];saveCart();}
+  cartItems=cartItems.filter(id=>pricing.offers.some(offer=>offer.id===id));saveCart();
   $("#billingStatus").textContent='';billingView();if(!$("#billingDialog").open)$("#billingDialog").showModal();
   refreshBalance();loadOrders();
 }
 async function checkout(offerId,provider) {
-  if(checkoutBusy||!checkoutProviders(pricing).includes(provider)||!pricing.offers.some(offer=>offer.id===offerId))return;
+  if(checkoutBusy||!checkoutProviders(pricing).includes(provider)||!['single','bundle10','s1b1'].includes(offerId))return;
   if(BROWSER_ONLY){openAccount('register');return;}
   if(!state.account){$("#billingDialog").close();openAccount('login');return;}
   if(checkCurrentTerms())return;
   if(!purchaseReady()){openPricing();$("#billingStatus").textContent=tr("Lies bitte die Kaufbedingungen und bestätige sie ausdrücklich, bevor du fortfährst.","Please read and explicitly confirm the purchase conditions before continuing.","Lexo dhe konfirmo shprehimisht kushtet e blerjes përpara se të vazhdosh.");return;}
   checkoutBusy=true;billingView();
-  const body=checkoutRequests.start({offer_id:offerId,provider,terms_version:pricing.terms_version,terms_accepted:true,immediate_performance:true,withdrawal_acknowledged:true,language:state.language});
+  const body=checkoutRequests.start({offer_id:cartOfferId(),provider,terms_version:pricing.terms_version,terms_accepted:true,immediate_performance:true,withdrawal_acknowledged:true,language:state.language});
   $("#billingStatus").textContent=tr("Sichere Zahlungsseite wird geöffnet …","Opening secure checkout …","Po hapet faqja e sigurt e pagesës …");
   const progressTimer=setTimeout(()=>{$("#billingStatus").textContent=tr("Stripe antwortet noch. Bitte nicht erneut klicken – wir warten sicher bis zu 45 Sekunden.","Stripe is still responding. Please don't click again; we are safely waiting for up to 45 seconds.","Stripe po përgjigjet ende. Mos kliko sërish; po presim deri në 45 sekonda.");},8000);
   try {
@@ -1297,8 +1303,8 @@ async function init() {
   $("#openPricing").addEventListener('click',openPricing);
   $$('[data-open-pricing]').forEach(button=>button.addEventListener('click',openPricing));
   for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-cart-offer]');if(!button)return;if(root.id==='landingPlans')openPricing(button.dataset.cartOffer);else chooseCartOffer(button.dataset.cartOffer);});
-  $("#checkoutPay").addEventListener('click',()=>{if(cartOfferId)checkout(cartOfferId,checkoutProviders(pricing)[0]||'stripe');});
-  $("#checkoutCartRemove").addEventListener('click',()=>{cartOfferId=null;try{localStorage.removeItem('tafolliboost.cartOffer');}catch{}billingView();});
+  $("#checkoutPay").addEventListener('click',()=>{if(cartItems.length)checkout(cartOfferId(),checkoutProviders(pricing)[0]||'stripe');});
+  $("#checkoutCartRemove").addEventListener('click',()=>{cartItems=[];saveCart();billingView();});
   $("#cartLauncher").addEventListener('click',()=>openPricing());
   $("#welcomeHistory").addEventListener("click",action(showProjects));
   $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});

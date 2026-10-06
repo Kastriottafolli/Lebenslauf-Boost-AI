@@ -533,7 +533,20 @@ def _contract_snapshots(language):
 
 def prepare_order(db, account_id, request_id, provider, offer_id, *, language="de", **consent):
     accepted = checkout_consent(**consent)
-    offer = next((item for item in offers() if item["id"] == offer_id), None)
+    catalog = {item["id"]: item for item in offers()}
+    if offer_id == "s1b1":
+        single, bundle = catalog.get("single"), catalog.get("bundle10")
+        offer = (
+            {
+                "id": offer_id,
+                "credits": single["credits"] + bundle["credits"],
+                "amount_cents": single["amount_cents"] + bundle["amount_cents"],
+            }
+            if single and bundle
+            else None
+        )
+    else:
+        offer = catalog.get(offer_id)
     if not offer:
         raise error(422, "INVALID_OFFER", "Unknown offer")
     with _transaction(db):

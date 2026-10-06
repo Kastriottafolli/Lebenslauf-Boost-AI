@@ -272,7 +272,7 @@ def test_checkout_freezes_server_price_and_reuses_provider_idempotency(store, mo
             calls.append(kwargs)
             return httpx.Response(
                 200,
-                json={"id": "cs_test_order", "url": "https://checkout.stripe.com/order"},
+                json={"id": f"cs_test_order_{len(calls)}", "url": "https://checkout.stripe.com/order"},
                 request=httpx.Request("POST", url),
             )
 
@@ -290,6 +290,13 @@ def test_checkout_freezes_server_price_and_reuses_provider_idempotency(store, mo
         with pytest.raises(HTTPException) as conflict:
             payments.checkout(db, account_id, request_id, "stripe", "bundle10", **CONSENT)
         assert conflict.value.detail["code"] == "IDEMPOTENCY_CONFLICT"
+        monkeypatch.setattr(settings, "billing_single_cents", 199)
+        combined = payments.checkout(db, account_id, uuid4(), "stripe", "s1b1", **CONSENT)
+        assert calls[-1]["data"]["line_items[0][price_data][unit_amount]"] == "1198"
+        combined_order = db.get(PaymentOrder, combined["order_id"])
+        assert (combined_order.offer_id, combined_order.amount_cents, combined_order.credits) == (
+            "s1b1", 1198, 11
+        )
 
 
 def test_payment_redirects_require_exact_provider_host_and_private_https_site(store, monkeypatch):
