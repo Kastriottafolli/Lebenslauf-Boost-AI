@@ -28,7 +28,8 @@ let chatEpoch = 0, chatPending = false;
 let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
 let accountData=null, accountSection="profile", pendingEmail="", emailFlow="verify", resetToken=null, accountActionBusy=false, selectedWithdrawal=null;
-let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false, cartOfferId=null;
+let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false, cartOfferId=readSavedCart();
+function readSavedCart(){try{const id=localStorage.getItem('tafolliboost.cartOffer');return ['single','bundle10'].includes(id)?id:null;}catch{return null;}}
 const packageRequests=new PackageRequests(), checkoutRequests=new PackageRequests();
 
 function billingView() {
@@ -47,6 +48,9 @@ function billingView() {
   $("#billingBalance").textContent=summary+(detail?' · '+detail:'');
   const enabled=checkoutProviders(pricing);
   const selectedOffer=pricing.offers.find(offer=>offer.id===cartOfferId);
+  const cartBadge=$('#cartBadge');
+  if(cartBadge){cartBadge.hidden=!selectedOffer;cartBadge.textContent=selectedOffer?'1':'0';cartBadge.setAttribute('aria-label',selectedOffer?tr('1 Paket im Warenkorb','1 package in cart','1 paket në shportë'):tr('Warenkorb leer','Cart is empty','Shporta është bosh'));}
+  $('#cartLauncher')?.classList.toggle('has-items',!!selectedOffer);
   $("#checkoutConsents").hidden=!enabled.length||!selectedOffer;
   $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen pro Kalenderwoche und Konto.`,`${pricing.free_packages} free applications per calendar week and account.`,`${pricing.free_packages} aplikime falas për javë kalendarike dhe llogari.`);
   $$('[data-free-count]').forEach(el=>el.textContent=pricing.free_packages);
@@ -116,12 +120,14 @@ function purchaseReady() {
 function chooseCartOffer(offerId) {
   if(!pricing.offers.some(offer=>offer.id===offerId))return;
   cartOfferId=offerId;
+  try{localStorage.setItem('tafolliboost.cartOffer',offerId);}catch{}
   $("#billingStatus").textContent='';
   billingView();
 }
 function openPricing(offerId=null) {
   for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).checked=false;
-  cartOfferId=pricing.offers.some(offer=>offer.id===offerId)?offerId:null;
+  if(offerId!==null&&pricing.offers.some(offer=>offer.id===offerId)){cartOfferId=offerId;try{localStorage.setItem('tafolliboost.cartOffer',offerId);}catch{}}
+  if(!pricing.offers.some(offer=>offer.id===cartOfferId)){cartOfferId=null;try{localStorage.removeItem('tafolliboost.cartOffer');}catch{}}
   $("#billingStatus").textContent='';billingView();if(!$("#billingDialog").open)$("#billingDialog").showModal();
   refreshBalance();loadOrders();
 }
@@ -1292,7 +1298,8 @@ async function init() {
   $$('[data-open-pricing]').forEach(button=>button.addEventListener('click',openPricing));
   for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-cart-offer]');if(!button)return;if(root.id==='landingPlans')openPricing(button.dataset.cartOffer);else chooseCartOffer(button.dataset.cartOffer);});
   $("#checkoutPay").addEventListener('click',()=>{if(cartOfferId)checkout(cartOfferId,checkoutProviders(pricing)[0]||'stripe');});
-  $("#checkoutCartRemove").addEventListener('click',()=>{cartOfferId=null;billingView();});
+  $("#checkoutCartRemove").addEventListener('click',()=>{cartOfferId=null;try{localStorage.removeItem('tafolliboost.cartOffer');}catch{}billingView();});
+  $("#cartLauncher").addEventListener('click',()=>openPricing());
   $("#welcomeHistory").addEventListener("click",action(showProjects));
   $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});
   $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());

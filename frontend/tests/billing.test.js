@@ -96,6 +96,9 @@ test("a generated package adopts its server-owned history ID and exact revision"
 
 test("public offer cards provide all pricing nodes before startup and use localized singular copy", async () => {
   const html=await readFile('frontend/index.html','utf8');
+  assert.match(html,/id="cartLauncher"[^>]*aria-controls="billingDialog"/);
+  assert.match(html,/id="cartBadge"/);
+  assert.match(html,/Ein Paket pro Kauf/);
   const cards=[...html.matchAll(/<article\b[^>]*data-pricing-offer="([^"]+)"[^>]*>([\s\S]*?)<\/article>/g)];
   assert.deepEqual(cards.map(card=>card[1]),['single','bundle10']);
   for(const [,id,markup] of cards){
@@ -106,4 +109,6 @@ test("public offer cards provide all pricing nodes before startup and use locali
   const app=await readFile('frontend/js/app.js','utf8');
   assert.match(app,/timeoutMs:45000/);
   assert.match(app,/data-cart-offer/);
+  assert.match(app,/tafolliboost\.cartOffer/);
+  assert.match(app,/\$\("#cartLauncher"\)\.addEventListener\('click',\(\)=>openPricing\(\)\)/);
 });
