@@ -28,7 +28,7 @@ let chatEpoch = 0, chatPending = false;
 let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
 let accountData=null, accountSection="profile", pendingEmail="", emailFlow="verify", resetToken=null, accountActionBusy=false, selectedWithdrawal=null;
-let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false;
+let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false, cartOfferId=null;
 const packageRequests=new PackageRequests(), checkoutRequests=new PackageRequests();
 
 function billingView() {
@@ -45,11 +45,12 @@ function billingView() {
   }
   $("#creditBalance").textContent=summary+(detail?' · '+detail:'');
   $("#billingBalance").textContent=summary+(detail?' · '+detail:'');
-  $("#checkoutConsents").hidden=!checkoutProviders(pricing).length;
+  const enabled=checkoutProviders(pricing);
+  const selectedOffer=pricing.offers.find(offer=>offer.id===cartOfferId);
+  $("#checkoutConsents").hidden=!enabled.length||!selectedOffer;
   $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen pro Kalenderwoche und Konto.`,`${pricing.free_packages} free applications per calendar week and account.`,`${pricing.free_packages} aplikime falas për javë kalendarike dhe llogari.`);
   $$('[data-free-count]').forEach(el=>el.textContent=pricing.free_packages);
   $$('[data-free-action]').forEach(el=>el.hidden=!!state.account);
-  const enabled=checkoutProviders(pricing);
   $$('[data-pricing-offer]').forEach(card=>{
     const offer=pricing.offers.find(item=>item.id===card.dataset.pricingOffer);
     if(!offer)return;
@@ -62,13 +63,30 @@ function billingView() {
         : tr("Einmalzahlung · kein Abonnement","One-time payment · no subscription","Pagesë e vetme · pa abonim"))
       : tr("Geplant · Zahlung noch nicht verfügbar","Planned · payments not available yet","Planifikuar · pagesat ende të padisponueshme");
     const actions=card.querySelector('[data-checkout-actions]');actions.hidden=!enabled.length;
-    actions.replaceChildren(...enabled.map(provider=>{
-      const button=document.createElement('button');button.type='button';button.className='button outline';
-      button.disabled=checkoutBusy||(!!card.closest('#billingDialog')&&!purchaseReady());button.dataset.checkoutOffer=offer.id;button.dataset.checkoutProvider=provider;
-      button.textContent=tr("Zahlungspflichtig bestellen","Place paid order","Porosit me detyrim pagese")+" · "+(provider==='paypal'?'PayPal':tr("Karte / Wallet","Card / wallet","Kartë / portofol"));
-      return button;
-    }));
+    card.classList.toggle('is-in-cart',cartOfferId===offer.id);
+    const button=document.createElement('button');button.type='button';button.className='button outline';
+    button.disabled=!enabled.length||checkoutBusy;button.dataset.cartOffer=offer.id;button.setAttribute('aria-pressed',String(cartOfferId===offer.id));
+    button.textContent=cartOfferId===offer.id
+      ? tr("Im Warenkorb · Paket wechseln","In cart · change package","Në shportë · ndrysho paketën")
+      : tr("Paket auswählen","Choose package","Zgjidh paketën");
+    actions.replaceChildren(button);
   });
+  const cart=$("#checkoutCart");
+  cart.hidden=!enabled.length||!selectedOffer;
+  $("#checkoutPay").hidden=!enabled.length||!selectedOffer;
+  $("#checkoutPay").disabled=checkoutBusy||!selectedOffer||!purchaseReady();
+  if(selectedOffer&&cart){
+    $("#checkoutCartName").textContent=tr(`${selectedOffer.credits} Bewerbung${selectedOffer.credits===1?'':'en'}`,`${selectedOffer.credits} application${selectedOffer.credits===1?'':'s'}`,`${selectedOffer.credits} aplikim${selectedOffer.credits===1?'':'e'}`);
+    $("#checkoutCartDetail").textContent=tr("Lebenslauf, Anschreiben, Motivationsschreiben und Bewerbungs-E-Mail","Resume, cover letter, motivation letter and application email","CV, letër aplikimi, letër motivimi dhe email aplikimi");
+    $("#checkoutCartTotal").textContent=new Intl.NumberFormat({de:'de-DE',en:'en-IE',sq:'sq-AL'}[state.language],{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100);
+    $("#checkoutCartMode").textContent=pricing.environment==='sandbox'
+      ? tr("Stripe-Testmodus · Es wird kein echtes Geld abgebucht. Einmaliger Testkauf, kein Abonnement.","Stripe test mode · no real money will be charged. One-time test purchase, no subscription.","Modalitet testues Stripe · nuk do të merret para reale. Blerje testuese një herë, pa abonim.")
+      : tr("Einmalzahlung · kein Abonnement.","One-time payment · no subscription.","Pagesë e vetme · pa abonim.");
+    $("#checkoutCartRemove").hidden=checkoutBusy;
+    $("#checkoutPay").textContent=pricing.environment==='sandbox'
+      ? tr(`Testzahlung fortsetzen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Continue test checkout · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Vazhdo pagesën testuese · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`)
+      : tr(`Sicher bezahlen · ${new Intl.NumberFormat('de-DE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Continue to secure payment · ${new Intl.NumberFormat('en-IE',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`,`Vazhdo te pagesa e sigurt · ${new Intl.NumberFormat('sq-AL',{style:'currency',currency:pricing.currency}).format(selectedOffer.amount_cents/100)}`);
+  }
   $$('[data-pricing-intro]').forEach(el=>el.textContent=enabled.length
     ? (pricing.environment==='sandbox'
       ? tr("Stripe-Testmodus: Es wird kein echtes Geld abgebucht. Drei kostenlose Bewerbungen pro Kalenderwoche; danach kannst du Testkäufe durchführen. Jede Bewerbung enthält alle vier Dokumente.","Stripe test mode: no real money will be charged. Three free applications per calendar week; then you can try test purchases. Each application includes all four documents.","Modaliteti testues Stripe: nuk do të merret para reale. Tre aplikime falas në javë; më pas mund të provosh blerjet testuese. Çdo aplikim përfshin katër dokumentet.")
@@ -95,8 +113,15 @@ async function loadPricing() {
 function purchaseReady() {
   return purchaseAcknowledged({termsAccepted:$("#checkoutTerms").checked,immediatePerformance:$("#checkoutImmediate").checked,withdrawalAcknowledged:$("#checkoutWithdrawal").checked});
 }
-function openPricing() {
+function chooseCartOffer(offerId) {
+  if(!pricing.offers.some(offer=>offer.id===offerId))return;
+  cartOfferId=offerId;
+  $("#billingStatus").textContent='';
+  billingView();
+}
+function openPricing(offerId=null) {
   for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).checked=false;
+  cartOfferId=pricing.offers.some(offer=>offer.id===offerId)?offerId:null;
   $("#billingStatus").textContent='';billingView();if(!$("#billingDialog").open)$("#billingDialog").showModal();
   refreshBalance();loadOrders();
 }
@@ -109,15 +134,19 @@ async function checkout(offerId,provider) {
   checkoutBusy=true;billingView();
   const body=checkoutRequests.start({offer_id:offerId,provider,terms_version:pricing.terms_version,terms_accepted:true,immediate_performance:true,withdrawal_acknowledged:true,language:state.language});
   $("#billingStatus").textContent=tr("Sichere Zahlungsseite wird geöffnet …","Opening secure checkout …","Po hapet faqja e sigurt e pagesës …");
+  const progressTimer=setTimeout(()=>{$("#billingStatus").textContent=tr("Stripe antwortet noch. Bitte nicht erneut klicken – wir warten sicher bis zu 45 Sekunden.","Stripe is still responding. Please don't click again; we are safely waiting for up to 45 seconds.","Stripe po përgjigjet ende. Mos kliko sërish; po presim deri në 45 sekonda.");},8000);
   try {
-    const result=await api('/api/billing/checkout',body,'POST',{timeoutMs:20000});
+    const result=await api('/api/billing/checkout',body,'POST',{timeoutMs:45000});
     const target=safeCheckoutUrl(result.checkout_url,provider);
     if(!target||result.provider!==provider||result.status!=='pending')throw new Error('CHECKOUT_UNAVAILABLE');
     checkoutRequests.succeeded(body.request_id);location.assign(target);
   } catch(error) {
     checkoutRequests.failed(error,body.request_id);
-    $("#billingStatus").textContent=tr("Die Zahlung konnte nicht geöffnet werden. Es wurde hier kein Guthaben gekauft. Bitte später erneut versuchen.","Checkout could not be opened. No credits were purchased here. Please try again later.","Faqja e pagesës nuk u hap. Nuk janë blerë kredite këtu. Provo përsëri më vonë.");
-  } finally {checkoutBusy=false;billingView();}
+    const code=typeof error?.code==='string'&&/^[A-Z_]{2,48}$/.test(error.code)?error.code:'';
+    $("#billingStatus").textContent=error?.code==='API_TIMEOUT'
+      ? tr("Stripe hat nicht rechtzeitig geantwortet. Es wurde kein Kauf bestätigt. Du kannst es erneut versuchen; derselbe offene Vorgang wird wiederverwendet.","Stripe did not respond in time. No purchase was confirmed. You can retry; the same pending request will be reused.","Stripe nuk u përgjigj në kohë. Nuk u konfirmua asnjë blerje. Mund të provosh sërish; kërkesa në pritje do të ripërdoret.")
+      : tr(`Checkout konnte nicht geöffnet werden${code?` (${code})`:''}. Es wurde kein Kauf bestätigt. Bitte später erneut versuchen.`,`Checkout could not be opened${code?` (${code})`:''}. No purchase was confirmed. Please try again later.`,`Faqja e pagesës nuk u hap${code?` (${code})`:''}. Nuk u konfirmua asnjë blerje. Provo përsëri më vonë.`);
+  } finally {clearTimeout(progressTimer);checkoutBusy=false;billingView();}
 }
 async function loadOrders() {
   const list=$("#billingOrders");list.replaceChildren();
@@ -1261,7 +1290,9 @@ async function init() {
   for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).addEventListener("change",billingView);
   $("#openPricing").addEventListener('click',openPricing);
   $$('[data-open-pricing]').forEach(button=>button.addEventListener('click',openPricing));
-  for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-checkout-offer]');if(button)checkout(button.dataset.checkoutOffer,button.dataset.checkoutProvider);});
+  for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-cart-offer]');if(!button)return;if(root.id==='landingPlans')openPricing(button.dataset.cartOffer);else chooseCartOffer(button.dataset.cartOffer);});
+  $("#checkoutPay").addEventListener('click',()=>{if(cartOfferId)checkout(cartOfferId,checkoutProviders(pricing)[0]||'stripe');});
+  $("#checkoutCartRemove").addEventListener('click',()=>{cartOfferId=null;billingView();});
   $("#welcomeHistory").addEventListener("click",action(showProjects));
   $("#boostyQuestion").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.isComposing){event.preventDefault();$("#boostyForm").requestSubmit();}});
   $("#boostyLauncher").addEventListener("click", () => $("#helpBtn").click());

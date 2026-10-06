@@ -102,4 +102,8 @@ test("public offer cards provide all pricing nodes before startup and use locali
     for(const node of ['data-price','data-offer-credits','data-offer-unit','data-payment-state','data-checkout-actions'])assert.ok(markup.includes(node),`${id}: missing ${node}`);
   }
   assert.match(cards[0][2],/data-offer-unit data-de="Bewerbung" data-en="application" data-sq="aplikim"/);
+  for(const id of ['checkoutCart','checkoutCartName','checkoutCartDetail','checkoutCartTotal','checkoutCartMode','checkoutPay','checkoutCartRemove'])assert.ok(html.includes(`id="${id}"`),`missing cart control ${id}`);
+  const app=await readFile('frontend/js/app.js','utf8');
+  assert.match(app,/timeoutMs:45000/);
+  assert.match(app,/data-cart-offer/);
 });
