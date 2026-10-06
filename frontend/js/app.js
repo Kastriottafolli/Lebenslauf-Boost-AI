@@ -12,11 +12,14 @@ import { readDocument } from "./browser/import.js";
 import branding from "../../static/branding.json" with { type: "json" };
 import { TOUR, GUIDES, helpForTopic, boostyAnswer, questionContainsSecret } from "./core/boosty.js";
 import { mountAdmin } from "./admin.js";
+import { createAnalyticsController } from "./core/analytics.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
 const accountLink = consumeAccountLink(location, history);
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
 const state = { language: LANGUAGES.includes(new URLSearchParams(location.search).get("lang")) ? new URLSearchParams(location.search).get("lang") : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
+const analytics = createAnalyticsController({language:state.language,page:'home',apiBase:API_BASE,enabled:!BROWSER_ONLY,staticRoutes:__RUNTIME__==='browser'});
+analytics.mount();
 const tr = (de, en, sq) => translate(state.language, de, en, sq);
 let toastTimer, installPrompt, editorMode = false, accountMode="login", accountBusy=false, studioEntered=false;
 let comparisonResults = [];
@@ -205,6 +208,7 @@ function labelsForStep(step) {
 function enterStudio({guide=true}={}) {
   if(!state.account){openAccount();return;}
   studioEntered=true;
+  analytics.setPage('app');
   document.body.dataset.view="studio";
   $("#how").hidden=true;
   $("#workspace").hidden=false;
@@ -217,6 +221,7 @@ function enterStudio({guide=true}={}) {
 }
 function returnWelcome() {
   studioEntered=false;
+  analytics.setPage('home');
   stopGuide();
   document.body.dataset.view="welcome";
   $("#how").hidden=false;
@@ -481,6 +486,7 @@ function boostyConnectionView() {
   $("#boostyConnection").textContent=boostyConfig.enabled ? tr("OpenAI-Softwarehilfe bereit", "OpenAI software help ready", "Ndihma OpenAI gati") : tr("Lokale Hilfe bereit · OpenAI-Hilfe wird vom Betreiber aktiviert", "Local help ready · Operator activates OpenAI help", "Ndihma lokale gati · Operatori aktivizon OpenAI");
 }
 function applyLanguage() {
+  analytics.setLanguage(state.language);
   document.documentElement.lang = state.language;
   $(".skip").textContent=tr("Zum Bewerbungseditor","Skip to application editor","Kalo te redaktori i aplikimit");
   $(".topbar nav").setAttribute('aria-label',tr("Hauptnavigation","Main navigation","Navigimi kryesor"));
@@ -943,6 +949,8 @@ function setAccountMode(mode) {
   $("#loginMode").setAttribute("aria-pressed",String(accountMode==="login"));
   $("#register").setAttribute("aria-pressed",String(isRegister));
   $("#registerNameField").hidden=!isRegister;
+  $$("#registerNameField input, #registerNameField select").forEach(input=>input.disabled=!isRegister);
+  $("#register-profile-date_of_birth").max=new Date().toISOString().slice(0,10);
   $("#accountEmailField").hidden=isReset;
   $("#accountEmail").required=!isReset;
   $("#accountPasswordField").hidden=!passwordNeeded;
@@ -972,7 +980,26 @@ async function loadAccount() {
 }
 function fillAccountProfile() {
   const profile=readAccountProfile(accountData)||readAccountProfile({});
-  for(const key of ["display_name","first_name","last_name","phone","location","headline","language"])$("#account-profile-"+key).value=profile[key];
+  for(const key of ["display_name","first_name","last_name","phone","location","headline","language","gender","date_of_birth","street","postal_code","city","country"])$("#account-profile-"+key).value=profile[key]??'';
+  const languages=$("#account-profile-spoken_languages");
+  [...languages.options].forEach(option=>option.selected=profile.spoken_languages.includes(option.value));
+  const known=[...languages.options].map(option=>option.value);
+  $("#account-profile-other_languages").value=profile.spoken_languages.filter(value=>!known.includes(value)).join(', ');
+  $("#account-profile-date_of_birth").max=new Date().toISOString().slice(0,10);
+}
+function readAccountFormProfile(prefix) {
+  const profile={};
+  for(const key of ["display_name","first_name","last_name","phone","location","headline","language","gender","street","postal_code","city","country"]){
+    const input=$("#"+prefix+key);if(input)profile[key]=input.value.trim();
+  }
+  profile.country=profile.country.toUpperCase();
+  profile.date_of_birth=$("#"+prefix+"date_of_birth").value||null;
+  profile.spoken_languages=[...new Set([
+    ...[...$("#"+prefix+"spoken_languages").selectedOptions].map(option=>option.value),
+    ...$("#"+prefix+"other_languages").value.split(',').map(value=>value.trim()).filter(Boolean),
+  ])];
+  if(profile.spoken_languages.length>20||profile.spoken_languages.some(value=>value.length>40))throw Object.assign(new Error("PROFILE_INVALID"),{code:"PROFILE_INVALID"});
+  return profile;
 }
 function selectAccountSection(section="profile") {
   if(!["profile","documents","security","data"].includes(section))return;
@@ -1009,7 +1036,7 @@ async function credentials(mode) {
     if(mode==="forgot"){
       await api("/api/account/forgot-password",{email,language:state.language},"POST",{timeoutMs:20000});showEmailPending(email,"forgot");
     } else if(mode==="register"){
-      const body=registrationPayload({email,password,displayName:$("#accountDisplayName").value,language:state.language,termsAccepted:$("#registerTerms").checked,privacyAcknowledged:$("#registerPrivacy").checked});
+      const body=registrationPayload({email,password,displayName:$("#accountDisplayName").value,language:state.language,profile:readAccountFormProfile('register-profile-'),termsAccepted:$("#registerTerms").checked,privacyAcknowledged:$("#registerPrivacy").checked});
       await api("/api/account/register",body,"POST",{timeoutMs:20000});showEmailPending(email);
     } else if(mode==="reset"){
       if(!resetToken)throw {code:"INVALID_TOKEN"};
@@ -1408,9 +1435,9 @@ async function init() {
   $("#accountCredits").addEventListener("click",()=>{$("#accountDialog").close();openPricing();});
   $("#accountProfileForm").addEventListener("submit",event=>{
     event.preventDefault();accountAction(event.target,async()=>{
-      const body={};for(const key of ['display_name','first_name','last_name','phone','location','headline','language'])body[key]=$("#account-profile-"+key).value.trim();
+      const body=readAccountFormProfile('account-profile-');
       body.preferences={email_notifications:accountData?.profile?.preferences?.email_notifications===true};
-      await api('/api/account/profile',body,'PUT',{timeoutMs:20000});await loadAccount();
+      await api('/api/account/profile',body,'PUT',{timeoutMs:20000});await loadAccount();fillAccountProfile();
       $("#accountHubStatus").textContent=tr("✓ Dein Profil wurde gespeichert.","✓ Your profile was saved.","✓ Profili u ruajt.");
     });
   });

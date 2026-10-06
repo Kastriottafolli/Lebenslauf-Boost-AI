@@ -1,5 +1,36 @@
-// Aggregated operational counts only: no cookies, IPs or personal user data.
-export function trafficOverview(days, english = false) {
+// Calendar labels use the server reporting timezone; visit details remain server-side.
+export const ADMIN_TIMEZONE = 'UTC';
+
+export function calendarDate(value = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-GB', {timeZone: ADMIN_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(value);
+  const field = type => parts.find(part => part.type === type).value;
+  return `${field('year')}-${field('month')}-${field('day')}`;
+}
+
+export function dateRangePreset(preset, now = new Date()) {
+  if (!['today', 'yesterday', '7', '30', '90'].includes(String(preset))) throw new RangeError('Unknown date preset');
+  const day = calendarDate(now);
+  const shift = amount => {
+    const date = new Date(day + 'T12:00:00Z');
+    date.setUTCDate(date.getUTCDate() + amount);
+    return date.toISOString().slice(0, 10);
+  };
+  if (preset === 'yesterday') return {start: shift(-1), end: shift(-1)};
+  return {start: preset === 'today' ? day : shift(1 - Number(preset)), end: day};
+}
+
+export function validDateRange(start, end) {
+  const valid = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value + 'T12:00:00Z')) && new Date(value + 'T12:00:00Z').toISOString().slice(0, 10) === value;
+  return valid(start) && valid(end) && start <= end;
+}
+
+export function activeDuration(value, english = false) {
+  const numeric = Number(value);
+  const seconds = Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : 0;
+  const minutes = Math.floor(seconds / 60);
+  return minutes ? `${minutes} min ${seconds % 60} s` : `${seconds} s`;
+}
+export function trafficOverview(days, english = false, timezone = ADMIN_TIMEZONE) {
   const text = (de, en) => english ? en : de;
   const series = [
     ['page_views', text('Seitenaufrufe', 'Page views'), '#1767c3'],
@@ -13,7 +44,7 @@ export function trafficOverview(days, english = false) {
   const figure = document.createElement('figure');
   figure.className = 'traffic-overview';
   const caption = document.createElement('figcaption');
-  caption.textContent = text('Dein Traffic im Verlauf', 'Your traffic over time');
+  caption.textContent = text('Dein Traffic im Verlauf', 'Your traffic over time') + ` · ${timezone}`;
   figure.append(caption);
   if (!rows.length) {
     const empty = document.createElement('p');

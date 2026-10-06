@@ -167,4 +167,7 @@ def guide(language: str, slug: str):
     path = PROJECT_ROOT / "_site" / language / slug / "index.html"
     if not path.exists():
         raise HTTPException(503, "Run npm run build")
-    return FileResponse(path)
+    return HTMLResponse(
+        path.read_text().replace('assets/js/analytics-app.js', 'assets/build/analytics-app.js'),
+        headers={'Cache-Control': 'no-cache'},
+    )

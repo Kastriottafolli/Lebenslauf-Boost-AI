@@ -35,6 +35,13 @@ class AccountProfile(Base):
     location = Column(String(300), nullable=False, default="")
     headline = Column(String(300), nullable=False, default="")
     language = Column(String(2), nullable=False, default="de")
+    gender = Column(String(16), nullable=False, default="undisclosed")
+    date_of_birth = Column(String(10), nullable=True)
+    street = Column(String(300), nullable=False, default="")
+    postal_code = Column(String(32), nullable=False, default="")
+    city = Column(String(200), nullable=False, default="")
+    country = Column(String(2), nullable=False, default="")
+    spoken_languages = Column(Text, nullable=False, default="[]")
     email_notifications = Column(Boolean, nullable=False, default=False)
     updated_at = Column(DateTime, nullable=False, default=_now)
 

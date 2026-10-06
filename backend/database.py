@@ -57,6 +57,7 @@ def get_db(request: Request):
 def init_db() -> None:
     from backend import (
         account_models,  # noqa: F401
+        analytics_models,  # noqa: F401 (additive, consent-only traffic tables)
         models,  # noqa: F401  (Modelle registrieren)
     )
 
@@ -65,6 +66,10 @@ def init_db() -> None:
     # Add ownership without exposing existing sessions. Old rows are intentionally unclaimed.
     columns = {c["name"] for c in inspect(engine).get_columns("sessions")}
     with engine.begin() as connection:
+        audit_columns = {c["name"] for c in inspect(engine).get_columns("admin_audit")}
+        for name, definition in {"reason": "VARCHAR(500)", "changed_fields_json": "TEXT"}.items():
+            if name not in audit_columns:
+                connection.execute(text(f"ALTER TABLE admin_audit ADD COLUMN {name} {definition}"))
         for name in ("owner_token_hash", "owner_id"):
             if name not in columns:
                 connection.execute(text(f"ALTER TABLE sessions ADD COLUMN {name} VARCHAR(64)"))

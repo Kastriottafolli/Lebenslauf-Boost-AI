@@ -250,6 +250,8 @@ class AdminAudit(Base):
     )
     action = Column(String(64), nullable=False)
     subject_id = Column(String(36), nullable=True)
+    reason = Column(String(500), nullable=True)
+    changed_fields_json = Column(Text, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC), index=True)
 
 

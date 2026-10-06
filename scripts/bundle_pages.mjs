@@ -2,7 +2,7 @@ import { build } from 'esbuild';
 import { cp, mkdir, readdir, writeFile, readFile, rm } from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 await rm('frontend/build',{recursive:true,force:true});
-const common={entryPoints:['frontend/js/app.js','frontend/js/admin-app.js'],bundle:true,splitting:true,format:'esm',platform:'browser',target:['es2022'],minify:true};
+const common={entryPoints:['frontend/js/app.js','frontend/js/admin-app.js','frontend/js/analytics-app.js'],bundle:true,splitting:true,format:'esm',platform:'browser',target:['es2022'],minify:true};
 await build({...common,outdir:'_site/assets/js',define:{__RUNTIME__:JSON.stringify('browser'),__API_BASE__:JSON.stringify(process.env.PUBLIC_API_BASE||'')}});
 await build({...common,outdir:'frontend/build',define:{__RUNTIME__:JSON.stringify('server'),__API_BASE__:JSON.stringify(process.env.PUBLIC_API_BASE||'')}});
 for(const root of ['_site/assets/js','frontend/build']){

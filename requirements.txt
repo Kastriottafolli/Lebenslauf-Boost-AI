@@ -13,3 +13,4 @@ httpx==0.28.1
 certifi==2026.07.22
 starlette==1.7.0
 cryptography==50.0.2
+maxminddb==3.2.0

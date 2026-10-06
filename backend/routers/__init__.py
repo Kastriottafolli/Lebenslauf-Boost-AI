@@ -21,6 +21,7 @@ from backend.routers import (
     sessions,
     social,
     system,
+    traffic,
 )
 
 ALL_ROUTERS = [
@@ -34,5 +35,6 @@ ALL_ROUTERS = [
     documents.router,
     generations.router,
     exports.router,
+    traffic.router,
     frontend.router,
 ]

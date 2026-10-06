@@ -340,7 +340,7 @@ def test_audited_data_views_exclude_secrets_and_handle_search(env):
         db.add(DailyMetric(day=admins.now().date().isoformat(), page_views=12, visits=4))
         db.commit()
     users = client.get("/api/admin/users").json()
-    assert users["total"] == 2
+    assert users["total"] == 1
     assert client.get("/api/admin/users?q=%25").json()["total"] == 0
     assert client.get("/api/admin/users?q=person").json()["total"] == 1
     assert (

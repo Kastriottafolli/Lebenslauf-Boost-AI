@@ -46,18 +46,18 @@ Der Befehl lehnt fehlende oder noch nicht aktivierte Admin-Konten sowie belegte 
 
 ## Ansichten
 
-- Tagesübersicht für 7/30/90 UTC-Kalendertage: registrierte/neue/aktive Konten, Bewerbungen, Aufrufe, gestartete Sitzungen und verwendete Funktionen.
-- Nutzer mit E-Mail, Registrierung, letzter Aktivität und Bewerbungszahl; E-Mail-Suche und Seitennavigation.
+- Anklickbare Kennzahlen für Kundenkonten, neue/aktive/bestätigte Konten, Bewerbungen und Aufrufe. Heute, gestern, 7/30/90 Tage oder freie UTC-Kalendertage bis 366 Tage; Betreiberkonten werden nicht als Kunden gezählt.
+- Kunden mit Namen, E-Mail, Registrierung, letzter Aktivität und Bewerbungszahl; Suche nach Namen/E-Mail, Statusfilter und Seitennavigation. Optionale Profilangaben: Geschlecht, Geburtstag, Adresse, Telefonnummer und gesprochene Sprachen.
 - Persönliche Bewerbungsinhalte sowie ursprüngliche CV-/Generierungs-/Nachrichteninhalte einzelner Sitzungen, jeweils bewusst zu öffnen und mit protokolliertem Adminzugriff.
 - Nutzungsereignisse mit Konto bzw. anonymem Status, Funktion, Zeitpunkt und HTTP-Ergebnis.
 - Admin-Protokoll: Anmeldung, Ersteinrichtung, serverseitiges Zurücksetzen und Datenabfragen.
-- Datenbank-Tabellen mit Zeilenzahlen und SQLite-Integritätsprüfung. Keine Passwort-Hashes, Tokens, Recovery-Codes, TOTP-Schlüssel oder frei ausführbaren SQL-Befehle im Browser. Vollständige Sicherungen über die Server-CLI.
+- Datenbank-Tabellen mit Zeilenzahlen, SQLite-Integritätsprüfung und Verweisen zu den passenden Listen/Support-Editoren. Keine Passwort-Hashes, Tokens, Recovery-Codes, TOTP-Schlüssel oder frei ausführbaren SQL-Befehle im Browser. Vollständige Sicherungen über die Server-CLI.
 
 Datensammlungen sind begrenzt und paginiert; Detailansichten enthalten höchstens 100 Sitzungen/Projekte bzw. Generierungen/Nachrichten. Für größere Bestände Ausbau mit Detail-Paginierung vorsehen. Kein Browser-Endpunkt für einen ungeschützten vollständigen Datenbankdownload.
 
 ## Statistik und Datenschutz
 
-Aufrufe und gestartete Sitzungen sind **keine eindeutigen Menschen**. Bots, Reloads, Vorschau und zusätzliche Sitzungen beim Login zählen mit. Ohne Tracking-Identifier oder Fingerprinting kann keine exakte Besucherzahl angegeben werden. Keine IP-Adressen, User-Agent-Werte, URLs mit Parametern, Frage-/Dokumenttexte, Passwörter oder API-Keys in der Statistik. Exportereignisse zeigen bereitgestellte Downloads bzw. abgeschlossene Übergaben an den nativen Teilen-Dialog; das tatsächliche Speichern beim Nutzer kann nicht bestätigt werden. Ereignisse werden erst ab diesem Stand erfasst; kein rückwirkender vollständiger Verlauf. Nicht angemeldete Ereignisse bleiben anonym und werden nicht rückwirkend einem Konto zugeordnet.
+Aufrufe und gestartete Sitzungen sind **keine eindeutigen Menschen**. Bots, Reloads, Vorschau und zusätzliche Sitzungen beim Login zählen mit. Ohne Tracking-Identifier oder Fingerprinting kann keine exakte Besucherzahl angegeben werden. Die notwendigen Betriebsereignisse enthalten keine IP-Adressen. Die getrennte freiwillige Besuchsstatistik speichert nach Einwilligung Geräteklasse, ungefähres Land, aktive Zeit und einen gekürzten Netzbereich; siehe [TRAFFIC.md](TRAFFIC.md). Keine vollständigen IP-Adressen, User-Agent-Werte, URLs mit Parametern, Frage-/Dokumenttexte, Passwörter oder API-Keys. Exportereignisse zeigen bereitgestellte Downloads bzw. abgeschlossene Übergaben an den nativen Teilen-Dialog; das tatsächliche Speichern beim Nutzer kann nicht bestätigt werden. Ereignisse werden erst ab diesem Stand erfasst; kein rückwirkender vollständiger Verlauf. Nicht angemeldete Ereignisse bleiben anonym und werden nicht rückwirkend einem Konto zugeordnet.
 
 Funktionsereignisse werden 30 Tage gespeichert, Tagesaggregate und Admin-Protokolle 90 Tage. Kontolöschung entfernt die Kontozuordnung über den Fremdschlüssel. Aggregate bleiben ohne Personenbezug erhalten. Anonyme Inhalte bleiben beim bisherigen 30-Tage-Cleanup; gespeicherte Kontobewerbungen bis zur Löschung. Die App erklärt den Zugriff des Betreibers im Datenschutzdialog. Hosting, Auftragsverarbeitung und die Rechtsgrundlage für diese internen Betriebsstatistiken müssen vor dem öffentlichen Start im tatsächlichen Datenschutztext geklärt werden.
 
@@ -82,3 +82,11 @@ Provider-Zugangsdaten bleiben ausschließlich auf dem Server. Die eingegebene Fr
 ## Vor öffentlicher Vermarktung noch offen
 
 DreamHost-Hosting, Domain und HTTPS sind in Betrieb. Bestätigungsmails, Passwort-Zurücksetzen, separate Admin-Anmeldung, interne Betriebsstatistiken und verschlüsselte Backups sind eingerichtet und geprüft. Anbieter-Konfiguration für Social-Login und echte Zahlungen, fachliche Prüfung der Rechtstexte und Verträge sowie externe Angriffstests und Belastungstests stehen noch aus. Native Geräte-/Store-Prüfungen fehlen weiterhin. Der Stand ist keine Sicherheitszertifizierung oder vollständige kommerzielle Abnahme.
+
+## Support-Korrekturen
+
+Der Nutzereditor ändert ausschließlich erlaubte Profilfelder. E-Mail, Bestätigungsstatus, Rolle, Guthaben und Passwort können dort nicht direkt überschrieben werden. „Passwort-Link senden“ reiht die reguläre Wiederherstellungs-E-Mail an die vorhandene Nutzeradresse ein und zeigt keinen Token. Betreiber-/Administratorkonten sind in diesen Editoren schreibgeschützt.
+
+Der Bewerbungseditor ändert Titel, Status, Notizen und die vier fertigen Dokumenttexte. Quelldateien, Stellenbeschreibung, Profil-Fakten, Foto und weitere Metadaten bleiben erhalten. Dokumente müssen vollständig und lesbar bleiben. Ein Änderungsgrund ist verpflichtend; Audit-Daten enthalten Grund und Feldnamen, keine Dokumentkopien. Profil-Zeitstempel bzw. Bewerbungsrevision verhindern verlorene parallele Änderungen. Bei Konflikten bleibt der Formularentwurf erhalten und der aktuelle Stand muss bewusst geprüft werden.
+
+Die Datenbankansicht gibt keine beliebigen SQL-Befehle, direkten Rollenänderungen oder vollständigen Datenbankdownloads frei. Die Support-Editoren decken fachliche Korrekturen mit Berechtigungsprüfung und Audit ab; tiefgreifende Wartung erfolgt nach Sicherung über den Serverzugang.

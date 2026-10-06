@@ -22,9 +22,10 @@ def cleanup():
         days=max(1, get_settings().retention_days)
     )
     with SessionLocal() as db:
-        from backend.services import billing_service
+        from backend.services import billing_service, traffic_service
 
         now = datetime.now(UTC).replace(tzinfo=None)
+        traffic_service.cleanup(db, current=now)
         from backend.account_models import AccountActionToken, AccountSecurity, EmailOutbox
         from backend.models import Account, AdminAccess
 
