@@ -14,12 +14,12 @@
         "Beim Aufruf werden technisch unter anderem IP-Adresse, Zeitpunkt, angeforderte Adresse, Browserdaten und Verbindungsstatus an den Server übertragen. Das ist für Auslieferung und Sicherheit erforderlich (Art. 6 Abs. 1 lit. f DSGVO; Interesse an einem sicheren, verfügbaren Dienst). Die App schreibt keine IP-Adressen in ihre Nutzungsstatistik; Reverse-Proxy, Hostinganbieter und vorgelagerte Dienste können eigene technische Protokolle führen. Hostinganbieter: {hosting_name}. Serverland: {hosting_country}. Technische Protokollfristen: {hosting_retention}. Diese Angaben und der Auftragsverarbeitungsvertrag sind vor dem öffentlichen Betrieb festzulegen."
       ],
       [
-        "Nutzerkonto und gespeicherte Bewerbungen",
-        "Für die App ist ein Konto erforderlich. Wir verarbeiten E-Mail-Adresse, gehashte Passwörter und Wiederherstellungscodes sowie ablaufende Anmeldetoken. Nach der Anmeldung speichern wir Profil, Stellenbeschreibung, Wünsche, Dokumente, Design, optionales Foto, Status, Notizen und Zeitpunkte automatisch. Boosty-Chattexte werden nicht gespeichert. Google, Apple, Facebook und X stehen nur zur Verfügung, soweit der jeweilige Anmeldedienst für diese Website eingerichtet und freigeschaltet ist. Bei einer solchen optionalen Anmeldung verarbeiten wir die Anbieterkennung, eine stabile Nutzerkennung und, soweit übermittelt, deine E-Mail-Adresse. Ohne E-Mail verwenden wir bei X/Facebook eine interne Kontokennung; sie ist keine erreichbare E-Mail-Adresse. Zugangstoken der Anmeldedienste werden nur vorübergehend zur Prüfung verarbeitet. Anmeldevorgänge speichern einen einmaligen Prüfzustand für höchstens zehn Minuten. Rechtsgrundlage für Kontofunktionen ist Art. 6 Abs. 1 lit. b DSGVO. Anmeldung läuft nach sieben Tagen ab. Gespeicherte Bewerbungen und das Konto können gelöscht werden."
+        "Kontobestätigung, Profil und Transaktions-E-Mails",
+        "Wir verarbeiten Profilangaben, E-Mail-Bestätigung, angenommene AGB-Version und Zeitpunkt sowie Sicherheitsaktionen zur Durchführung und Absicherung des Kontovertrags (Art. 6 Abs. 1 lit. b und f DSGVO). Neue Konten werden erst nach E-Mail-Bestätigung aktiv. Nicht bestätigte neue Konten werden nach 14 Tagen entfernt. Bestätigungslinks sind 24 Stunden, Passwort-Zurücksetzen-Links 30 Minuten gültig und einmalig. Die Datenbank speichert Token nur als Hash; noch zu versendende Nachrichten werden bis zur Zustellung oder zum Ablauf verschlüsselt zwischengespeichert. Versandmetadaten werden nach 7 Tagen bereinigt. Bestätigung, Wiederherstellung und Vertragsnachrichten werden über DreamHost mit dem Absender info@tafolli.net gesendet. Dazu werden Empfänger, Betreff und Nachrichtentext an den DreamHost-Maildienst übertragen. Sie sind keine Werbemails. Profil und Unterlagen kannst du im Konto ändern, exportieren oder nach erneuter Identitätsprüfung löschen. Backups können gelöschte Daten noch innerhalb der beschriebenen Sicherungsfrist enthalten."
       ],
       [
-        "Bewerbungsguthaben und technische Wiederholungen",
-        "Jedes Konto erhält einmalig drei kostenlose Bewerbungsmappen. Wir speichern Guthaben, Verbrauch, Zeitpunkte und technische Anfragenkennungen zur Erfüllung der Kontofunktionen und zur Vermeidung doppelter Abbuchungen (Art. 6 Abs. 1 lit. b DSGVO). Erfolgreich erstellte Mappen werden vor der Antwort im eigenen Bewerbungsverlauf gespeichert. Für technische Wiederholungen kann zusätzlich eine Antwortkopie verarbeitet werden: Sie ist höchstens 24 Stunden abrufbar und wird nach Ablauf beim nächsten Guthabenabruf oder Wiederholungsversuch sowie durch die tägliche Bereinigung entfernt. Das Löschen einer Bewerbung oder ihrer Sitzung entfernt diese Antwortkopie ebenfalls; der dokumentfreie Verbrauchsnachweis bleibt im Konto erhalten. Eine Kontolöschung entfernt auch diese kontobezogenen Einträge. Zahlungen sind derzeit nicht freigeschaltet; die angekündigten Preise sind geplante Angebote. Es werden keine Kartendaten erhoben und keine Zahlungen ausgelöst."
+        "Nutzerkonto und gespeicherte Bewerbungen",
+        "Für die App ist ein Konto erforderlich. Wir verarbeiten E-Mail-Adresse, gehashte Passwörter, Einmal-Links zur Bestätigung und Passwortänderung sowie ablaufende Anmeldetoken. Nach der Anmeldung speichern wir Profil, Stellenbeschreibung, Wünsche, Dokumente, Design, optionales Foto, Status, Notizen und Zeitpunkte automatisch. Boosty-Chattexte werden nicht gespeichert. Google, Apple, Facebook und X stehen nur zur Verfügung, soweit der jeweilige Anmeldedienst für diese Website eingerichtet und freigeschaltet ist. Bei einer solchen optionalen Anmeldung verarbeiten wir die Anbieterkennung, eine stabile Nutzerkennung und, soweit übermittelt, deine E-Mail-Adresse. Ohne E-Mail verwenden wir bei X/Facebook eine interne Kontokennung; sie ist keine erreichbare E-Mail-Adresse. Zugangstoken der Anmeldedienste werden nur vorübergehend zur Prüfung verarbeitet. Anmeldevorgänge speichern einen einmaligen Prüfzustand für höchstens zehn Minuten. Rechtsgrundlage für Kontofunktionen ist Art. 6 Abs. 1 lit. b DSGVO. Anmeldung läuft nach sieben Tagen ab. Gespeicherte Bewerbungen und das Konto können gelöscht werden."
       ],
       [
         "Lebensläufe, Stellenanzeigen und Dokumenterstellung",
@@ -72,6 +72,10 @@
       [
         "Empfänger und Aktualisierung",
         "Empfänger können der Betreiber, ein vertraglich eingebundener Hosting-/Backupdienst und bei deiner gewählten KI-Nutzung OpenAI sein. Andere KI-Anbieter sind derzeit nicht aktiviert. Bei einem für diese Website freigeschalteten sozialen Login erhält der von dir gewählte Anmeldedienst die für diesen Vorgang erforderlichen Daten. Inhalte werden nicht veröffentlicht oder als Werbedaten verkauft. Maßgeblich sind die tatsächlich aktivierten Dienste und Verträge; die offenen Hosting-, Betreiber- und Transferangaben müssen vor öffentlichem Start vervollständigt werden. Stand: {updated}."
+      ],
+      [
+        "Wöchentliches Guthaben und Käufe",
+        "Für das Wochenkontingent speichern wir je Konto Kalenderwoche, drei Gratisplätze, Verbrauch und laufende Reservierungen. Gekauftes Guthaben wird getrennt geführt und beim Wochenwechsel nicht zurückgesetzt. Bei freigeschalteten Käufen verarbeiten wir Bestellkennung, Paket, Betrag, Zahlungsanbieter, bestätigten Zahlungsstatus, Vertragszustimmungen sowie Widerrufserklärungen und Eingangsbestätigungen (Art. 6 Abs. 1 lit. b und c DSGVO). Vollständige Kartendaten werden nicht auf unserem Server gespeichert. Die Zuordnung dient korrekter Gutschrift, Doppelbuchungsschutz und Vertragsabwicklung. Tatsächlich gesetzlich aufzubewahrende Abrechnungsdaten werden bei Kontolöschung beschränkt archiviert; technische oder unbezahlte Entwürfe begründen keine pauschale mehrjährige Speicherung."
       ]
     ],
     "legal": [
@@ -95,6 +99,86 @@
         "Datenschutz",
         "Die Verarbeitung personenbezogener Daten wird auf der gesonderten Datenschutzseite erläutert. Kontakt für Datenschutzanfragen: {operator_email}."
       ]
+    ],
+    "terms": [
+      [
+        "1. Anbieter und Geltungsbereich",
+        "Diese Allgemeinen Geschäftsbedingungen gelten für Nutzerkonten und die digitalen Bewerbungsleistungen auf tafolliboost.com. Anbieter und Vertragspartner ist {operator_name}, {operator_address}, E-Mail: {operator_email}. Individuelle Vereinbarungen haben Vorrang. Zwingende gesetzliche Verbraucherrechte bleiben bestehen. Version: 2026-10-06."
+      ],
+      [
+        "2. Was TafolliBoost leistet",
+        "TafolliBoost hilft, aus deinem Lebenslauf und einer Stellenanzeige eine Bewerbungsmappe mit Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail-Entwurf zu erstellen. Du kannst Ergebnisse bearbeiten, ein Design wählen, Unterlagen exportieren und Mappen im Konto speichern. Boosty unterstützt bei Fragen zur Software. Die Texte sind KI-Entwürfe und müssen vor einer Verwendung von dir geprüft werden. Eine Einstellung, Einladung oder bestimmte Trefferquote wird nicht zugesichert. Die Software verschickt keine Bewerbung automatisch an Arbeitgeber."
+      ],
+      [
+        "3. Konto eröffnen und bestätigen",
+        "Du eröffnest ein Konto mit deiner E-Mail-Adresse und einem Passwort, bestätigst diese AGB und erhältst Informationen zum Datenschutz. Die E-Mail-Adresse muss durch den persönlichen Bestätigungslink aktiviert werden, bevor du dich anmelden kannst. Du erhältst eine Bestätigung mit der angenommenen AGB-Version. Du musst geschäftsfähig sein oder die erforderliche Zustimmung deiner gesetzlichen Vertretung haben. Kontaktdaten sollen zutreffend sein. Halte Zugangsdaten geheim. Nutze für jede Person ein eigenes Konto; Mehrfachkonten zur Umgehung von Kontingenten sind nicht erlaubt. Eine reine Kontoeröffnung löst keinen kostenpflichtigen Kauf aus."
+      ],
+      [
+        "4. Drei kostenlose Bewerbungen pro Woche",
+        "Jedes bestätigte Konto erhält drei kostenlose Bewerbungspakete je Kalenderwoche, Montag 00:00 bis zum folgenden Montag 00:00 in der Zeitzone Europe/Berlin. Nicht genutzte Gratisplätze werden nicht übertragen. Eine Bewerbung bedeutet die erfolgreiche Erstellung einer neuen vollständigen Mappe aus vier Dokumenten. Anzeigen, Herunterladen, manuelle Bearbeitung und Öffnen einer gespeicherten Mappe verbrauchen keinen weiteren Gratisplatz. Das System reserviert während der Erstellung einen Platz und gibt ihn bei einem technischen Fehlschlag frei. Die Wiederholung derselben technischen Anfrage erzeugt keine doppelte Abbuchung. Sicherheits- und Kostenlimits können die Erstellung vorübergehend begrenzen; ein solcher fehlgeschlagener Versuch verbraucht keine Bewerbung."
+      ],
+      [
+        "5. Kaufpakete und Preise",
+        "Zusätzlich sind Einzelkäufe mit einer Bewerbung für 1,99 € oder zehn Bewerbungen für 9,99 € vorgesehen. Maßgeblich sind die unmittelbar vor der Bestellung angezeigten Endpreise und der Leistungsumfang. Es gibt keine automatische Vertragsverlängerung und kein kostenpflichtiges Abonnement. Gekaufte Bewerbungen werden getrennt von Gratisplätzen geführt, werden nicht beim Wochenwechsel gelöscht und werden erst genutzt, wenn das aktuelle Gratisbudget ausgeschöpft ist. Technische Fehlschläge verbrauchen auch kein gekauftes Guthaben. Solange der Zahlungsdienst nicht freigeschaltet ist, ist keine zahlungspflichtige Bestellung möglich."
+      ],
+      [
+        "6. Bestellung und Zahlung",
+        "Vor einem Kauf kannst du Paket und Preis prüfen und korrigieren. Du bestätigst die für diesen Kauf geltenden AGB und die Widerrufsinformationen separat. Eine kostenpflichtige Bestellung wird durch eine eindeutig als zahlungspflichtig bezeichnete Schaltfläche abgegeben; der Zahlungsanbieter zeigt die Zahlungsbestätigung. Guthaben wird erst nach serverseitig geprüfter Zahlungsbestätigung gutgeschrieben. Zahlungsrückleitungen allein genügen nicht. Du erhältst eine elektronische Bestellbestätigung mit Betrag, Leistungsumfang, Vertragsinformationen und den erforderlichen Angaben zur Zahlung. Unterstützte Zahlarten werden vor der Bestellung angezeigt; Wallets hängen von Anbieter, Gerät und Verfügbarkeit ab. Zahlungsdaten werden vom Zahlungsanbieter verarbeitet."
+      ],
+      [
+        "7. Leistungsbeginn und Widerruf",
+        "Verbraucher haben bei kostenpflichtigen Fernabsatzverträgen grundsätzlich ein vierzehntägiges Widerrufsrecht; Einzelheiten und das Musterformular stehen unter /widerruf/. Ein gewünschter Leistungsbeginn vor Fristablauf wird ausdrücklich und gesondert abgefragt. Der Kauf von Guthaben oder die Zustimmung zu diesen AGB führen für sich genommen nicht zum sofortigen Verlust des Widerrufsrechts. Bei einer entgeltlichen digitalen Dienstleistung kann das Recht unter den gesetzlichen Voraussetzungen mit vollständiger Leistungserbringung erlöschen. Die Anforderung eines Widerrufs ist im Kontobereich über „Vertrag widerrufen“ und anschließend „Widerruf bestätigen“ möglich; zusätzlich kannst du eine eindeutige Erklärung an {operator_email} senden. Eine Eingangsbestätigung wird per E-Mail versandt. Ein gemeldeter Widerruf bedeutet noch keine bestätigte Zahlungserstattung; gesetzliche Rückzahlungsansprüche werden geprüft und fristgerecht erfüllt."
+      ],
+      [
+        "8. Deine Eingaben und Rechte an Unterlagen",
+        "Du darfst nur Inhalte hochladen und verarbeiten, die du verwenden darfst. Prüfe insbesondere Namen, Kontaktdaten, Arbeitgeber, Berufserfahrung und Qualifikationen. Erfinde keine Abschlüsse oder Tätigkeiten. Ergebnisse können Fehler enthalten, auch wenn sie plausibel formuliert sind. Du behältst deine Rechte an Eingaben und erhältst die Nutzungsrechte an Ausgaben, soweit der Anbieter diese einräumen kann. Aufgrund automatischer Erstellung können ähnliche Formulierungen auch anderen Nutzern angeboten werden; Exklusivität wird nicht versprochen. Inhalte werden weder als öffentliche Profile veröffentlicht noch als Referenzen benutzt, ohne dass du dies gesondert freigibst."
+      ],
+      [
+        "9. Fairer und sicherer Betrieb",
+        "Missbrauch, Schadsoftware, automatisierte Massenkonten, fremde Zugangsdaten und Umgehung technischer Schutzmaßnahmen sind unzulässig. Stellenlinks müssen öffentlich erreichbar sein. Jobportale können Abrufe beschränken; in diesem Fall steht das Einfügen des Stellentextes zur Verfügung. Es ist nicht zugesichert, dass jede Drittanbieter-URL importiert werden kann. Bei konkretem Missbrauch können Funktionen verhältnismäßig beschränkt werden. Berechtigte Nutzer erhalten soweit möglich eine Begründung und können sich an {operator_email} wenden. Das dient nicht dazu, Datenrechte oder gesetzliche Zahlungsansprüche zu verhindern."
+      ],
+      [
+        "10. Kontoverwaltung, Unterlagen und Beendigung",
+        "Im Konto kannst du Profil, E-Mail-Adresse, Passwort und gespeicherte Unterlagen verwalten und eine Datenkopie herunterladen. Du kannst das kostenlose Kontoverhältnis jederzeit beenden. Die Kontoschließung steht unter „Meine Daten“ und verlangt eine klare Bestätigung sowie eine erneute Identitätsprüfung; Datenrechte werden dadurch nicht aufgehoben. Sichere benötigte Unterlagen vor dem Löschen. Bei tatsächlich bezahlten Bestellungen können gesetzlich erforderliche Vertrags- oder Abrechnungsnachweise beschränkt weiter aufbewahrt werden. Bereits exportierte Dateien und an Dritte versandte Bewerbungen bleiben auf deinen Geräten beziehungsweise bei den Empfängern. Ansprüche auf Rückzahlung und gesetzliche Rechte bleiben unberührt."
+      ],
+      [
+        "11. Mängel, Verfügbarkeit und Haftung",
+        "Es gelten die gesetzlichen Rechte bei mangelhaften digitalen Produkten. Wende dich mit einer nachvollziehbaren Fehlerbeschreibung an {operator_email}. Sicherheitsupdates und notwendige Wartung können zeitweise Einschränkungen erfordern. Bei Vorsatz, grober Fahrlässigkeit, Verletzung von Leben, Körper oder Gesundheit sowie zwingender gesetzlicher Haftung haftet der Anbieter unbeschränkt. Bei leicht fahrlässiger Verletzung wesentlicher Vertragspflichten ist die Haftung auf den vorhersehbaren vertragstypischen Schaden begrenzt. Eine weitergehende Beschränkung zwingender Rechte, gesetzlicher Mängelansprüche oder zwingender Haftung erfolgt nicht."
+      ],
+      [
+        "12. Änderungen, Sprache und Kommunikation",
+        "Vertraglich vereinbarte bezahlte Leistungen und Guthaben werden nicht einseitig rückwirkend verschlechtert. Neue Vertragsfassungen gelten für neue Verträge beziehungsweise nach wirksamer Vereinbarung. Wesentliche Änderungen werden verständlich mitgeteilt; eine pauschale Zustimmung durch Schweigen ist nicht vorgesehen. Die Seite ist auf Deutsch, Englisch und Albanisch nutzbar. Die bei Vertragsschluss bereitgestellte Fassung bleibt dokumentiert. Vertragsnachrichten und Sicherheitslinks werden an die bestätigte Konto-E-Mail-Adresse geschickt; Werbung erfordert eine gesonderte Grundlage."
+      ],
+      [
+        "13. Anwendbares Recht und Streitbeilegung",
+        "Es gilt deutsches Recht unter Wahrung zwingender Schutzvorschriften des Staates, in dem ein Verbraucher seinen gewöhnlichen Aufenthalt hat. Gesetzliche Gerichtsstände für Verbraucher bleiben unberührt. Der Anbieter nimmt nicht an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil. Fragen und Beschwerden: {operator_email}."
+      ]
+    ],
+    "withdrawal": [
+      [
+        "Widerrufsbelehrung für kostenpflichtige digitale Dienstleistungen",
+        "Du hast als Verbraucher das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Frist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses. Um dein Widerrufsrecht auszuüben, musst du uns ({operator_name}, {operator_address}, {operator_email}) mittels einer eindeutigen Erklärung über deinen Entschluss informieren, etwa per E-Mail oder Brief. Du kannst das folgende Muster verwenden, musst es aber nicht. Zur Fristwahrung genügt es, die Erklärung vor Ablauf der Frist abzusenden."
+      ],
+      [
+        "Online widerrufen",
+        "Öffne im Konto „Guthaben“, wähle die betroffene Bestellung und „Vertrag widerrufen“. Prüfe Name, Bestellung und Bestätigungsadresse und wähle anschließend „Widerruf bestätigen“. Wir senden dir unverzüglich eine Eingangsbestätigung per E-Mail mit Inhalt, Datum und Uhrzeit der Erklärung. Falls du keinen Kontozugriff hast, kannst du dieselbe Erklärung an {operator_email} oder die oben genannte Anschrift senden. Die Support-E-Mail bleibt auch ohne Anmeldung erreichbar."
+      ],
+      [
+        "Folgen des Widerrufs",
+        "Wenn du diesen Vertrag widerrufst, zahlen wir die erhaltenen Zahlungen unverzüglich, spätestens binnen vierzehn Tagen ab Eingang deiner Widerrufserklärung, zurück. Dafür verwenden wir dasselbe Zahlungsmittel wie bei der ursprünglichen Transaktion, sofern nicht ausdrücklich etwas anderes vereinbart wurde; dir entstehen wegen dieser Rückzahlung keine Entgelte. Falls du ausdrücklich verlangt hast, dass eine Dienstleistung während der Widerrufsfrist beginnt, kann unter den gesetzlichen Voraussetzungen ein angemessener Betrag für die bis zum Widerruf erbrachte Leistung geschuldet sein. Eine pauschale Stornogebühr wird nicht berechnet."
+      ],
+      [
+        "Vollständig erbrachte digitale Dienstleistung",
+        "Bei einer entgeltlichen Dienstleistung erlischt das Widerrufsrecht nur unter den gesetzlichen Voraussetzungen nach vollständiger Leistungserbringung, wenn du zuvor ausdrücklich dem Beginn vor Ablauf der Frist zugestimmt und deine Kenntnis vom Erlöschen bei vollständiger Leistung bestätigt hast. Eine bloße Guthabengutschrift oder Kontoeröffnung wird nicht als pauschaler sofortiger Verzicht behandelt. Bei einem Paket mit noch ungenutzten Anwendungen wird ein vollständiger Verbrauch nicht allein wegen einer ersten Generierung unterstellt."
+      ],
+      [
+        "Muster-Widerrufsformular",
+        "Wenn du den Vertrag widerrufen willst, kannst du diese Erklärung ausfüllen und an uns senden:\nAn: {operator_name}, {operator_address}; E-Mail: {operator_email}\nHiermit widerrufe ich den von mir abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung: [Paket/Bestellnummer]\nBestellt am: [Datum]\nName des Verbrauchers: [Name]\nAnschrift des Verbrauchers: [Anschrift]\nUnterschrift des Verbrauchers (nur bei Mitteilung auf Papier): [Unterschrift]\nDatum: [Datum]"
+      ],
+      [
+        "Derzeitige Kaufverfügbarkeit",
+        "Kostenpflichtige Pakete sind nur bestellbar, wenn die Zahlungsfunktion ausdrücklich freigeschaltet ist. Das kostenlose Wochenkontingent begründet keine Zahlungspflicht. Ein Widerruf und eine Kontolöschung sind unterschiedliche Vorgänge; das Konto muss für einen Widerruf nicht gelöscht werden."
+      ]
     ]
   },
   "en": {
@@ -109,15 +193,15 @@
       ],
       [
         "Website and account",
-        "The server receives IP address and technical connection details to deliver and secure the service (GDPR Art. 6(1)(f)). Hosting: {hosting_name}; country: {hosting_country}; logs: {hosting_retention}. Accounts store email, hashed passwords/recovery codes, expiring tokens and automatically saved drafts and applications after sign-in, including profile, job details, preferences, optional photo, design, documents, status, notes and creation/update timestamps. API keys and Boosty chat messages are never saved to the account (Art. 6(1)(b)). Login expires after seven days. Delete accounts and projects in the app."
+        "The server receives IP address and technical connection details to deliver and secure the service (GDPR Art. 6(1)(f)). Hosting: {hosting_name}; country: {hosting_country}; logs: {hosting_retention}. Accounts store email, hashed passwords, single-use verification/reset links and expiring tokens and automatically saved drafts and applications after sign-in, including profile, job details, preferences, optional photo, design, documents, status, notes and creation/update timestamps. API keys and Boosty chat messages are never saved to the account (Art. 6(1)(b)). Login expires after seven days. Delete accounts and projects in the app."
+      ],
+      [
+        "Account confirmation, profile and transactional email",
+        "Profile data, email verification, accepted terms version and time, and security actions are processed to deliver and secure your account contract (GDPR Art. 6(1)(b) and (f)). New accounts activate only after verification. Unverified new accounts are removed after 14 days. Verification links expire after 24 hours and password reset links after 30 minutes; each is single use. Tokens are stored only as hashes. Undelivered messages are encrypted until delivery or expiry; delivery metadata is cleared after 7 days. DreamHost delivers verification, recovery and contractual emails from info@tafolli.net, receiving recipient, subject and message content. These are not marketing emails. Manage, export or delete your profile and documents after renewed identity verification. Backups may retain deleted data within the stated backup cycle."
       ],
       [
         "Documents, AI and Boosty",
         "Uploads, profile and job text are processed for your requested functions (Art. 6(1)(b)). Local OCR does not send images to an OCR provider. Application AI sends sources, profile, posting and instructions to OpenAI only after permission (Art. 6(1)(a)). Boosty responds to greetings and app questions, not unrelated topics. Its help sends only your current question and fixed help topics to OpenAI after sign-in and submission. No CV, account data or chat history is attached; questions are not saved in the app database. The central operator key never reaches the browser."
-      ],
-      [
-        "Application credits and technical retries",
-        "Each account receives three free application packages once. We store credit balance, use, timestamps and technical request identifiers to provide account features and prevent duplicate charges (GDPR Art. 6(1)(b)). Successful packages are saved to your application history before the response. A separate response copy is available for technical retries for at most 24 hours; after expiry it is removed on the next balance lookup or retry and by daily cleanup. Deleting its application or session also removes this copy; document-free usage metadata remains in your account. Account deletion removes the account-linked records. Payments are not enabled. Advertised prices are planned offers; no card information is collected and no payments are initiated."
       ],
       [
         "Provider processing",
@@ -134,6 +218,10 @@
       [
         "Rights and choice",
         "Public information pages are available without an account. Registration and sign-in are required for the application studio; there is no guest editor. Application generation and signed-in Boosty AI help use OpenAI only; other AI providers are not enabled. Google, Apple, Facebook and X login are available only when the respective service has been configured and enabled for this website. Such optional login processes a provider identifier, stable subject and email if available. Some services use an internal account alias instead of email. One-time login state expires after ten minutes. Verified profiles and job postings are sent to centrally funded OpenAI only after your permission. Help sends only the current question after sign-in, never your CV or chat history. The operator key never reaches the browser. Requests use store=false; this does not remove all provider retention. Account drafts and applications are saved automatically. Help text is not saved. AI call metadata, tokens and estimated costs are retained up to 30 days for abuse and cost prevention; aggregate daily budgets contain no personal data. Account deletion removes account-linked records. See the German notice for legal bases and provider/hosting requirements."
+      ],
+      [
+        "Weekly credits and purchases",
+        "Weekly records contain the account, calendar week, free allowance, usage and pending reservations. Paid credits are separate and survive resets. Enabled purchases record order ID, package, amount, provider, verified payment status, contractual consent and withdrawal notices and receipts (GDPR Art. 6(1)(b) and (c)). Full card details are not stored on our server. Records support correct crediting, deduplication and contractual processing. Billing records actually subject to statutory retention are restricted on account deletion; technical or unpaid drafts do not justify blanket long-term retention."
       ]
     ],
     "legal": [
@@ -144,6 +232,86 @@
       [
         "Service",
         "You review and send your application documents yourself. The service does not guarantee employment outcomes. Copyright and third-party rights remain applicable. See the privacy notice for processing details."
+      ]
+    ],
+    "terms": [
+      [
+        "1. Provider and scope",
+        "These terms govern user accounts and digital application services at tafolliboost.com. Your provider and contracting party is {operator_name}, {operator_address}; email: {operator_email}. Individual agreements take priority. Mandatory consumer rights remain unaffected. Version: 2026-10-06."
+      ],
+      [
+        "2. The service",
+        "TafolliBoost helps turn your résumé and a job advert into a résumé, cover letter, motivation letter and application email draft. You can edit, choose a design, export and save your documents. Boosty helps with the software. AI outputs are drafts that you must review. A job offer, interview or specific success rate is not guaranteed. The app does not automatically send applications to employers."
+      ],
+      [
+        "3. Account and email confirmation",
+        "Register with an email and password, accept these terms and read the privacy information. Activate your email through the personal confirmation link before signing in. A confirmation includes the accepted terms version. You must have legal capacity or the necessary permission of your legal representative. Provide accurate details and keep credentials private. Each person uses their own account; multiple accounts to circumvent allowances are prohibited. Opening an account does not place a paid order."
+      ],
+      [
+        "4. Three free applications each week",
+        "Each verified account receives three free application packages per calendar week, from Monday 00:00 to the following Monday 00:00 in Europe/Berlin. Unused free slots do not carry over. One application means successful generation of a new complete four-document package. Viewing, downloads, manual editing and reopening saved packages do not consume another slot. Generation reserves a slot and releases it on technical failure. Replaying the same technical request does not charge twice. Temporary security and spending limits may apply; failed attempts do not consume a package."
+      ],
+      [
+        "5. One-off purchases",
+        "Planned packages cost €1.99 for one application or €9.99 for ten. The final price and scope shown before ordering govern the purchase. There is no automatic renewal or paid subscription. Purchased credits are separate, survive weekly resets and are used after the current free allowance. Technical failures do not consume paid credits. No paid order can be placed until payment services are enabled."
+      ],
+      [
+        "6. Ordering and payment",
+        "Check and correct the package and price before ordering. Accept the purchase terms and withdrawal information separately. Paid orders use an unambiguous button indicating the obligation to pay. The payment provider confirms payment; credits are granted only after server-side verification, never from a return URL alone. Electronic confirmation includes price, scope and contractual information. Available payment methods are shown before ordering; wallets depend on the provider and device. Payment details are handled by the payment provider."
+      ],
+      [
+        "7. Withdrawal and early performance",
+        "Consumers generally have a fourteen-day withdrawal right for paid distance contracts. Instructions and the model form are at /widerruf/. A request to start before the deadline is asked separately and explicitly. Buying credits or accepting these terms does not itself immediately waive withdrawal rights. For a paid digital service, the right can end on full performance only when the statutory conditions are met. Use “Withdraw from contract” then “Confirm withdrawal” in your account, or send an unambiguous statement to {operator_email}. An email acknowledges receipt. A request is not confirmation that a refund has already been made; statutory refund claims are reviewed and fulfilled within the applicable deadline."
+      ],
+      [
+        "8. Your documents and rights",
+        "Upload only material you may use. Check personal details, employers, experience and qualifications. Do not invent qualifications or roles. Plausible AI text can still be wrong. You keep rights in your inputs and receive rights in outputs to the extent the provider can grant them. Similar outputs may be offered to others; exclusivity is not promised. Your documents are not published as public profiles or testimonials without separate permission."
+      ],
+      [
+        "9. Fair and secure use",
+        "Malware, mass automated accounts, misuse of credentials and bypassing protections are prohibited. Job links must be publicly accessible. Job boards may restrict imports; pasting the job text remains available. Every third-party URL is not guaranteed to import. Measures against actual misuse must be proportionate, with an explanation where possible and contact at {operator_email}; they do not cancel data rights or statutory payment claims."
+      ],
+      [
+        "10. Manage or close your account",
+        "Manage your profile, email, password and saved documents and download a copy of your data. You may end the free account agreement at any time. Closing the account is available in “My data”, with clear confirmation and renewed identity verification. Download needed documents first. Legally required records of actual paid transactions may be retained with restricted processing. Exported files and applications already sent to others remain with you or those recipients. Statutory rights and refund claims remain unaffected."
+      ],
+      [
+        "11. Defects, availability and liability",
+        "Statutory rights for defective digital products apply. Report reproducible issues to {operator_email}. Necessary security updates and maintenance can cause temporary disruption. Liability is unlimited for intent, gross negligence, injury to life, body or health and other mandatory liability. For minor negligence affecting essential contractual duties, liability is limited to foreseeable typical loss. Mandatory rights, statutory defect claims and compulsory liability are not excluded."
+      ],
+      [
+        "12. Changes and communication",
+        "Agreed paid services and credits are not retroactively worsened unilaterally. New terms apply to new contracts or after valid agreement. Material changes are explained; silence is not blanket consent. German, English and Albanian versions are available and the accepted version is recorded. Contract and security messages go to the verified account email. Marketing requires a separate basis."
+      ],
+      [
+        "13. Law and dispute resolution",
+        "German law applies while preserving mandatory protections of a consumer’s country of habitual residence. Statutory consumer venues remain unaffected. The provider does not participate in consumer arbitration proceedings. Questions and complaints: {operator_email}."
+      ]
+    ],
+    "withdrawal": [
+      [
+        "Withdrawal instructions for paid digital services",
+        "As a consumer, you have the right to withdraw from this contract within fourteen days without giving a reason. The period is fourteen days from the conclusion of the contract. Inform us ({operator_name}, {operator_address}, {operator_email}) of your decision by an unambiguous statement, for example an email or letter. The model form below is optional. Sending the notice before the period ends is sufficient."
+      ],
+      [
+        "Withdraw online",
+        "In your account, open “Credits”, select the order and “Withdraw from contract”. Check your name, order and confirmation email, then choose “Confirm withdrawal”. An email immediately acknowledges the statement and its date and time. If you cannot access your account, send the same statement to {operator_email} or the address above. Support email remains available without login."
+      ],
+      [
+        "Effects of withdrawal",
+        "Payments received for this contract are refunded without undue delay and no later than fourteen days after receipt of the withdrawal notice. We use the original payment method unless expressly agreed otherwise; no refund fee is charged. If you expressly requested early performance, a proportionate amount for services already supplied may be due only under the statutory conditions. There is no flat cancellation fee."
+      ],
+      [
+        "Fully performed digital service",
+        "For a paid service, the withdrawal right ends on full performance only when statutory conditions are met, including your prior express request for early performance and acknowledgment that full performance ends the right. Opening an account or granting credits is not a blanket immediate waiver. Generating the first application of a bundle does not mean all its services have been performed."
+      ],
+      [
+        "Model withdrawal form",
+        "To: {operator_name}, {operator_address}; email: {operator_email}\nI hereby withdraw from my contract for the following service: [package/order number]\nOrdered on: [date]\nConsumer name: [name]\nConsumer address: [address]\nConsumer signature (paper notice only): [signature]\nDate: [date]"
+      ],
+      [
+        "Payment availability",
+        "Paid packages can be ordered only when payments are enabled. The free weekly allowance creates no obligation to pay. Withdrawal and account deletion are separate actions; you do not need to delete your account to withdraw."
       ]
     ]
   },
@@ -162,12 +330,12 @@
         "Serveri merr IP-në dhe të dhëna teknike për ofrimin dhe sigurinë e shërbimit (neni 6(1)(f) GDPR). Hosting: {hosting_name}; vendi: {hosting_country}; afati i protokolleve: {hosting_retention}. Llogaritë ruajnë email-in, hash-et e fjalëkalimit dhe rikuperimit, token-at dhe draftet/aplikimet që ruhen automatikisht pas hyrjes (neni 6(1)(b)). Hyrja skadon pas shtatë ditësh. Llogaritë dhe projektet mund t’i fshish në aplikacion. Pas hyrjes, draftet dhe aplikimet ruhen automatikisht: profili, shpallja, dëshirat, fotoja opsionale, dizajni, dokumentet, statusi, shënimet dhe datat e krijimit/ndryshimit. Çelësat API dhe biseda me Boosty nuk ruhen në llogari."
       ],
       [
-        "Dokumentet, IA dhe Boosty",
-        "Faqet publike të informacionit mund t’i lexosh pa llogari. Për studion e aplikimeve kërkohet regjistrim dhe hyrje; nuk ka editor për vizitorë. Krijimi i dokumenteve dhe ndihma IA e Boosty pas hyrjes përdorin vetëm OpenAI; ofruesit e tjerë IA nuk janë aktivizuar. Hyrja me Google, Apple, Facebook dhe X ofrohet vetëm kur shërbimi përkatës është konfiguruar dhe aktivizuar për këtë faqe. Kjo hyrje opsionale përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Boosty u përgjigjet përshëndetjeve dhe pyetjeve për aplikacionin, jo temave të tjera. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+        "Konfirmimi i llogarisë, profili dhe emaili transaksional",
+        "Të dhënat e profilit, konfirmimi i emailit, versioni dhe koha e pranimit të kushteve dhe veprimet e sigurisë përpunohen për realizimin dhe sigurinë e kontratës së llogarisë (neni 6(1)(b) dhe (f) GDPR). Llogaritë e reja aktivizohen vetëm pas konfirmimit. Llogaritë e pakonfirmuara hiqen pas 14 ditësh. Lidhjet e konfirmimit vlejnë 24 orë dhe ato të rivendosjes 30 minuta, vetëm për një përdorim. Tokenët ruhen vetëm si hash. Mesazhet e padërguara ruhen të enkriptuara deri në dërgim ose skadim; metadatat pastrohen pas 7 ditësh. DreamHost dërgon emailat e konfirmimit, rikuperimit dhe kontratës nga info@tafolli.net, duke marrë marrësin, subjektin dhe përmbajtjen. Nuk janë reklama. Mund të ndryshosh, eksportosh ose fshish profilin dhe dokumentet pas verifikimit të ri të identitetit. Kopjet rezervë mund t’i mbajnë të dhënat brenda ciklit të përshkruar."
       ],
       [
-        "Kreditet e aplikimit dhe përsëritjet teknike",
-        "Çdo llogari merr vetëm një herë tre paketa aplikimi falas. Ruajmë bilancin, përdorimin, datat dhe identifikuesit teknikë të kërkesave për funksionimin e llogarisë dhe shmangien e tarifimit të dyfishtë (neni 6(1)(b) GDPR). Paketat e krijuara me sukses ruhen në historikun tënd para përgjigjes. Një kopje shtesë e përgjigjes është e disponueshme për përsëritje teknike për maksimumi 24 orë; pas skadimit hiqet në kontrollin tjetër të bilancit ose përsëritjen e kërkesës dhe nga pastrimi ditor. Fshirja e aplikimit ose sesionit heq edhe kopjen; të dhënat e përdorimit pa dokumente mbeten në llogari. Fshirja e llogarisë heq regjistrimet e lidhura. Pagesat nuk janë aktivizuar. Çmimet e paraqitura janë oferta të planifikuara; nuk mblidhen të dhëna karte dhe nuk nisen pagesa."
+        "Dokumentet, IA dhe Boosty",
+        "Faqet publike të informacionit mund t’i lexosh pa llogari. Për studion e aplikimeve kërkohet regjistrim dhe hyrje; nuk ka editor për vizitorë. Krijimi i dokumenteve dhe ndihma IA e Boosty pas hyrjes përdorin vetëm OpenAI; ofruesit e tjerë IA nuk janë aktivizuar. Hyrja me Google, Apple, Facebook dhe X ofrohet vetëm kur shërbimi përkatës është konfiguruar dhe aktivizuar për këtë faqe. Kjo hyrje opsionale përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Boosty u përgjigjet përshëndetjeve dhe pyetjeve për aplikacionin, jo temave të tjera. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
       ],
       [
         "Ofruesit dhe transferimet",
@@ -184,6 +352,10 @@
       [
         "Të drejtat dhe zgjedhja",
         "Faqet publike të informacionit mund t’i lexosh pa llogari. Për studion e aplikimeve kërkohet regjistrim dhe hyrje; nuk ka editor për vizitorë. Krijimi i dokumenteve dhe ndihma IA e Boosty pas hyrjes përdorin vetëm OpenAI; ofruesit e tjerë IA nuk janë aktivizuar. Hyrja me Google, Apple, Facebook dhe X ofrohet vetëm kur shërbimi përkatës është konfiguruar dhe aktivizuar për këtë faqe. Kjo hyrje opsionale përpunon identifikuesin e ofruesit, identifikuesin e qëndrueshëm dhe email-in nëse jepet. Disa shërbime përdorin emërtim të brendshëm në vend të email-it. Gjendja njëpërdorimëshe skadon pas dhjetë minutash. Profili dhe shpallja dërgohen te OpenAI i paguar nga operatori vetëm pas miratimit. Ndihma dërgon vetëm pyetjen aktuale pas hyrjes, jo CV-në apo historikun. Çelësi nuk dërgohet në shfletues. Kërkesat përdorin store=false; kjo nuk heq çdo ruajtje nga ofruesi. Draftet dhe aplikimet ruhen automatikisht. Pyetjet nuk ruhen. Metadata e kërkesave IA, tokenat dhe kostot e vlerësuara ruhen deri në 30 ditë për mbrojtje nga abuzimi; buxhetet e përgjithshme nuk përmbajnë të dhëna personale. Fshirja e llogarisë heq regjistrimet e lidhura. Shih njoftimin gjerman për bazat ligjore dhe kërkesat ndaj ofruesve."
+      ],
+      [
+        "Kreditet javore dhe blerjet",
+        "Regjistrat javorë përmbajnë llogarinë, javën, kontingjentin falas, përdorimin dhe rezervimet. Kreditet e blera janë veçmas dhe nuk rivendosen. Blerjet aktive regjistrojnë porosinë, paketën, shumën, ofruesin, pagesën e verifikuar, pranimet kontraktuale dhe kërkesat e tërheqjes me konfirmimet (neni 6(1)(b) dhe (c) GDPR). Të dhënat e plota të kartës nuk ruhen në server. Regjistrat shërbejnë për kreditim të saktë dhe mbrojtje nga dublimi. Regjistrat që kanë detyrim ligjor ruajtjeje kufizohen pas fshirjes; draftet teknike ose të papaguara nuk justifikojnë ruajtje të përgjithshme afatgjatë."
       ]
     ],
     "legal": [
@@ -194,6 +366,86 @@
       [
         "Shërbimi",
         "Ti kontrollon dhe dërgon vetë aplikimet. Shërbimi nuk garanton punësim. Të drejtat e autorit dhe të palëve të treta mbeten në fuqi. Shiko njoftimin e privatësisë për përpunimin e të dhënave."
+      ]
+    ],
+    "terms": [
+      [
+        "1. Ofruesi dhe fusha e zbatimit",
+        "Këto kushte rregullojnë llogaritë dhe shërbimet digjitale të aplikimit në tafolliboost.com. Ofruesi dhe pala kontraktuese është {operator_name}, {operator_address}; email: {operator_email}. Marrëveshjet individuale kanë përparësi. Të drejtat e detyrueshme të konsumatorit mbeten në fuqi. Versioni: 2026-10-06."
+      ],
+      [
+        "2. Shërbimi",
+        "TafolliBoost ndihmon të krijosh nga CV-ja dhe njoftimi i punës një CV, letër aplikimi, letër motivimi dhe email aplikimi. Mund t’i redaktosh, të zgjedhësh dizajnin, t’i shkarkosh dhe t’i ruash. Boosty ndihmon me softuerin. Tekstet e IA-së janë drafte që duhet t’i kontrollosh. Nuk garantohet punësim, intervistë apo rezultat i caktuar. Aplikacioni nuk dërgon automatikisht aplikime te punëdhënësit."
+      ],
+      [
+        "3. Llogaria dhe konfirmimi i emailit",
+        "Regjistrohu me email dhe fjalëkalim, prano kushtet dhe lexo informacionin e privatësisë. Konfirmo emailin me lidhjen personale para hyrjes. Konfirmimi përmban versionin e kushteve të pranuara. Duhet të kesh zotësi juridike ose lejen e nevojshme të përfaqësuesit ligjor. Jep të dhëna të sakta dhe mbaji private kredencialet. Çdo person përdor llogarinë e vet; llogaritë e shumëfishta për shmangien e kufijve ndalohen. Hapja e llogarisë nuk krijon porosi me pagesë."
+      ],
+      [
+        "4. Tre aplikime falas çdo javë",
+        "Çdo llogari e konfirmuar merr tre paketa aplikimi falas për javë kalendarike, nga e hëna 00:00 deri të hënën tjetër 00:00 sipas Europe/Berlin. Vendet falas të papërdorura nuk transferohen. Një aplikim është krijimi i suksesshëm i një pakete të re me katër dokumente. Shikimi, shkarkimi, redaktimi manual dhe rihapja nuk konsumojnë aplikim tjetër. Gjatë krijimit rezervohet një vend dhe lirohet kur ka dështim teknik. Përsëritja e së njëjtës kërkesë teknike nuk debitohet dy herë. Kufijtë e përkohshëm të sigurisë dhe kostos mund të zbatohen; përpjekjet e dështuara nuk konsumojnë paketë."
+      ],
+      [
+        "5. Blerjet njëherëshe",
+        "Parashikohen 1,99 € për një aplikim ose 9,99 € për dhjetë. Vlen çmimi përfundimtar dhe përmbajtja e shfaqur para porosisë. Nuk ka rinovim automatik apo abonim me pagesë. Aplikimet e blera janë të ndara, ruhen gjatë ndryshimit të javës dhe përdoren pasi mbaron kontingjenti falas. Dështimet teknike nuk konsumojnë kredi të blera. Porosia me pagesë nuk është e mundur pa aktivizimin e shërbimit të pagesave."
+      ],
+      [
+        "6. Porosia dhe pagesa",
+        "Kontrollo dhe korrigjo paketën dhe çmimin para porosisë. Prano veçmas kushtet e blerjes dhe informacionin për tërheqjen. Butoni i porosisë shpreh qartë detyrimin për pagesë. Kreditet shtohen vetëm pas verifikimit të pagesës në server, jo vetëm nga lidhja e kthimit. Konfirmimi elektronik përmban çmimin, shërbimin dhe informacionin kontraktual. Mënyrat e pagesës shfaqen përpara porosisë; kuletat varen nga ofruesi dhe pajisja. Të dhënat e pagesës përpunohen nga ofruesi i pagesave."
+      ],
+      [
+        "7. Tërheqja dhe fillimi i hershëm",
+        "Konsumatorët kanë në parim katërmbëdhjetë ditë për t’u tërhequr nga kontrata me pagesë e lidhur në distancë. Udhëzimet dhe formulari janë te /widerruf/. Fillimi i shërbimit para afatit kërkohet shprehimisht dhe veçmas. Blerja e kredive ose pranimi i kushteve nuk e heq menjëherë këtë të drejtë. Për shërbimin digjital me pagesë, ajo mund të përfundojë me realizimin e plotë vetëm sipas kushteve ligjore. Përdor “Tërhiqu nga kontrata” dhe pastaj “Konfirmo tërheqjen”, ose dërgo deklaratë të qartë te {operator_email}. Merr konfirmim me email. Kërkesa nuk do të thotë se rimbursimi është kryer; pretendimet ligjore shqyrtohen dhe përmbushen brenda afatit."
+      ],
+      [
+        "8. Dokumentet dhe të drejtat e tua",
+        "Ngarko vetëm materiale që ke të drejtë t’i përdorësh. Kontrollo të dhënat, punëdhënësit, përvojën dhe kualifikimet. Mos shpik diploma apo role. IA-ja mund të gabojë edhe kur teksti duket bindës. Ti ruan të drejtat e hyrjeve dhe merr të drejtat e rezultateve aq sa ofruesi mund t’i japë. Rezultate të ngjashme mund të krijohen për të tjerë; ekskluziviteti nuk garantohet. Dokumentet nuk publikohen si profile ose dëshmi pa leje të veçantë."
+      ],
+      [
+        "9. Përdorimi i drejtë dhe i sigurt",
+        "Keqpërdorimi, malware, llogaritë automatike në masë, kredencialet e huaja dhe anashkalimi i mbrojtjeve ndalohen. Lidhjet e punës duhet të jenë publike. Portalet mund të kufizojnë importin; teksti mund të ngjitet manualisht. Importi i çdo lidhjeje nuk garantohet. Kufizimet për keqpërdorim konkret duhet të jenë proporcionale; kur është e mundur jepet arsye dhe kontakt te {operator_email}. Këto masa nuk pengojnë të drejtat mbi të dhënat ose pagesat."
+      ],
+      [
+        "10. Menaxhimi dhe mbyllja",
+        "Menaxho profilin, emailin, fjalëkalimin dhe dokumentet dhe shkarko një kopje të të dhënave. Mund ta përfundosh marrëdhënien falas në çdo kohë. Mbyllja te “Të dhënat e mia” kërkon konfirmim të qartë dhe verifikim të ri identiteti. Ruaj dokumentet e nevojshme më parë. Regjistrat e detyrueshëm ligjorë të pagesave reale mund të ruhen me përpunim të kufizuar. Skedarët e eksportuar dhe aplikimet e dërguara mbeten në pajisjet e tua ose te marrësit. Të drejtat ligjore dhe pretendimet për rimbursim mbeten në fuqi."
+      ],
+      [
+        "11. Mangësitë, disponueshmëria dhe përgjegjësia",
+        "Zbatohen të drejtat ligjore për produkte digjitale me mangësi. Raporto gabime të riprodhueshme te {operator_email}. Mirëmbajtja dhe përditësimet e sigurisë mund të sjellin ndërprerje të përkohshme. Përgjegjësia është e pakufizuar për dashje, pakujdesi të rëndë, cenim të jetës ose shëndetit dhe përgjegjësi të detyrueshme. Për pakujdesi të lehtë në detyrime thelbësore kufizohet te dëmi i parashikueshëm tipik. Të drejtat e detyrueshme dhe pretendimet ligjore nuk përjashtohen."
+      ],
+      [
+        "12. Ndryshimet dhe komunikimi",
+        "Shërbimet e paguara dhe kreditet nuk përkeqësohen njëanshmërisht me efekt prapaveprues. Kushtet e reja vlejnë për kontrata të reja ose pas marrëveshjes së vlefshme. Ndryshimet thelbësore shpjegohen; heshtja nuk është pranim i përgjithshëm. Faqja përdoret në gjermanisht, anglisht dhe shqip; versioni i pranuar dokumentohet. Njoftimet kontraktuale dhe të sigurisë shkojnë te emaili i konfirmuar. Reklamat kërkojnë bazë të veçantë."
+      ],
+      [
+        "13. Ligji dhe mosmarrëveshjet",
+        "Zbatohet ligji gjerman duke ruajtur mbrojtjen e detyrueshme të vendit ku konsumatori banon zakonisht. Gjykatat kompetente sipas ligjit mbeten të pandryshuara. Ofruesi nuk merr pjesë në procedura ndërmjetësimi të konsumatorëve. Pyetje dhe ankesa: {operator_email}."
+      ]
+    ],
+    "withdrawal": [
+      [
+        "Udhëzime për tërheqjen nga shërbimet digjitale me pagesë",
+        "Si konsumator mund të tërhiqesh nga kontrata brenda katërmbëdhjetë ditësh pa dhënë arsye. Afati nis ditën e lidhjes së kontratës. Njofto ({operator_name}, {operator_address}, {operator_email}) me një deklaratë të qartë, për shembull email ose letër. Formulari më poshtë është fakultativ. Mjafton ta dërgosh deklaratën para përfundimit të afatit."
+      ],
+      [
+        "Tërheqja në internet",
+        "Në llogari hap “Kreditet”, zgjidh porosinë dhe “Tërhiqu nga kontrata”. Kontrollo emrin, porosinë dhe emailin e konfirmimit dhe zgjidh “Konfirmo tërheqjen”. Konfirmimi me email përmban deklaratën, datën dhe orën. Nëse nuk hyn dot në llogari, dërgo deklaratën te {operator_email} ose në adresën më sipër. Emaili i mbështetjes është i disponueshëm edhe pa hyrje."
+      ],
+      [
+        "Pasojat e tërheqjes",
+        "Pagesat e marra për kontratën kthehen pa vonesë të panevojshme dhe jo më vonë se katërmbëdhjetë ditë pas marrjes së deklaratës. Përdoret mënyra origjinale e pagesës, përveç një marrëveshjeje të shprehur ndryshe; nuk ka tarifë rimbursimi. Kur ke kërkuar shprehimisht fillimin e hershëm, mund të kërkohet një shumë proporcionale për shërbimin e kryer vetëm sipas kushteve ligjore. Nuk ka tarifë fikse anulimi."
+      ],
+      [
+        "Shërbimi digjital i realizuar plotësisht",
+        "Për shërbimin me pagesë e drejta përfundon me realizimin e plotë vetëm sipas kushteve ligjore, përfshirë kërkesën paraprake të shprehur për fillim të hershëm dhe konfirmimin se realizimi i plotë e përfundon të drejtën. Hapja e llogarisë ose shtimi i kredive nuk është heqje dorë e menjëhershme. Aplikimi i parë i një pakete nuk nënkupton realizim të plotë të gjithë paketës."
+      ],
+      [
+        "Formulari model i tërheqjes",
+        "Për: {operator_name}, {operator_address}; email: {operator_email}\nMe këtë deklaroj tërheqjen nga kontrata për shërbimin: [paketa/numri i porosisë]\nPorositur më: [data]\nEmri i konsumatorit: [emri]\nAdresa: [adresa]\nNënshkrimi (vetëm për letër): [nënshkrimi]\nData: [data]"
+      ],
+      [
+        "Disponueshmëria e pagesave",
+        "Paketat me pagesë porositen vetëm kur pagesat janë aktive. Kontingjenti falas javor nuk krijon detyrim për pagesë. Tërheqja dhe fshirja e llogarisë janë procese të ndryshme; nuk duhet ta fshish llogarinë për t’u tërhequr."
       ]
     ]
   }

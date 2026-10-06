@@ -277,3 +277,52 @@ def test_missing_database_is_not_created_and_invalid_retention_preserves_files(t
     with pytest.raises(ValueError, match="Retention"):
         backup.create_backup(database, key, directory, retention_days=0)
     assert not list(directory.iterdir())
+
+
+def test_pending_mail_requires_matching_key_and_is_recoverable(sources, tmp_path):
+    database, key, admin_key, directory = sources
+    mail_key = private_key(database.parent / "mail-secrets.key")
+    ciphertext = (
+        Fernet(mail_key.read_bytes()).encrypt(b'{"token":"synthetic-one-time-link"}').decode()
+    )
+    with sqlite3.connect(database) as connection:
+        connection.execute("CREATE TABLE email_outbox (payload_cipher TEXT)")
+        connection.execute("INSERT INTO email_outbox VALUES (?)", (ciphertext,))
+    with pytest.raises(ValueError, match="mail encryption key is required"):
+        backup.create_backup(database, key, directory, admin_key_file=admin_key)
+    wrong = private_key(tmp_path / "keys" / "wrong-mail.key")
+    with pytest.raises(ValueError, match="mail encryption key does not match"):
+        backup.create_backup(
+            database, key, directory, admin_key_file=admin_key, mail_key_file=wrong
+        )
+    archive = backup.create_backup(
+        database, key, directory, admin_key_file=admin_key, mail_key_file=mail_key
+    )
+    contents = decrypted_contents(archive, key)
+    assert backup.verify_backup(archive, key)["mail_key_included"] is True
+    assert b"synthetic-one-time-link" not in archive.read_bytes()
+    with sqlite3.connect(":memory:") as connection:
+        connection.deserialize(contents["database.sqlite3"])
+        encrypted = connection.execute("SELECT payload_cipher FROM email_outbox").fetchone()[0]
+    assert (
+        Fernet(contents["mail-secrets.key"]).decrypt(encrypted.encode())
+        == b'{"token":"synthetic-one-time-link"}'
+    )
+
+
+def test_legacy_format_one_backup_remains_verifiable(sources):
+    import json
+
+    database, key, admin_key, directory = sources
+    archive = backup.create_backup(database, key, directory, admin_key_file=admin_key)
+    contents = decrypted_contents(archive, key)
+    metadata = json.loads(contents["metadata.json"])
+    metadata["format"] = 1
+    metadata.pop("mail_key_included")
+    contents["metadata.json"] = json.dumps(metadata).encode()
+    output = io.BytesIO()
+    with tarfile.open(fileobj=output, mode="w:gz") as bundle:
+        for name, content in contents.items():
+            backup._add_member(bundle, name, content)
+    archive.write_bytes(Fernet(key.read_bytes()).encrypt(output.getvalue()))
+    assert backup.verify_backup(archive, key)["format"] == 1

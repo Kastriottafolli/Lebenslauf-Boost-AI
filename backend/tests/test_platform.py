@@ -47,13 +47,30 @@ def package_body(client):
 
 
 def register(client):
+    from unittest.mock import patch
+
+    from backend.account_models import EmailOutbox
+    from backend.account_terms import TERMS_VERSION
+    from backend.database import SessionLocal
+    from backend.services import account_mail
+
     email = f"{uuid.uuid4()}@example.com"
-    value = client.post(
-        "/api/account/register",
-        json={"email": email, "password": "test-long-password-123"},
-    )
+    with patch.object(account_mail, "ready", return_value=True):
+        value = client.post("/api/account/register", json={
+            "email": email, "password": "test-long-password-123",
+            "terms_accepted": True, "privacy_acknowledged": True,
+            "terms_version": TERMS_VERSION,
+        })
     assert value.status_code == 200, value.text
-    return value.json()
+    assert value.json()["verification_required"] is True
+    with SessionLocal() as db:
+        mail = db.query(EmailOutbox).filter_by(recipient=email, purpose="verify").one()
+        token = json.loads(account_mail.cipher().decrypt(mail.payload_cipher.encode()))["token"]
+    with patch.object(account_mail, "ready", return_value=True):
+        assert client.post("/api/account/verify-email", json={"token": token}).status_code == 200
+    login = client.post("/api/account/login", json={"email": email, "password": "test-long-password-123"})
+    assert login.status_code == 200, login.text
+    return login.json()
 
 
 def test_session_id_does_not_grant_access():
@@ -254,34 +271,13 @@ def test_owned_project_crud_recovery_and_account_deletion():
     assert owner.get("/api/projects/" + pid).json()["design"] == "sapphire"
     assert owner.post("/api/account/logout", json={}).status_code == 200
     assert owner.get("/api/projects").status_code == 401
-    recovered = owner.post(
-        "/api/account/recover",
-        json={
-            "email": account["email"],
-            "password": "new-test-password-123",
-            "recovery_code": account["recovery_code"],
-        },
-    )
-    assert recovered.status_code == 200
-    assert (
-        owner.post(
-            "/api/account/recover",
-            json={
-                "email": account["email"],
-                "password": "new-test-password-123",
-                "recovery_code": account["recovery_code"],
-            },
-        ).status_code
-        == 401
-    )
-    assert (
-        owner.post(
-            "/api/account/login",
-            json={"email": account["email"], "password": "new-test-password-123"},
-        ).status_code
-        == 200
-    )
-    assert owner.delete("/api/account").status_code == 200
+    assert owner.post("/api/account/recover", json={}).status_code == 410
+    assert owner.post("/api/account/login", json={
+        "email": account["email"], "password": "test-long-password-123",
+    }).status_code == 200
+    assert owner.request("DELETE", "/api/account", json={
+        "current_password": "test-long-password-123", "confirmation": "DELETE",
+    }).status_code == 200
     assert owner.get("/api/projects").status_code == 401
 
 
@@ -317,7 +313,7 @@ def test_cleanup_removes_expired_anonymous_data_but_keeps_account_projects():
         assert db.get(Session, body["session_id"]) is not None
         assert db.get(Login, "expired-test-token") is None
     assert owner.get("/api/projects/" + pid).status_code == 200
-    assert owner.delete("/api/account").status_code == 200
+    assert owner.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"}).status_code == 200
 
 
 def test_public_job_import_rejects_internal_networks(monkeypatch):
@@ -444,7 +440,7 @@ def test_usage_is_metadata_only_and_account_deletion_unlinks_events():
         aid = account.id
         rows = db.query(Activity).filter_by(account_id=aid).all()
         assert {r.event for r in rows} >= {"account.register", "session.start", "demo.generate"}
-    assert client.delete("/api/account").status_code == 200
+    assert client.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"}).status_code == 200
     with SessionLocal() as db:
         assert db.query(Activity).filter_by(account_id=aid).count() == 0
 

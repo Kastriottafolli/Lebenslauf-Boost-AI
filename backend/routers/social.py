@@ -280,6 +280,13 @@ def social_account(db, provider, subject, email):
     )
     db.add(account)
     db.flush()
+    from backend.account_models import AccountProfile, AccountSecurity
+
+    db.add(AccountSecurity(
+        account_id=account.id, verified_at=datetime.now(UTC).replace(tzinfo=None),
+        verification_source="social_verified", credential_version=1,
+    ))
+    db.add(AccountProfile(account_id=account.id))
     db.add(SocialIdentity(provider=provider, subject=subject, account_id=account.id))
     db.commit()
     return account

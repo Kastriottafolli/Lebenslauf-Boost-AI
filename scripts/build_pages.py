@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from backend.services.legal_service import render as render_legal
+from backend.services.legal_service import render as render_legal, render_text as render_legal_text
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / '_site'
@@ -47,6 +47,7 @@ source = (ROOT / 'frontend/index.html').read_text().replace('Boosty AI', html.es
 source = source.replace('"/assets/build/app.js?v=__BUILD_ID__"', '"./assets/js/app.js?v=__BUILD_ID__"').replace('"/assets/', '"./assets/').replace('"/static/', '"./static/')
 source = source.replace('"/manifest.webmanifest"', '"./manifest.webmanifest"').replace('href="/de/', 'href="./de/')
 source = source.replace('href="/impressum/"', 'href="./impressum/"').replace('href="/datenschutz/"', 'href="./datenschutz/"')
+source = source.replace('href="/agb/"', 'href="./agb/"').replace('href="/widerruf/"', 'href="./widerruf/"')
 source = source.replace('</head>', '<meta name="app-base" content="./"></head>')
 if site:
     source = source.replace('</head>', f'<link rel="canonical" href="{site}/"><meta property="og:url" content="{site}/"></head>')
@@ -57,11 +58,13 @@ manifest = {'id': '.', 'name': brand, 'short_name': brand, 'description': 'Resum
 (ROOT / 'frontend/public/manifest.webmanifest').write_text(json.dumps(manifest, ensure_ascii=False))
 shutil.copy(ROOT / 'frontend/public/sw.js', OUT / 'sw.js')
 urls = []
-for route,kind in [('impressum','legal'),('datenschutz','privacy')]:
+for route,kind in [('impressum','legal'),('datenschutz','privacy'),('agb','terms'),('widerruf','withdrawal')]:
     for language in ['de','en','sq']:
         target=OUT / route if language=='de' else OUT / route / language
         target.mkdir(parents=True,exist_ok=True)
         (target / 'index.html').write_text(render_legal(kind,language,site_url=site,prefix='../' if language=='de' else '../../',static_routes=True))
+        if kind in ('terms','withdrawal'):
+            (target / 'document.txt').write_text(render_legal_text(kind,language))
     urls.append(route)
 for path in sorted((ROOT / 'frontend/content').rglob('*.json')):
     if any(is_local_duplicate(part) for part in path.relative_to(ROOT / 'frontend/content').parts):

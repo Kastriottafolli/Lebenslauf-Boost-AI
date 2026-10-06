@@ -1,7 +1,6 @@
 """Profiles, job import, application packages, accounts and owned projects."""
 
 import json
-import re
 import secrets
 from datetime import UTC, datetime
 from uuid import UUID
@@ -21,6 +20,9 @@ from backend.services import application_service as applications
 from backend.services import job_service, session_service
 
 router = APIRouter(tags=["Application platform"])
+
+# Admin payloads share validation, but retain their separate MFA lifecycle.
+Credentials = schemas.AccountCredentials
 
 
 class Profile(BaseModel):
@@ -163,106 +165,261 @@ def refine_package(
     return {"content": result.content, "model": result.model}
 
 
-class Credentials(BaseModel):
-    email: str = Field(..., max_length=254)
-    password: str = Field(..., min_length=12, max_length=128)
-
-    def normalized_email(self):
-        value = self.email.strip().lower()
-        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", value):
-            raise HTTPException(422, "E-Mail prüfen / check email")
-        return value
-
-
 @router.post("/api/account/register")
 def register(
-    req: Credentials, request: Request, response: Response, db: DBSession = Depends(get_db)
+    req: schemas.AccountRegistration, request: Request, db: DBSession = Depends(get_db)
 ):
+    from backend.account_models import AccountProfile, AccountSecurity
+    from backend.account_terms import PRIVACY_VERSION, TERMS_VERSION
+    from backend.services import account_mail
+
+    req.validate_current()
     email = req.normalized_email()
+    accounts.limit_identity(db, email, "register")
+    account_mail.ensure_ready()
+    hashed_password = accounts.password_hash(req.password)
+    result = {"email": email, "verification_required": True, "status": "verification_sent"}
+    # Identical response protects account existence. Existing users can recover/sign in.
     if db.query(Account).filter_by(email=email).first():
-        raise HTTPException(
-            409,
-            "Registrierung nicht möglich. Anmelden oder Wiederherstellung nutzen / sign in or recover account.",
-        )
-    recovery = secrets.token_urlsafe(32)
+        return result
     account = Account(
-        email=email,
-        password_hash=accounts.password_hash(req.password),
-        recovery_hash=session_service.token_hash(recovery),
+        email=email, password_hash=hashed_password,
+        recovery_hash=session_service.token_hash(secrets.token_urlsafe(48)),
     )
     db.add(account)
+    try:
+        db.flush()
+    except IntegrityError:
+        db.rollback()
+        return result
+    db.add(AccountSecurity(
+        account_id=account.id, verification_source="email_pending", credential_version=1,
+        terms_version=TERMS_VERSION, privacy_version=PRIVACY_VERSION,
+        terms_accepted_at=accounts.now(), privacy_acknowledged_at=accounts.now(),
+    ))
+    db.add(AccountProfile(account_id=account.id, display_name=req.display_name, language=req.language))
+    db.flush()
+    accounts.action_token(db, account, "verify", email, req.language)
     try:
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            409,
-            "Registrierung nicht möglich. Anmelden oder Wiederherstellung nutzen / sign in or recover account.",
-        ) from None
-    token = accounts.login_cookie(db, account, response)
+        return result
     request.state.metric_account = account.id
-    return {"email": email, "recovery_code": recovery, "access_token": token}
+    return result
 
 
 @router.post("/api/account/login")
-def login(req: Credentials, request: Request, response: Response, db: DBSession = Depends(get_db)):
-    accounts.limit_identity(db, req.normalized_email())
-    account = db.query(Account).filter_by(email=req.normalized_email()).first()
-    # Perform a password hash even for unknown users.
+def login(req: schemas.AccountCredentials, request: Request, response: Response, db: DBSession = Depends(get_db)):
+    email = req.normalized_email()
+    accounts.limit_identity(db, email)
+    account = db.query(Account).filter_by(email=email).first()
     stored = account.password_hash if account else accounts.DUMMY_HASH
-    if (
-        not accounts.password_matches(req.password, stored)
-        or not account
-        or db.get(AdminAccess, account.id)
-    ):
+    if not accounts.password_matches(req.password, stored) or not account or db.get(AdminAccess, account.id):
         raise HTTPException(401, "Anmeldedaten ungültig / invalid credentials")
+    accounts.security_for(db, account)
     if not account.password_hash.startswith("scrypt$"):
         account.password_hash = accounts.password_hash(req.password)
     token = accounts.login_cookie(db, account, response)
     request.state.metric_account = account.id
-    return {"email": account.email, "access_token": token}
+    return accounts.profile_json(db, account) | {"access_token": token}
 
 
-class Recovery(Credentials):
-    recovery_code: str = Field(..., min_length=20, max_length=100)
+@router.post("/api/account/verify-email")
+def verify_email(req: schemas.AccountTokenRequest, response: Response, db: DBSession = Depends(get_db)):
+    from sqlalchemy.exc import IntegrityError
+
+    from backend.account_models import AccountProfile
+    from backend.account_terms import TERMS_VERSION, queue_terms_receipt
+
+    account, security, action = accounts.consume_token(db, req.token, {"verify", "change_email"})
+    if action.purpose == "verify" and account.email != action.target_email:
+        db.rollback()
+        raise HTTPException(400, {"code": "ACCOUNT_LINK_INVALID", "message": "Bitte einen neuen Bestätigungslink anfordern."})
+    if action.purpose == "change_email":
+        account.email = action.target_email
+        accounts.revoke_credentials(db, account)
+    security.verified_at = accounts.now()
+    security.verification_source = "email_confirmed"
+    if action.purpose == "verify" and security.terms_version == TERMS_VERSION:
+        profile = db.get(AccountProfile, account.id)
+        queue_terms_receipt(db, account, profile.language if profile else "de")
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(400, {"code": "ACCOUNT_LINK_INVALID", "message": "Diese E-Mail-Adresse kann nicht übernommen werden."}) from None
+    response.delete_cookie("candidaro_login", path="/")
+    return {"verified": True, "email": account.email, "sign_in_required": True}
+
+
+@router.post("/api/account/resend-verification")
+def resend_verification(req: schemas.AccountEmailRequest, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountSecurity
+    from backend.services import account_mail
+
+    email = req.normalized_email()
+    accounts.limit_identity(db, email, "resend")
+    account_mail.ensure_ready()
+    account = db.query(Account).filter_by(email=email).first()
+    security = db.get(AccountSecurity, account.id) if account else None
+    if account and security and not security.verified_at and not db.get(AdminAccess, account.id):
+        accounts.action_token(db, account, "verify", email, req.language)
+        db.commit()
+    return {"ok": True, "status": "verification_if_pending"}
+
+
+@router.post("/api/account/forgot-password")
+def forgot_password(req: schemas.AccountEmailRequest, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountSecurity
+    from backend.services import account_mail
+
+    email = req.normalized_email()
+    accounts.limit_identity(db, email, "forgot")
+    account_mail.ensure_ready()
+    account = db.query(Account).filter_by(email=email).first()
+    security = db.get(AccountSecurity, account.id) if account else None
+    if account and security and security.verified_at and not db.get(AdminAccess, account.id):
+        accounts.action_token(db, account, "reset", email, req.language)
+        db.commit()
+    return {"ok": True, "status": "reset_if_registered"}
+
+
+@router.post("/api/account/reset-password")
+def reset_password(req: schemas.AccountResetRequest, response: Response, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountProfile
+    from backend.services import account_mail
+
+    account, security, _action = accounts.consume_token(db, req.token, {"reset"})
+    account.password_hash = accounts.password_hash(req.password)
+    security.password_changed_at = accounts.now()
+    accounts.revoke_credentials(db, account)
+    if account_mail.ready():
+        profile = db.get(AccountProfile, account.id)
+        account_mail.queue(db, account, account.email, "password_changed", language=profile.language if profile else "de")
+    db.commit()
+    response.delete_cookie("candidaro_login", path="/")
+    return {"reset": True, "sign_in_required": True}
 
 
 @router.post("/api/account/recover")
-def recover(req: Recovery, db: DBSession = Depends(get_db)):
-    accounts.limit_identity(db, req.normalized_email(), "recover")
-    account = db.query(Account).filter_by(email=req.normalized_email()).first()
-    if (
-        not account
-        or db.get(AdminAccess, account.id)
-        or not secrets.compare_digest(
-            account.recovery_hash, session_service.token_hash(req.recovery_code)
-        )
-    ):
-        raise HTTPException(401, "Wiederherstellung fehlgeschlagen / recovery failed")
-    code = secrets.token_urlsafe(32)
-    account.password_hash = accounts.password_hash(req.password)
-    account.recovery_hash = session_service.token_hash(code)
-    db.query(Login).filter_by(account_id=account.id).delete()
-    db.commit()
-    return {"recovery_code": code}
+def recover():
+    # The former printed recovery code is intentionally unusable everywhere.
+    raise HTTPException(410, {"code": "EMAIL_RECOVERY_REQUIRED", "message": "Bitte Passwort vergessen verwenden. Du erhältst einen Link per E-Mail."})
 
 
 @router.get("/api/account")
 def account_info(request: Request, db: DBSession = Depends(get_db)):
     account = accounts.current_account(db, request)
-    result = {"email": account.email if account else None}
-    if account and not db.get(AdminAccess, account.id):
-        from backend.services.billing_service import balance
+    if not account:
+        return {"email": None}
+    from backend.services.billing_service import balance
 
-        result["billing"] = balance(db, account.id)
-    return result
+    return accounts.profile_json(db, account) | {"billing": balance(db, account.id)}
+
+
+@router.post("/api/account/accept-terms")
+def accept_terms(req: schemas.AccountConsent, request: Request, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountProfile, AccountSecurity
+    from backend.account_terms import PRIVACY_VERSION, TERMS_VERSION, queue_terms_receipt
+
+    req.validate_current()
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("BEGIN IMMEDIATE"))
+    account = accounts.normal_account(db, request)
+    security = db.get(AccountSecurity, account.id)
+    db.refresh(security)
+    if security.terms_version == TERMS_VERSION and security.privacy_version == PRIVACY_VERSION:
+        db.rollback()
+        return accounts.profile_json(db, account)
+    security.terms_version, security.privacy_version = TERMS_VERSION, PRIVACY_VERSION
+    security.terms_accepted_at = accounts.now()
+    security.privacy_acknowledged_at = accounts.now()
+    profile = db.get(AccountProfile, account.id)
+    queue_terms_receipt(db, account, profile.language if profile else "de")
+    db.commit()
+    return accounts.profile_json(db, account)
+
+
+@router.put("/api/account/profile")
+def update_account_profile(req: schemas.AccountProfileUpdate, request: Request, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountProfile
+
+    account = accounts.normal_account(db, request)
+    profile = db.get(AccountProfile, account.id)
+    if not profile:
+        profile = AccountProfile(account_id=account.id)
+        db.add(profile)
+    for field, value in req.model_dump(exclude={"preferences"}).items():
+        setattr(profile, field, value.strip())
+    profile.email_notifications = req.preferences.email_notifications
+    profile.updated_at = accounts.now()
+    db.commit()
+    return accounts.profile_json(db, account)
+
+
+@router.post("/api/account/change-password")
+def change_password(req: schemas.AccountPasswordChange, request: Request, response: Response, db: DBSession = Depends(get_db)):
+    from backend.account_models import AccountProfile, AccountSecurity
+    from backend.services import account_mail
+
+    account = accounts.normal_account(db, request)
+    accounts.require_password(db, account, req.current_password)
+    account.password_hash = accounts.password_hash(req.new_password)
+    db.get(AccountSecurity, account.id).password_changed_at = accounts.now()
+    accounts.revoke_credentials(db, account)
+    if account_mail.ready():
+        profile = db.get(AccountProfile, account.id)
+        account_mail.queue(db, account, account.email, "password_changed", language=profile.language if profile else "de")
+    db.commit()
+    response.delete_cookie("candidaro_login", path="/")
+    return {"changed": True, "sign_in_required": True}
+
+
+@router.post("/api/account/change-email")
+def change_email(req: schemas.AccountEmailChange, request: Request, db: DBSession = Depends(get_db)):
+    from backend.services import account_mail
+
+    account = accounts.normal_account(db, request)
+    accounts.require_password(db, account, req.current_password)
+    email = req.normalized_email()
+    account_mail.ensure_ready()
+    if email == account.email:
+        raise HTTPException(422, "Bitte eine andere E-Mail-Adresse eingeben.")
+    if db.query(Account).filter_by(email=email).first():
+        raise HTTPException(422, "Diese E-Mail-Adresse kann nicht verwendet werden.")
+    accounts.action_token(db, account, "change_email", email, req.language)
+    account_mail.queue(db, account, account.email, "email_change_notice", language=req.language)
+    db.commit()
+    return {"verification_required": True, "status": "verification_sent", "email": email}
+
+
+@router.get("/api/account/export")
+def export_account(request: Request, db: DBSession = Depends(get_db)):
+    from backend.models import CVDocument, Generation, Message, PaymentOrder
+
+    account = accounts.normal_account(db, request)
+    session_ids = [row.id for row in db.query(Session).filter_by(owner_id=account.id).all()]
+    projects = db.query(Application).filter(Application.session_id.in_(session_ids)).all()
+    source_documents = db.query(CVDocument).filter(CVDocument.session_id.in_(session_ids)).all()
+    generations = db.query(Generation).filter(Generation.session_id.in_(session_ids)).all()
+    messages = db.query(Message).filter(Message.session_id.in_(session_ids)).all()
+    orders = db.query(PaymentOrder).filter_by(account_id=account.id).all()
+    payload = {
+        "exported_at": accounts.now().isoformat() + "Z",
+        "account": accounts.profile_json(db, account),
+        "applications": [{"id": row.id, "title": row.title, "status": row.status, "data": json.loads(row.data_json)} for row in projects],
+        "documents": [{"filename": row.filename, "content": row.content, "photo": row.photo_data_url} for row in source_documents],
+        "generations": [{"content": row.content, "ats_score": row.ats_score, "created_at": row.created_at.isoformat() + "Z"} for row in generations],
+        "messages": [{"role": row.role, "content": row.content, "created_at": row.created_at.isoformat() + "Z"} for row in messages],
+        "purchases": [{"id": row.id, "offer": row.offer_id, "status": row.status, "amount_cents": row.amount_cents, "currency": row.currency, "credits": row.credits, "created_at": row.created_at.isoformat() + "Z"} for row in orders],
+    }
+    return Response(content=json.dumps(payload, ensure_ascii=False), media_type="application/json", headers={"Content-Disposition": 'attachment; filename="tafolliboost-meine-daten.json"'})
 
 
 @router.post("/api/account/logout")
 def logout(request: Request, response: Response, db: DBSession = Depends(get_db)):
-    token = request.headers.get("Authorization", "").removeprefix("Bearer ") or request.cookies.get(
-        "candidaro_login", ""
-    )
+    token = request.headers.get("Authorization", "").removeprefix("Bearer ") or request.cookies.get("candidaro_login", "")
     db.query(Login).filter_by(token_hash=session_service.token_hash(token)).delete()
     db.commit()
     response.delete_cookie("candidaro_login", path="/")
@@ -270,8 +427,11 @@ def logout(request: Request, response: Response, db: DBSession = Depends(get_db)
 
 
 @router.delete("/api/account")
-def delete_account(request: Request, response: Response, db: DBSession = Depends(get_db)):
-    account = accounts.current_account(db, request, True)
+def delete_account(req: schemas.AccountDeletion, request: Request, response: Response, db: DBSession = Depends(get_db)):
+    account = accounts.normal_account(db, request)
+    accounts.require_password(db, account, req.current_password)
+    if req.confirmation != "DELETE":
+        raise HTTPException(422, {"code": "DELETION_CONFIRMATION_REQUIRED", "message": "Löschung ausdrücklich mit DELETE bestätigen."})
     for sess in db.query(Session).filter_by(owner_id=account.id).all():
         db.query(Application).filter_by(session_id=sess.id).delete()
         db.delete(sess)

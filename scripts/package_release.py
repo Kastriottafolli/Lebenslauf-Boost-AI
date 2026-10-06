@@ -91,7 +91,7 @@ def allowed_source(name: str) -> bool:
         return path.parts[1] in {"js", "css", "content", "public"} and path.suffix in TEXT_SUFFIXES
     if path.parts[0] == "static":
         return (
-            path.suffix in {".json", ".svg", ".png", ".ttf", ".txt", ".md", ".traineddata"}
+            path.suffix in {".json", ".svg", ".png", ".jpg", ".mp4", ".vtt", ".ttf", ".txt", ".md", ".traineddata"}
             or path.name == "LICENSE"
         )
     if path.parts[0] == "prompts":

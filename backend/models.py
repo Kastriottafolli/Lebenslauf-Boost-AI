@@ -315,13 +315,32 @@ class AIBudget(Base):
 
 
 class CreditWallet(Base):
-    """Lifetime package balance; the welcome grant is never renewed by the date."""
+    """Compatible total balance; the weekly sidecar separates paid and free credits."""
 
     __tablename__ = "credit_wallets"
     __table_args__ = (CheckConstraint("available >= 0", name="ck_credit_wallet_available"),)
     account_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
     available = Column(Integer, nullable=False)
     free_total = Column(Integer, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class WeeklyCreditWallet(Base):
+    """Additive migration of existing wallets without rebuilding their ledger."""
+
+    __tablename__ = "weekly_credit_wallets"
+    __table_args__ = (
+        CheckConstraint("paid_remaining >= 0", name="ck_weekly_paid_remaining"),
+        CheckConstraint(
+            "free_remaining >= 0 AND free_remaining <= free_total", name="ck_weekly_free_remaining"
+        ),
+        CheckConstraint("free_total > 0", name="ck_weekly_free_total"),
+    )
+    account_id = Column(String(36), ForeignKey("accounts.id", ondelete="CASCADE"), primary_key=True)
+    paid_remaining = Column(Integer, nullable=False)
+    free_remaining = Column(Integer, nullable=False)
+    free_total = Column(Integer, nullable=False)
+    week_key = Column(String(10), nullable=False)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
 
@@ -371,6 +390,23 @@ class PackageReservation(Base):
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
 
 
+class PackageCreditAllocation(Base):
+    """Remember the funding source and week of each fenced reservation attempt."""
+
+    __tablename__ = "package_credit_allocations"
+    __table_args__ = (
+        CheckConstraint("funding IN ('free','paid')", name="ck_package_funding"),
+        CheckConstraint("attempt >= 1", name="ck_package_allocation_attempt"),
+    )
+    reservation_id = Column(
+        String(36), ForeignKey("package_reservations.id", ondelete="CASCADE"), primary_key=True
+    )
+    attempt = Column(Integer, nullable=False)
+    funding = Column(String(4), nullable=False)
+    free_week = Column(String(10), nullable=True)
+    weekly_debit = Column(Boolean, nullable=False, default=False)
+
+
 class PaymentOrder(Base):
     __tablename__ = "payment_orders"
     __table_args__ = (
@@ -394,6 +430,40 @@ class PaymentOrder(Base):
     checkout_url = Column(Text, nullable=True)
     status = Column(String(12), nullable=False, default="pending")
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class CheckoutConsent(Base):
+    """Order-specific acknowledgements; no IP address or additional profile data."""
+
+    __tablename__ = "checkout_consents"
+    order_id = Column(
+        String(36), ForeignKey("payment_orders.id", ondelete="CASCADE"), primary_key=True
+    )
+    terms_version = Column(String(24), nullable=False)
+    withdrawal_version = Column(String(24), nullable=False)
+    terms_accepted = Column(Boolean, nullable=False)
+    immediate_performance = Column(Boolean, nullable=False)
+    withdrawal_acknowledged = Column(Boolean, nullable=False)
+    language = Column(String(2), nullable=False, default="de")
+    terms_snapshot = Column(Text, nullable=False)
+    withdrawal_snapshot = Column(Text, nullable=False)
+    receipt_outbox_id = Column(String(36), nullable=True)
+    accepted_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+
+
+class PaymentWithdrawal(Base):
+    """Deduplicated customer request; refund execution remains a merchant action."""
+
+    __tablename__ = "payment_withdrawals"
+    __table_args__ = (CheckConstraint("status = 'requested'", name="ck_withdrawal_status"),)
+    id = Column(String(36), primary_key=True, default=_uuid)
+    order_id = Column(
+        String(36), ForeignKey("payment_orders.id", ondelete="CASCADE"), nullable=False, unique=True
+    )
+    name = Column(String(200), nullable=False)
+    requested_at = Column(DateTime, nullable=False, default=lambda: datetime.now(UTC))
+    status = Column(String(12), nullable=False, default="requested")
+    receipt_outbox_id = Column(String(36), nullable=True)
 
 
 class PaymentEvent(Base):

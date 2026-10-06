@@ -72,8 +72,8 @@ def test_draft_promotes_to_package_and_survives_relogin():
     assert restored["documents"] == body["documents"] and restored["design"] == "sapphire"
     assert restored["wishes"] == body["wishes"]
     assert restored["photo"] == body["photo"]
-    owner.delete("/api/account")
-    stranger.delete("/api/account")
+    owner.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"})
+    stranger.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"})
 
 
 def test_saved_projects_reject_credentials_active_images_and_partial_documents():
@@ -103,7 +103,7 @@ def test_saved_projects_reject_credentials_active_images_and_partial_documents()
         == 422
     )
     assert TestClient(app).post("/api/projects", json=body).status_code == 401
-    owner.delete("/api/account")
+    owner.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"})
 
 
 def test_concurrent_edits_cannot_overwrite_the_same_revision():
@@ -129,7 +129,7 @@ def test_concurrent_edits_cannot_overwrite_the_same_revision():
         outcomes = list(pool.map(write, ["First tab", "Second tab"]))
     assert sorted(outcomes) == [200, 409]
     assert owner.get("/api/projects/" + result["id"]).json()["_revision"] == 2
-    owner.delete("/api/account")
+    owner.request("DELETE", "/api/account", json={"current_password": "test-long-password-123", "confirmation": "DELETE"})
 
 
 def test_boosty_rejects_accidental_credentials_before_provider_call(monkeypatch):

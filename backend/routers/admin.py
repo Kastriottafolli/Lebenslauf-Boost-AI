@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, update
 
+from backend.account_models import AccountProfile, AccountSecurity, EmailOutbox
 from backend.database import engine, get_db
 from backend.models import (
     Account,
@@ -186,6 +187,27 @@ def overview(days: int = Query(30, ge=1, le=90), admin=Depends(protected), db=De
             "active_accounts": db.query(func.count(func.distinct(Activity.account_id)))
             .filter(Activity.created_at >= cutoff, Activity.outcome < 400)
             .scalar(),
+            "pending_verifications": db.query(AccountSecurity).filter(
+                AccountSecurity.verified_at.is_(None),
+                ~db.query(AdminAccess.account_id).filter(
+                    AdminAccess.account_id == AccountSecurity.account_id
+                ).exists(),
+            ).count(),
+            "verified_users": db.query(AccountSecurity).filter(
+                AccountSecurity.verified_at.is_not(None),
+                ~db.query(AdminAccess.account_id).filter(
+                    AdminAccess.account_id == AccountSecurity.account_id
+                ).exists(),
+            ).count(),
+        },
+        "email_delivery": {
+            "pending": db.query(EmailOutbox).filter(
+                EmailOutbox.status.in_(["pending", "sending"])
+            ).count(),
+            "failed": db.query(EmailOutbox).filter_by(status="failed").count(),
+            "sent": db.query(EmailOutbox).filter_by(status="sent").count(),
+            "retention_days": 7,
+            "measurement": "Fehlgeschlagen umfasst auch abgelaufene oder ersetzte Links. Nur Zustellmetadaten, keine Nachrichteninhalte.",
         },
         "daily": [
             {
@@ -194,7 +216,7 @@ def overview(days: int = Query(30, ge=1, le=90), admin=Depends(protected), db=De
                 "visit_sessions": next((m.visits for m in metrics if m.day == day), 0),
                 "registrations": registrations.get(day, 0),
             }
-            for day in sorted(set(registrations) | {m.day for m in metrics})
+            for day in [(cutoff + timedelta(days=index)).date().isoformat() for index in range(days)]
         ],
         "operations": [{"event": event, "count": count} for event, count in activity],
         "measurement": "Seitenaufrufe und gestartete App-Sitzungen; keine eindeutigen Menschen. Bots, Reloads und Vorschau zählen mit. Keine IP-Adressen oder Werbe-Tracker.",
@@ -228,6 +250,14 @@ def users(
         .group_by(Session.owner_id)
         .all()
     )
+    security = {
+        row.account_id: row
+        for row in db.query(AccountSecurity).filter(AccountSecurity.account_id.in_(ids))
+    }
+    profiles = {
+        row.account_id: row
+        for row in db.query(AccountProfile).filter(AccountProfile.account_id.in_(ids))
+    }
     admins.audit(db, admin, "users.read")
     return {
         "total": total,
@@ -239,6 +269,11 @@ def users(
                 "created_at": row.created_at.isoformat(),
                 "last_active_at": usage[row.id].isoformat() if row.id in usage else None,
                 "applications": projects.get(row.id, 0),
+                "display_name": profiles[row.id].display_name if row.id in profiles else "",
+                "verified_at": security[row.id].verified_at.isoformat() + "Z"
+                if row.id in security and security[row.id].verified_at else None,
+                "verification_source": security[row.id].verification_source
+                if row.id in security else None,
             }
             for row in rows
         ],
@@ -266,10 +301,16 @@ def user_details(account_id: str, admin=Depends(protected), db=Depends(get_db)):
         .all()
     )
     admins.audit(db, admin, "user.details.read", account.id)
+    security = db.get(AccountSecurity, account.id)
+    profile = db.get(AccountProfile, account.id)
     return {
         "id": account.id,
         "email": account.email,
         "created_at": account.created_at.isoformat(),
+        "display_name": profile.display_name if profile else "",
+        "verified_at": security.verified_at.isoformat() + "Z"
+        if security and security.verified_at else None,
+        "verification_source": security.verification_source if security else None,
         "sessions": [
             {"id": s.id, "language": s.language, "created_at": s.created_at.isoformat()}
             for s in sessions
@@ -427,6 +468,9 @@ def database(admin=Depends(protected), db=Depends(get_db)):
         Activity,
         DailyMetric,
         AdminAudit,
+        AccountSecurity,
+        AccountProfile,
+        EmailOutbox,
     ]
     admins.audit(db, admin, "database.read")
     return {

@@ -51,7 +51,7 @@ services:
     profiles:
       - maintenance
     entrypoint: ["python", "-m", "backend.backup"]
-    command: ["create", "--database", "/app/data/tafolli.db", "--admin-key", "/app/data/admin-secrets.key", "--key-file", "/run/backup/encryption.key", "--directory", "/app/backups", "--retention-days", "14"]
+    command: ["create", "--database", "/app/data/tafolli.db", "--admin-key", "/app/data/admin-secrets.key", "--mail-key", "/app/data/mail-secrets.key", "--key-file", "/run/backup/encryption.key", "--directory", "/app/backups", "--retention-days", "14"]
     network_mode: none
     read_only: true
     security_opt:

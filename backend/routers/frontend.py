@@ -118,17 +118,38 @@ def sitemap():
 @router.get("/impressum/", include_in_schema=False)
 @router.get("/datenschutz", include_in_schema=False)
 @router.get("/datenschutz/", include_in_schema=False)
+@router.get("/agb", include_in_schema=False)
+@router.get("/agb/", include_in_schema=False)
+@router.get("/widerruf", include_in_schema=False)
+@router.get("/widerruf/", include_in_schema=False)
 def legal_notice(request: Request, lang: str = "de"):
     from backend.config import get_settings
     from backend.services.legal_service import render
 
     settings = get_settings()
-    kind = "privacy" if "datenschutz" in request.url.path else "legal"
+    kind = {"datenschutz": "privacy", "agb": "terms", "widerruf": "withdrawal"}.get(request.url.path.strip("/"), "legal")
     return HTMLResponse(render(kind, lang, {
         "operator_name":settings.operator_name,
         "operator_address":settings.operator_address,
         "operator_email":settings.operator_email,
     }, settings.site_url, retention_days=settings.retention_days), headers={"Cache-Control":"no-cache"})
+
+
+@router.get("/agb.txt", include_in_schema=False)
+@router.get("/widerruf.txt", include_in_schema=False)
+def contract_text(request: Request, lang: str = "de"):
+    from fastapi.responses import PlainTextResponse
+
+    from backend.config import get_settings
+    from backend.services.legal_service import render_text
+
+    settings = get_settings()
+    kind = "withdrawal" if "widerruf" in request.url.path else "terms"
+    return PlainTextResponse(render_text(kind, lang, {
+        "operator_name": settings.operator_name,
+        "operator_address": settings.operator_address,
+        "operator_email": settings.operator_email,
+    }, settings.retention_days), headers={"Cache-Control": "no-cache", "Content-Disposition": f'attachment; filename="tafolliboost-{kind}-{lang if lang in ("de", "en", "sq") else "de"}.txt"'})
 
 
 @router.get("/{language}/{slug}/", include_in_schema=False)

@@ -1,12 +1,13 @@
-"""Password hashing, expiring login cookies and one-time recovery codes."""
+"""Verified accounts, versioned consent, passwords and expiring login cookies."""
 
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, Request
+from sqlalchemy import insert, select, text
 
-from backend.models import Account, Login
+from backend.models import Account, AdminAccess, Login
 from backend.services.session_service import token_hash
 
 
@@ -33,6 +34,146 @@ def password_matches(password, stored):
 
 
 DUMMY_HASH = password_hash("unavailable-password")
+
+
+def now():
+    return datetime.now(UTC).replace(tzinfo=None)
+
+
+def migrate_existing_accounts(engine):
+    from backend.account_models import AccountProfile, AccountSecurity
+
+    with engine.begin() as connection:
+        missing = select(Account.id).where(
+            ~select(AccountSecurity.account_id)
+            .where(AccountSecurity.account_id == Account.id)
+            .exists()
+        )
+        for account_id in connection.execute(missing).scalars().all():
+            connection.execute(insert(AccountSecurity).values(
+                account_id=account_id, verified_at=now(), verification_source="legacy_existing",
+                credential_version=1,
+            ))
+            connection.execute(insert(AccountProfile).values(account_id=account_id))
+
+
+def security_for(db, account):
+    from backend.account_models import AccountSecurity
+
+    security = db.get(AccountSecurity, account.id)
+    if not security or not security.verified_at:
+        raise HTTPException(403, {
+            "code": "EMAIL_VERIFICATION_REQUIRED",
+            "message": "Bitte bestätige zuerst deine E-Mail-Adresse. Du kannst eine neue Bestätigungs-E-Mail anfordern.",
+        })
+    return security
+
+
+def normal_account(db, request):
+    account = current_account(db, request, True)
+    if db.get(AdminAccess, account.id):
+        raise HTTPException(403, "Admin-Zugang separat verwenden")
+    return account
+
+
+def require_password(db, account, password):
+    limit_identity(db, account.email, "sensitive")
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("BEGIN IMMEDIATE"))
+    # A request may have loaded this account before another password reset.
+    # Recheck the current hash while holding the same lock as token consumption.
+    db.refresh(account)
+    if db.get(AdminAccess, account.id) or not password_matches(password, account.password_hash):
+        raise HTTPException(401, {
+            "code": "CURRENT_PASSWORD_INVALID", "message": "Aktuelles Passwort ist nicht korrekt.",
+        })
+
+
+def revoke_credentials(db, account):
+    from backend.account_models import AccountActionToken, AccountSecurity, EmailOutbox
+
+    security = db.get(AccountSecurity, account.id)
+    security.credential_version += 1
+    db.query(Login).filter_by(account_id=account.id).delete()
+    db.query(AccountActionToken).filter_by(account_id=account.id).delete()
+    db.query(EmailOutbox).filter(
+        EmailOutbox.account_id == account.id,
+        # Only links depend on the credential version. Contract/withdrawal
+        # receipts and security notices must retain their delivery guarantees.
+        EmailOutbox.purpose.in_(["verify", "reset", "change_email"]),
+        EmailOutbox.status.in_(["pending", "sending"]),
+    ).update({"status": "failed", "payload_cipher": None, "lease_until": None})
+
+
+def action_token(db, account, purpose, target_email, language):
+    from backend.account_models import AccountActionToken, AccountSecurity, EmailOutbox
+    from backend.services import account_mail
+
+    security = db.get(AccountSecurity, account.id)
+    # An explicit resend invalidates previous links and unsent obsolete messages.
+    db.query(AccountActionToken).filter_by(account_id=account.id, purpose=purpose).delete()
+    db.query(EmailOutbox).filter(
+        EmailOutbox.account_id == account.id, EmailOutbox.purpose == purpose,
+        EmailOutbox.status.in_(["pending", "sending"]),
+    ).update({"status": "failed", "payload_cipher": None, "lease_until": None})
+    token = secrets.token_urlsafe(32)
+    expiry = now() + (timedelta(minutes=30) if purpose == "reset" else timedelta(hours=24))
+    db.add(AccountActionToken(
+        token_hash=token_hash(token), account_id=account.id, purpose=purpose,
+        target_email=target_email, credential_version=security.credential_version,
+        expires_at=expiry,
+    ))
+    account_mail.queue(db, account, target_email, purpose, token, language, expiry)
+
+
+def consume_token(db, token, purposes):
+    from backend.account_models import AccountActionToken, AccountSecurity
+
+    if db.bind.dialect.name == "sqlite":
+        db.execute(text("BEGIN IMMEDIATE"))
+    action = db.get(AccountActionToken, token_hash(token))
+    security = db.get(AccountSecurity, action.account_id) if action else None
+    account = db.get(Account, action.account_id) if action else None
+    if security:
+        db.refresh(security)
+    if account:
+        db.refresh(account)
+    if (
+        not action or action.purpose not in purposes or action.consumed_at
+        or action.expires_at <= now() or not account or not security
+        or action.credential_version != security.credential_version
+        or db.get(AdminAccess, account.id)
+    ):
+        db.rollback()
+        raise HTTPException(400, {
+            "code": "ACCOUNT_LINK_INVALID",
+            "message": "Dieser Link ist ungültig, bereits verwendet oder abgelaufen. Bitte einen neuen Link anfordern.",
+        })
+    action.consumed_at = now()
+    return account, security, action
+
+
+def profile_json(db, account):
+    from backend.account_models import AccountProfile, AccountSecurity
+    from backend.account_terms import PRIVACY_VERSION, TERMS_VERSION
+
+    profile = db.get(AccountProfile, account.id)
+    security = db.get(AccountSecurity, account.id)
+    return {
+        "email": account.email,
+        "verified": bool(security and security.verified_at),
+        "created_at": account.created_at.isoformat() + "Z",
+        "profile": {
+            name: getattr(profile, name, "de" if name == "language" else "")
+            for name in ("display_name", "first_name", "last_name", "phone", "location", "headline", "language")
+        } | {"preferences": {"email_notifications": bool(profile and profile.email_notifications)}},
+        "terms": {
+            "version": TERMS_VERSION,
+            "privacy_version": PRIVACY_VERSION,
+            "accepted_version": security.terms_version if security else None,
+            "current": bool(security and security.terms_version == TERMS_VERSION and security.privacy_version == PRIVACY_VERSION),
+        },
+    }
 
 
 def limit_identity(db, email, category="user"):
@@ -66,7 +207,14 @@ def current_account(db, request: Request, required=False):
     login = db.get(Login, token_hash(token)) if token else None
     if login and login.expires_at > datetime.now(UTC).replace(tzinfo=None):
         account = db.get(Account, login.account_id)
-        if account:
+        if account and not db.get(AdminAccess, account.id):
+            from backend.account_models import AccountSecurity
+
+            security = db.get(AccountSecurity, account.id)
+            if not security or not security.verified_at:
+                if required:
+                    security_for(db, account)
+                return None
             return account
     if required:
         raise HTTPException(401, "Bitte anmelden / sign in first")
@@ -76,6 +224,7 @@ def current_account(db, request: Request, required=False):
 def login_cookie(db, account, response):
     from backend.config import get_settings
 
+    security_for(db, account)
     token = secrets.token_urlsafe(32)
     db.add(
         Login(

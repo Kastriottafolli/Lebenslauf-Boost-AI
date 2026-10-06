@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { PLANNED_PRICING, readPricing, readBalance, checkoutProviders, safeCheckoutUrl, packageProject, PackageRequests } from "../js/core/billing.js";
+import { PLANNED_PRICING, readPricing, readBalance, purchaseAcknowledged, checkoutProviders, safeCheckoutUrl, packageProject, PackageRequests } from "../js/core/billing.js";
 import { validJobUrl, jobImportProblem } from "../js/core/job.js";
 
 test("planned pricing never enables a payment and invalid pricing fails closed", () => {
@@ -11,8 +11,16 @@ test("planned pricing never enables a payment and invalid pricing fails closed",
   assert.equal(readPricing({ ...PLANNED_PRICING, free_period: "daily" }), null);
   const live = readPricing({ ...PLANNED_PRICING, payments_enabled: true, providers: { stripe: true, paypal: false } });
   assert.deepEqual(checkoutProviders(live), ["stripe"]);
-  assert.equal(readBalance({ available: 3, reserved: 0, free_total: 3, used: 0 }).available, 3);
+  assert.equal(readPricing({ ...PLANNED_PRICING, free_period: "lifetime" }), null);
+  assert.equal(readPricing({ ...PLANNED_PRICING, free_timezone: "UTC" }), null);
+  assert.equal(readBalance({ available: 5, reserved: 0, free_total: 3, used: 0, free_remaining: 3, paid_remaining: 2, week_start: "2026-10-04T22:00:00Z", week_end: "2026-10-11T22:00:00Z" }).available, 5);
   assert.equal(readBalance({ available: -1, reserved: 0, free_total: 3, used: 0 }), null);
+});
+
+test("paid checkout needs all explicit acknowledgements and never accepts truthy text", () => {
+  const agreed = {termsAccepted:true,immediatePerformance:true,withdrawalAcknowledged:true};
+  assert.equal(purchaseAcknowledged(agreed),true);
+  for(const key of Object.keys(agreed))for(const value of [false,undefined,"true",1])assert.equal(purchaseAcknowledged({...agreed,[key]:value}),false);
 });
 
 test("checkout URLs are limited to the actual payment provider", () => {

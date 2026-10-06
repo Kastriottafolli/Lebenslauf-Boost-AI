@@ -16,7 +16,9 @@ Bewerbungswerkstatt auf Deutsch, Englisch und Albanisch mit Pflichtkonto und zen
 - Boosty als Logo, animierte Begleitung und Hilfe; Erstellung zeigt vier bestätigte Phasen mit Tipps statt einer erfundenen Zeitprognose.
 - Zwei KI-Anbieter vergleichen und einen Entwurf selbst auswählen. Kein behaupteter KI-Gewinner aus einer Keyword-Zahl.
 - Sechs PDF-/Word-Designs, optionales Foto nur im Lebenslauf, komplette Mappe als ZIP. E-Mail kopieren oder als `mailto:`-Entwurf öffnen; kein automatischer Versand.
-- Konto mit Passwort und einmaligem Wiederherstellungscode; Bewerbungen speichern, Status und Notizen pflegen, Projekte laden/löschen, Konto löschen.
+- Konto mit E-Mail-Bestätigung, Passwort-Zurücksetzen per E-Mail, bearbeitbarem Profil und eigenen Unterlagen; Bewerbungen speichern, Status und Notizen pflegen, Daten exportieren und geschützt löschen.
+- Drei kostenlose Bewerbungsmappen pro Kalenderwoche (Europe/Berlin), dauerhafte Kaufcredits und vorbereitete Einzelkäufe (1,99 EUR / zehn für 9,99 EUR); Zahlungen erst nach Händleranbindung verfügbar.
+- Erklärvideo in DE/EN/SQ mit KI-Sprecherstimme, eigener Musik, Untertiteln und nativen Videosteuerungen.
 - Ohne Konto: Projektdatei selbst herunterladen und wieder öffnen. Keys und Fotos sind nicht Teil dieser Projektdatei.
 - Installierbare PWA, DE-/EN-/SQ-Ratgeber, responsive Oberfläche, Tastaturbedienung und reduzierte Bewegung.
 - Capacitor-Projekte für Android/iOS mit Kamera, lokalem OCR, Datei-/Share-Export und Deep Links. Android empfängt außerdem geteilte HTTPS-Stellenlinks.
@@ -112,7 +114,7 @@ API-Tests laufen offline mit synthetischen Daten und gemockten KI-Antworten. Sie
 
 [Release-Status und offene externe Schritte](docs/product/RELEASE.md) · [Marke, SEO und Launch](docs/product/LAUNCH.md) · [Technik und Datenschutzgrenzen](docs/product/ARCHITECTURE.md)
 
-Domainkauf, Betreiberanschrift, Datenschutzerklärung für den tatsächlichen Hostingbetrieb, Live-KI-Tests mit eigenen Keys, mobile Builds/Signierung und Store-Einreichung sind noch erforderlich. Es gibt kein eingebautes Bezahlsystem; die erste Version setzt auf eigene API-Keys.
+tafolliboost.com läuft mit HTTPS auf DreamHost und zentral bereitgestellter OpenAI-KI. Mailbestätigung, Kontoverwaltung und Zahlungslogik sind implementiert. Extern offen bleiben freigeschaltete Social-Login-Apps, Zahlungshändlerkonfiguration, rechtliche Betreiber-/Vertragsprüfung und signierte Store-Veröffentlichungen.
 
 Die ausdrücklich gewählte Demo erstellt Dokumente lokal auch im Serverbetrieb. Nach dem ersten vollständigen Laden kann die gecachte PWA dafür genutzt werden; KI, Konten und Stellenimport benötigen eine Verbindung. OCR- und PDF-Worker müssen für Offline-Nutzung bereits geladen worden sein.
 
@@ -120,11 +122,11 @@ Die ausdrücklich gewählte Demo erstellt Dokumente lokal auch im Serverbetrieb.
 
 Die lokale Konfiguration aus `.env.example` verwendet `data/tafolli.db`. Initialisieren und eine geprüfte Sicherung erstellen: `python -m backend.manage_database init` bzw. `python -m backend.manage_database backup`. Registrierung und gespeicherte Bewerbungen bleiben nach einem Serverneustart erhalten. Der Prüflauf testet dies mit zwei unabhängigen Prozessen.
 
-Für die Veröffentlichung auf tafolliboost.com sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage verwendet `https://tafolliboost.com`; `www.tafolliboost.com` wird auf diese Adresse weitergeleitet. Beide DNS-Namen müssen auf den Server zeigen. Keine DNS-Änderung wurde durchgeführt. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).
+Für die Veröffentlichung auf tafolliboost.com sind `.env.production.example`, `compose.production.yml` und `deploy/Caddyfile` vorbereitet. Die Vorlage verwendet `https://tafolliboost.com`; `www.tafolliboost.com` wird auf diese Adresse weitergeleitet. Beide DNS-Namen müssen auf den Server zeigen. Die Produktionsdomain ist verbunden; tafolli.net bleibt die bestehende Betreiberhomepage. [Betreiber, Datenbank und Hosting](docs/product/TAFOLLI-HOSTING.md).
 
 ## Boosty AI · Admin und Hilfe
 
-Die Marke ist Boosty AI. Das Maskottchen führt durch die Bewerbung und beantwortet Bedienungsfragen ohne API-Key; freie KI-Fragen benötigen Zustimmung und einen eigenen Anbieter-Key.
+Die Webseite heißt tafolliboost.com. Boosty ist das Maskottchen und führt durch die Bewerbung. Seine Softwarehilfe nutzt den zentralen serverseitigen OpenAI-Zugang und lokal verfügbare Bedienhinweise.
 
 Unter `/admin` und über **Admin** in der App stehen separate MFA-Anmeldung, Konten, Nutzungsverlauf, Tagesstatistiken, gespeicherte Inhalte und Datenbankstatus bereit. Keine öffentliche Vergabe von Adminrechten und kein Standardpasswort. Einrichtung und Schutzgrenzen: [ADMIN.md](docs/product/ADMIN.md).
 
@@ -136,6 +138,8 @@ Die private Datei mit einmaligem Setup-Code bleibt außerhalb von Git und Webaus
 
 ## Betreiberrechtstexte und Boosty-KI
 
-Impressum und Datenschutzerklärung unter `/impressum/` und `/datenschutz/` sind dauerhaft verlinkt. Offene Betreiber-/Hostingangaben bleiben sichtbar als Entwurf: [Rechtstext-Vorbereitung](docs/product/LEGAL-READINESS.md). Der öffentliche GitHub-Link wurde entfernt; das Repository wird dadurch nicht privat.
+Impressum und Datenschutzerklärung unter `/impressum/` und `/datenschutz/` sind dauerhaft verlinkt. Der öffentliche Entwurfshinweis wurde entfernt; die interne fachliche Prüfung bleibt dokumentiert: [Rechtstext-Vorbereitung](docs/product/LEGAL-READINESS.md). Der öffentliche GitHub-Link wurde entfernt; das Repository wird dadurch nicht privat.
 
 Boosty bewegt sich mit Hinweis und Zeiger zu festen Bedienfeldern. Ein eigener serverseitiger OpenAI-Key kann ausschließlich die Software-Themenerkennung versorgen: [Sichere Einrichtung](docs/product/BOOSTY-SETUP.md). API-Key nicht im Chat teilen. [Token- und Kostenbeispiele](docs/product/AI-COSTS.md).
+
+Aktuelle Betriebsdokumente: [Konto-E-Mails](docs/deploy/ACCOUNT-MAIL.md), [Wochencredits und Zahlungslogik](docs/product/BILLING.md), [Traffic](docs/product/TRAFFIC.md), [Backups](docs/deploy/BACKUPS.md).
