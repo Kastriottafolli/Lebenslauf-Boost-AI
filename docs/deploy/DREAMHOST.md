@@ -1,6 +1,6 @@
 # tafolliboost.com auf DreamHost
 
-Dieser Ablauf bereitet den öffentlichen Betrieb vor. Er bestätigt keine bereits ausgeführte Veröffentlichung, gekauften Hosting-Tarife oder eingerichteten Social-Login-Apps. Domainregistrierung allein stellt noch keinen Python-App-Server bereit.
+Stand 06.10.2026: **https://tafolliboost.com** ist auf einem DreamHost Self-Managed VPS mit Docker/Caddy, persistentem Datenträger und HTTPS veröffentlicht. Der zentrale OpenAI-Zugang, Konto-Mails, Admin-MFA und tägliche verschlüsselte Sicherungen sind eingerichtet. Social-Login-Apps und Zahlungshändler sind noch nicht konfiguriert. Der folgende Ablauf dokumentiert Einrichtung und Wartung; alternative Hosting-Typen sind keine Behauptung über den tatsächlich gewählten Tarif.
 
 ## 1. Vorhandenen Hosting-Typ feststellen
 
@@ -19,7 +19,7 @@ Im DreamHost-Panel den Server und den Hosting-Typ der Domain prüfen. Keine best
 
 Die vollständige FastAPI-App liefert auf `https://tafolliboost.com` sowohl die Oberfläche als auch `/api/…` aus. Das vermeidet browserabhängige Cookies zwischen GitHub Pages und einer fremden API-Domain. `_site/` allein enthält keinen Anmeldeserver und keine Datenbank.
 
-Für die spätere Übertragung lässt sich ein geprüftes Quellpaket erzeugen:
+Für weitere Übertragungen lässt sich ein geprüftes Quellpaket erzeugen:
 
 ```sh
 python3 scripts/package_release.py --output /tmp/tafolliboost-source-release.tar.gz
@@ -111,7 +111,7 @@ Für den endgültigen Betrieb ist die komplette App auf `tafolliboost.com` vorzu
 ## 6. Freigabe durch reale Prüfungen
 
 1. Domain über HTTPS öffnen, Sprachwechsel und rechtliche Seiten laden; keine Vorschau-/Konto-Ladefehler.
-2. Eigenes fiktives Testkonto registrieren, Wiederherstellungscode privat sichern, abmelden und erneut anmelden. Fehlerfälle zeigen eine verständliche Meldung.
+2. Eigenes fiktives Testkonto mit ausdrücklicher AGB-Annahme registrieren. Vor Bestätigung muss Login scheitern; danach den tatsächlichen Mail-Einmallink verwenden, anmelden und prüfen, dass der Link nicht erneut nutzbar ist. Passwort-Zurücksetzen über das echte Postfach prüfen: neues Passwort funktioniert, altes Passwort und vorhandene Login-Sitzungen werden ungültig. Fehlerfälle zeigen eine verständliche Meldung.
 3. Fiktiven Lebenslauf und Stellenlink verwenden, Daten prüfen, eine Mappe erstellen und speichern. Keine echten Bewerberdaten für diese Prüfung verwenden.
 4. Seite neu laden, Konto wieder öffnen, gespeicherte Mappe aufrufen. Danach App-Prozess neu starten und erneut aufrufen: Konten und Verlauf bleiben erhalten.
 5. Ein anderes Testkonto darf die Mappe nicht öffnen; anonyme Erzeugungsrequests scheitern. Der öffentliche Browser bekommt keinen Betreiber-Key.
@@ -120,6 +120,6 @@ Für den endgültigen Betrieb ist die komplette App auf `tafolliboost.com` vorzu
 8. Datenbanksicherung mit der SQLite-Backup-API erstellen; verschlüsselte externe Kopie und Wiederherstellungsprüfung einrichten. Kein unkoordiniertes Kopieren einer laufenden WAL-Datenbank.
 9. Tatsächlichen Hosting-Anbieter, Standort, Aufbewahrung und Verträge in die Datenschutzinformationen aufnehmen; Budgetlimits und OpenAI-Projektlimits prüfen.
 
-Die aktuelle E-Mail-Registrierung verwendet einen privaten Wiederherstellungscode. Verifizierungs- und Passwort-Reset-E-Mails werden noch nicht versendet. Für einen größeren öffentlichen Betrieb ist das eine eigene Implementierungsaufgabe mit Maildienst, auslaufenden Einmaltokens und Tests. Keine automatische Mailfunktion behaupten, solange sie nicht eingerichtet ist.
+Neue E-Mail-Konten werden erst durch einen auslaufenden Bestätigungslink aktiviert. Passwort-Zurücksetzen, neue E-Mail-Adressen und Vertragskopien verwenden die verschlüsselte Mail-Outbox; die frühere Recovery-Code-Anmeldung ist deaktiviert. Der tatsächliche Versand läuft über einen HMAC-geschützten HTTPS-Relay auf dem bestehenden DreamHost Shared Hosting, ohne die Betreiberhomepage zu ersetzen. Mailnutzlasten werden nicht in URLs oder Protokolle geschrieben. Echte Zustellung und Aktivierung eines eigenen Produktions-Testkontos wurden geprüft; Quoten und Spam-/Bouncezustellung müssen laufend beobachtet werden. Details: [ACCOUNT-MAIL.md](ACCOUNT-MAIL.md).
 
 Updates dürfen den privaten Datenträger nicht ersetzen. Erst geprüften Build bereitstellen, Datenbank sichern, Dienst kontrolliert neu starten und funktionierenden Login/Verlauf bestätigen. Das Docker-Volume nicht mit `down -v` löschen. Die vorherige App-Version für einen Rücksprung bereithalten.

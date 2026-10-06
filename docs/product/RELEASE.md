@@ -1,31 +1,36 @@
 # Release-Status
 
-Diese Änderung baut einen funktionsfähigen Beta-Stand. Sie ist keine Behauptung, dass ein öffentliches, kommerzielles Produkt bereits vollständig betrieben und freigegeben ist.
+Stand 06.10.2026. Die Web-App ist unter **https://tafolliboost.com** auf einem DreamHost Self-Managed VPS veröffentlicht; `www` wird auf diese Adresse weitergeleitet. GitHub Pages liefert die aktuelle Oberfläche mit Verbindung zur Produktions-API. Ein veröffentlichter technischer Stand ist keine vollständige kommerzielle, rechtliche oder externe Sicherheitsfreigabe.
 
-## Implementiert und lokal prüfbar
+## Implementiert und veröffentlicht
 
-Profil-/Abschnittsimport, Faktenbestätigung, Stellenimport mit Textfallback, fünf KI-Adapter mit Modellwahl/Key-Links, explizite Demo, vier Dokumente, individuelle Bearbeitung, Vergleich, Kontext bei Revision, Versionsrücksprung, Vorschau, PDF/Word/ZIP, E-Mail-Entwurf, Konten/Recovery, Projektspeicherung/Status/Notizen/Löschung, PWA, DE/EN, Ratgeber-SEO und native Projektquellen. Boosty AI als Produktmarke, animiertes Boosty-Maskottchen, geführte Hinweise und lokale/optionale KI-Hilfe. Geschützter Adminbereich mit eigener MFA, Nutzerdatenansichten, Statistik und Audit-Protokoll; Details in ADMIN.md.
+Pflichtkonto mit ausdrücklicher AGB-Annahme, E-Mail-Bestätigung und Passwort-Zurücksetzen; bearbeitbares Profil, eigene Unterlagen, Verlauf, Datenexport und geschützte Kontolöschung. Zentral bereitgestellte OpenAI-KI erstellt Lebenslauf, Anschreiben, Motivationsschreiben und E-Mail. Profil-/Abschnittsimport, Faktenbestätigung, Stellenimport mit Textfallback, individuelle Bearbeitung, Kontext bei Revision, Versionsrücksprung, begrenzte Vorschau und PDF/Word/ZIP-Export sind vorhanden. Frühere Anbieteradapter bleiben im Quellcode; die Oberfläche bietet keinen Gasteditor, Nutzer-Key oder Anbietervergleich.
+
+Drei kostenlose Mappen pro Kalenderwoche in Europe/Berlin, getrennte dauerhafte Kaufcredits sowie vorbereitete Einzelkäufe für 1,99 EUR beziehungsweise zehn Mappen für 9,99 EUR. Zahlungsanbieter sind noch nicht aktiviert. Der geschützte Adminbereich besitzt eine eingerichtete MFA-Anmeldung, Nutzerdatenansichten, Nutzungsdiagramm, CSV-Export und Audit-Protokoll. Tatsächliches Hosting bleibt DreamHost; ein Hostinger-Dashboard wurde nicht eingerichtet.
+
+DE/EN/SQ-Oberfläche und Erklärvideos mit KI-Stimme, Musik, Untertiteln und nativen Videosteuerungen; animiertes Boosty-Maskottchen, Willkommensanimation, geführte Hinweise und zentral bereitgestellte Softwarehilfe. Ladeanzeigen zeigen bestätigte Schritte und kennzeichnen die laufende KI-Wartephase. PWA, Ratgeber-SEO und native Android-/iOS-Projektquellen sind vorhanden.
+
+Transaktionsmails werden über eine verschlüsselte Outbox und einen geschützten DreamHost-Mailrelay gesendet. Tatsächliche Zustellung und Aktivierung eines eigenen Produktions-Testkontos wurden geprüft. Tägliche verschlüsselte Sicherungen mit 14 Tagen Aufbewahrung sind eingerichtet; Sicherung und eine getrennte Wiederherstellungsprüfung wurden durchgeführt. Die Sicherungen auf demselben VPS ersetzen keine externe Sicherung.
 
 ## Durch externe Informationen bzw. Werkzeuge offen
 
 | Schritt | Was fehlt |
 |---|---|
-| Marke/Domain | Boosty AI gewählt; Namens-/Markenrechte noch prüfen. Öffentliches Hosting unter Tafolli-Domain noch nicht verbunden |
-| Admin-Ersteinrichtung | Privater einmaliger Code lokal vorbereitet; Betreiber legt Passwort und Authenticator selbst fest. Auf Produktionsserver separat provisionieren |
-| Sicherheitsabnahme | Externer Penetrations-/Belastungstest, Wiederherstellung und tatsächlicher Hostbetrieb noch nicht geprüft |
-| Öffentlicher Server | Hosting/HTTPS, finale Host-/Origin-Liste, verschlüsselte externe Backups; Cleanup beim Start und stündlich integriert |
+| Marke | tafolliboost.com als Webseite und Boosty als Maskottchen; Namens-/Markenrechte noch prüfen |
+| Social-Login | Google-/Apple-/Meta-/X-Apps mit echten Zugangsdaten, Anbieterfreigaben und Callback-Prüfungen; derzeit nur E-Mail-Anmeldung aktiv |
+| Sicherheitsabnahme | Externer Penetrations-/Belastungstest; die bisherigen automatisierten Prüfungen sind keine unabhängige Sicherheitsabnahme |
+| Externe Sicherung | Kontinuierliche verschlüsselte Offsite-Sicherung und regelmäßige Wiederherstellungsübungen; tägliche lokale Sicherung bereits eingerichtet |
 | Betreiber/Datenschutz | Kastriot Tafolli, Anschrift und info@tafolli.net hinterlegt; auf Hosting und Anbieter abgestimmte Datenschutzangaben noch vervollständigen |
-| Live-KI | Eigene gültige Keys, Guthaben und Modellzugriff; bisher Vertragstests mit Mocks |
 | Android | JDK/SDK, Geräteprüfung, Signierung, Play-Console-Konto und Store-Angaben |
 | iOS | Vollständiges Xcode, Geräteprüfung, Apple-Team/Signierung, Store-/Datenschutzangaben |
 | Store-Grafiken | Native Icons und Startbildschirme vorhanden; reale Store-Screenshots und finale Markenfreigabe fehlen |
-| Mail-Verifikation | SMTP bzw. Identity-Anbieter; derzeit Recovery-Code statt Mail-Reset |
-| Bezahlprodukt | Noch kein Checkout/Abonnement; serverfinanzierte KI braucht zusätzliche Tagesquoten und Abrechnung |
+| Mailbetrieb | Versandquoten, Bounce-/Spamzustellung und Betrieb dauerhaft überwachen; echte Konto-E-Mails sind eingerichtet |
+| Bezahlprodukt | Händlerkonten, Sandbox-End-to-End-Prüfung, Steuer-/Rechnungsablauf und gesetzliche Aufbewahrung; Checkout und Guthabenlogik vorbereitet, Zahlungen deaktiviert, kein Abonnement |
 | Größere Skalierung | Gemeinsame Limits und Datenbankmigrationen; Pilotbetrieb mit einem Worker |
 | iOS Share-Eingang | Eigene Share Extension fehlt; Einfügen und Deep Links vorhanden |
 
 ## Prüfungen
 
-Die automatisierten Tests laufen ohne echte personenbezogene Daten oder kostenpflichtige KI-Aufrufe. Die abschließenden Ergebnisse und Browserprüfungen stehen im Änderungsbericht/PR. Ein grüner Testlauf ersetzt weder Anbieter-Zugriffstests noch mobile Geräte- oder Store-Prüfungen.
+Die automatisierten Tests laufen ohne echte personenbezogene Daten oder kostenpflichtige KI-Aufrufe. Der veröffentlichte Stand besteht 209 Backend- und 43 Frontend-Prüfungen, Build, Lint sowie Abhängigkeitsaudits. Zusätzlich wurden echte Mailzustellung, Aktivierung, Login und die veröffentlichten Videos mit eigenen Testdaten geprüft. Ein grüner Testlauf ersetzt weder Social-Login-/Zahlungsanbieter-Zugriffstests noch mobile Geräte- oder Store-Prüfungen. Weitere Betriebsdetails: [Konto-E-Mails](../deploy/ACCOUNT-MAIL.md), [Wochencredits und Zahlungen](BILLING.md), [Traffic](TRAFFIC.md), [Backups](../deploy/BACKUPS.md), [rechtliche Vorbereitung](LEGAL-READINESS.md).
 
-Vor dem ersten produktiven Datenbankstart Backup erstellen; alte ungeschützte Sitzungen werden nicht stillschweigend neu beansprucht.
+Vor produktiven Datenbankänderungen eine geprüfte Sicherung erstellen; alte ungeschützte Sitzungen werden nicht stillschweigend neu beansprucht. Bestehende Konten und gespeicherte Bewerbungen wurden durch die additive Aktualisierung erhalten.
