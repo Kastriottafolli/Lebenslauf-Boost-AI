@@ -213,7 +213,7 @@ def test_additive_migration_preserves_admin_existing_users_and_pending_registrat
     _client, factory = lifecycle
     with factory() as db:
         existing = Account(email="existing@example.com", password_hash="old", recovery_hash="old")
-        admin = Account(email="info@dafoli.net", password_hash="admin", recovery_hash="admin")
+        admin = Account(email="info@tafolli.net", password_hash="admin", recovery_hash="admin")
         pending = Account(email="pending@example.com", password_hash="pending", recovery_hash="pending")
         db.add_all([existing, admin, pending])
         db.flush()

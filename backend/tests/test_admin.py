@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from backend.account_models import AccountActionToken, AccountProfile, AccountSecurity, EmailOutbox
 from backend.config import get_settings
 from backend.database import Base, get_db
 from backend.main import app
@@ -22,6 +23,7 @@ from backend.models import (
     Application,
     AuthAttempt,
     DailyMetric,
+    Login,
     Session,
 )
 from backend.services import admin_service as admins
@@ -336,6 +338,117 @@ def test_admin_recovery_only_from_server_revokes_sessions(env):
     assert replacement != path
     assert client.get("/api/admin/users").status_code == 401
     assert client.post("/api/admin/setup/begin", json=setup).status_code == 401
+
+
+def test_server_admin_email_correction_preserves_credentials_mfa_and_owned_data(env):
+    client, factory, setup, clock, _path = env
+    secret, _result = complete(env)
+    with factory() as db:
+        account = db.query(Account).filter_by(email=setup["email"]).one()
+        access = db.get(AdminAccess, account.id)
+        account_id = account.id
+        credentials = (account.password_hash, account.recovery_hash, account.created_at)
+        mfa = (access.secret_cipher, access.enabled, access.last_counter, access.setup_hash, access.setup_expires_at)
+        verified_at = admins.now()
+        db.add(AccountSecurity(account_id=account_id, verified_at=verified_at, verification_source="legacy_existing", credential_version=2))
+        db.add(AccountProfile(account_id=account_id, display_name="Operator profile"))
+        db.add(Login(token_hash=token_hash("synthetic-normal-login"), account_id=account_id, expires_at=admins.now() + timedelta(hours=1)))
+        db.add(AccountActionToken(token_hash=token_hash("synthetic-reset"), account_id=account_id, purpose="reset", target_email=account.email, credential_version=2, expires_at=admins.now() + timedelta(minutes=30)))
+        for purpose in ("verify", "reset", "change_email", "receipt", "password_changed"):
+            db.add(EmailOutbox(account_id=account_id, recipient=account.email, purpose=purpose, payload_cipher="synthetic-encrypted-payload", expires_at=admins.now() + timedelta(hours=1)))
+        session = Session(owner_id=account_id, owner_token_hash=token_hash("synthetic-owned-session"))
+        db.add(session)
+        db.flush()
+        application = Application(session_id=session.id, title="Owned application", data_json='{"cv":"Owned document"}')
+        db.add(application)
+        db.commit()
+        session_id, application_id = session.id, application.id
+    with factory() as db:
+        assert admins.rename_email(db, "  ADMIN@EXAMPLE.COM  ", " INFO@TAFOLLI.NET ") == account_id
+    with factory() as db:
+        account = db.get(Account, account_id)
+        access = db.get(AdminAccess, account_id)
+        assert account.email == "info@tafolli.net"
+        assert (account.password_hash, account.recovery_hash, account.created_at) == credentials
+        assert (access.secret_cipher, access.enabled, access.last_counter, access.setup_hash, access.setup_expires_at) == mfa
+        security = db.get(AccountSecurity, account_id)
+        assert security.credential_version == 3
+        assert (security.verified_at, security.verification_source) == (verified_at, "legacy_existing")
+        assert db.get(AccountProfile, account_id).display_name == "Operator profile"
+        assert db.get(Session, session_id).owner_id == account_id
+        assert db.get(Application, application_id).data_json == '{"cv":"Owned document"}'
+        assert db.query(AdminLogin).count() == db.query(Login).count() == db.query(AccountActionToken).count() == 0
+        for row in db.query(EmailOutbox).all():
+            if row.purpose in ("verify", "reset", "change_email"):
+                assert row.status == "failed" and row.payload_cipher is None
+            else:
+                assert row.status == "pending" and row.payload_cipher == "synthetic-encrypted-payload"
+                assert row.recipient == setup["email"]
+        assert db.query(AdminAudit).filter_by(admin_id=account_id, action="admin.cli.email_changed").count() == 1
+    assert client.get("/api/admin/me").status_code == 401
+    clock[0] += 30
+    credentials = {"email": setup["email"], "password": PASSWORD, "code": admins.totp(secret, clock[0] // 30)}
+    assert client.post("/api/admin/login", json=credentials).status_code == 401
+    renamed = client.post("/api/admin/login", json={**credentials, "email": "info@tafolli.net"})
+    assert renamed.status_code == 200
+    assert renamed.json()["email"] == "info@tafolli.net"
+    assert client.get("/api/admin/me").json()["email"] == "info@tafolli.net"
+
+
+def test_admin_email_correction_rejects_occupied_target_without_merging_or_revoking(env):
+    client, factory, setup, _clock, _path = env
+    complete(env)
+    with factory() as db:
+        occupied = Account(email="info@tafolli.net", password_hash="normal-user-hash", recovery_hash="normal-user-recovery")
+        db.add(occupied)
+        db.commit()
+        occupied_id = occupied.id
+    with factory() as db:
+        with pytest.raises(ValueError, match="bereits belegt"):
+            admins.rename_email(db, setup["email"], "info@tafolli.net")
+        assert db.query(Account).filter_by(email=setup["email"]).count() == 1
+        assert db.get(Account, occupied_id).password_hash == "normal-user-hash"
+        assert db.get(AdminAccess, occupied_id) is None
+        assert db.query(AdminLogin).count() == 1
+        assert db.query(AdminAudit).filter_by(action="admin.cli.email_changed").count() == 0
+    assert client.get("/api/admin/me").json()["email"] == setup["email"]
+
+
+@pytest.mark.parametrize("source", ["ordinary@example.com", "missing@example.com", "admin@example.com"])
+def test_admin_email_correction_refuses_non_admin_missing_or_inactive_source(env, source):
+    _client, factory, _setup, _clock, _path = env
+    with factory() as db:
+        db.add(Account(email="ordinary@example.com", password_hash="ordinary-hash", recovery_hash="ordinary-recovery"))
+        db.commit()
+    with factory() as db:
+        with pytest.raises(ValueError, match="aktiven Adminkonto"):
+            admins.rename_email(db, source, "info@tafolli.net")
+        assert db.query(Account).filter_by(email="info@tafolli.net").count() == 0
+        assert db.query(AdminAccess).count() == 1
+        assert not db.query(AdminAccess).one().enabled
+        assert db.query(AdminAudit).filter_by(action="admin.cli.email_changed").count() == 0
+
+
+@pytest.mark.parametrize("target", [" ADMIN@EXAMPLE.COM ", "bad-email", "name..part@example.com", "Name <admin@example.com>"])
+def test_admin_email_correction_rejects_unchanged_or_invalid_address(env, target):
+    _client, factory, setup, _clock, _path = env
+    complete(env)
+    with factory() as db:
+        with pytest.raises(ValueError):
+            admins.rename_email(db, setup["email"], target)
+        assert db.query(Account).filter_by(email=setup["email"]).count() == 1
+        assert db.query(AdminLogin).count() == 1
+
+
+def test_admin_cli_email_correction_cannot_be_combined_with_credential_reset(monkeypatch):
+    import sys
+
+    from backend.manage_admin import main
+
+    monkeypatch.setattr(sys, "argv", ["manage_admin", "--email", "info@tafolli.net", "--rename-from", "old@example.com", "--reset-existing"])
+    with pytest.raises(SystemExit) as rejected:
+        main()
+    assert rejected.value.code == 2
 
 
 def test_password_work_factor_upgrade_and_malformed_hashes(env):

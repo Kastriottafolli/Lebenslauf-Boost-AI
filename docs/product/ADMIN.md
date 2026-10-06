@@ -8,22 +8,35 @@ Auf dem vorgesehenen App-Server:
 
 ```sh
 python -m backend.manage_database backup
-python -m backend.manage_admin --email DEINE-ADMIN-EMAIL
+python -m backend.manage_admin --email info@tafolli.net
 ```
 
 Der Befehl erstellt ein deaktiviertes, reserviertes Adminkonto. Er zeigt nur den Pfad einer privaten Datei (Dateimodus 0600, außerhalb von Git und Webauslieferung). Darin steht der einmalige Einrichtungscode, gültig für 24 Stunden. Kein Standardpasswort und keine E-Mail mit Zugangsdaten.
 
 Öffne `/admin`, klappe **Ersteinrichtung mit privatem Einrichtungscode** auf und gib E-Mail und Einrichtungscode ein. Übertrage den angezeigten Base32-Schlüssel in eine Authenticator-App: TOTP, SHA-1, 6 Ziffern, 30 Sekunden. Lege ein eigenes Passwort mit mindestens 14 Zeichen fest und bestätige den aktuellen Code. Bewahre den Authenticator-Schlüssel in deinem Passwortmanager auf. Ein verwendeter Zeitcode kann nicht erneut eingesetzt werden; bei einer direkten erneuten Anmeldung auf den nächsten Code warten.
 
-Die lokale Einrichtung wurde für **info@dafoli.net** vorbereitet, entsprechend der ausdrücklich geschriebenen Adresse. Der Betreiber-/Supportkontakt bleibt **info@tafolli.net**. Es wurde keine Mail versendet und keine Domain geändert. Sollte die Adresse korrigiert werden, muss der Betreiber sie lokal ändern oder ein neues Adminkonto gezielt provisionieren.
+Die verbindliche Betreiber-, Support- und Admin-Adresse ist **info@tafolli.net**. Der produktive Adminbereich ist unter **https://tafolliboost.com/admin** erreichbar. Das Admin-Konto wird ausschließlich serverseitig eingerichtet; eine öffentliche Registrierung mit dieser Adresse vergibt keine Adminrechte. Zugangsdaten und Authenticator-Schlüssel gehören ausschließlich in die private Zugangsdokumentation und einen Passwortmanager.
 
 Die lokale Datenbank und der private Code werden nicht über Git ins Hosting übertragen. Den Admin auf dem Produktionsserver separat einrichten. Verlust oder Ablauf der Einrichtung bzw. des Authenticators: nur mit Serverzugang einen bereits provisionierten Admin zurücksetzen:
 
 ```sh
-python -m backend.manage_admin --email DEINE-ADMIN-EMAIL --reset-existing
+python -m backend.manage_admin --email info@tafolli.net --reset-existing
 ```
 
 Damit werden bisherige Admin-Sitzungen, Passwort, Authenticator und Einrichtungscode ungültig. Bewerbungen und Konto-ID bleiben erhalten. Ein selbstregistriertes normales Konto wird auch mit diesem Schalter nicht zum Admin. Keine öffentliche Wiederherstellung der Adminrechte.
+
+## Admin-Adresse korrigieren, ohne Zugangsdaten zurückzusetzen
+
+Nach einer Datenbanksicherung kann der Serverbetreiber die Adresse eines bereits aktiven Admin-Kontos korrigieren:
+
+```sh
+python -m backend.manage_database backup
+python -m backend.manage_admin --rename-from BISHERIGE-ADMIN-EMAIL --email info@tafolli.net
+```
+
+Konto-ID, Passwort, Wiederherstellungs-Hash, Authenticator-Schlüssel, MFA-Zähler und zugehörige Daten bleiben erhalten. Die Änderung beendet vorhandene Admin- und normale Anmeldungen und macht veraltete Bestätigungs- oder Zurücksetzungslinks ungültig. Anschließend mit **info@tafolli.net**, dem bisherigen Passwort und einem neuen Authenticator-Zeitcode anmelden. Vertragsnachrichten und Sicherheitshinweise werden nicht gelöscht. Die Änderung wird im Admin-Protokoll vermerkt.
+
+Der Befehl lehnt fehlende oder noch nicht aktivierte Admin-Konten sowie belegte Zieladressen ab. Er führt keine Konten zusammen und erhebt normale Konten nicht zu Administratoren. `--rename-from` und `--reset-existing` schließen sich aus; zur reinen Adresskorrektur darf der Zurücksetzungsschalter nicht verwendet werden.
 
 ## Ansichten
 
@@ -56,10 +69,10 @@ Orientierung: [OWASP Passwortspeicherung](https://cheatsheetseries.owasp.org/che
 
 ## Boosty
 
-Boosty ist wieder als animiertes Maskottchen sichtbar, auch mobil. Acht Hinweise zeigen den Weg durch Profil, Stellenbeschreibung, KI und Export. **Boosty fragen** beantwortet Bedienungsfragen lokal anhand fest hinterlegter DE/EN-Hilfe, ohne Key oder Datenübermittlung. Unbekannte Themen werden als solche gekennzeichnet.
+Boosty ist als animiertes Maskottchen sichtbar, auch mobil. Hinweise begleiten Profil, Stellenbeschreibung, KI und Export. **Boosty fragen** nutzt für angemeldete Nutzer die serverseitig bereitgestellte OpenAI-Anbindung und beantwortet Fragen zur Software. Lokale Hinweise und Begrüßungen stehen auch ohne eine KI-Anfrage zur Verfügung. Antworten und Seitenführung unterstützen Deutsch, Englisch und Albanisch.
 
-Freie KI-Antworten erfordern einen eigenen Provider-Key und ausdrückliche Zustimmung im Boosty-Dialog. Übermittelt werden nur die eingegebene Frage und allgemeine Produktanweisungen; keine Profilfelder, CV-Dateien, Bewerbungsdokumente, Kontodatensätze oder bisheriger Gesprächsverlauf. Die Frage kann selbst sensible Angaben enthalten; Nutzer entscheiden, was sie eingeben. API-Anfragen können Kosten verursachen. Boosty besitzt keine Aktionen, Tool-Aufrufe, Adminrechte oder Versandfunktion. KI-Antworten können Fehler enthalten.
+Provider-Zugangsdaten bleiben ausschließlich auf dem Server. Die eingegebene Frage und allgemeine Produktanweisungen werden zur Antwortgenerierung übermittelt; die Frage kann selbst sensible Angaben enthalten. Boosty erhält keinen Admin-Zugriff, keine Versandberechtigung und keine frei ausführbaren Aktionen. KI-Antworten können Fehler enthalten.
 
 ## Vor öffentlicher Vermarktung noch offen
 
-Öffentliches Hosting/DNS/HTTPS, überprüfte Backups samt Wiederherstellung und Schlüsselverwaltung, Hosting-/Datenschutzerklärung, Mail-Verifikation/SMTP, externe Angriffstests und Belastungstests unter realen Bedingungen. Native Geräte-/Store-Prüfungen fehlen weiterhin. Der geprüfte Stand ist eine Beta, keine vollständig abgenommene kommerzielle Infrastruktur.
+DreamHost-Hosting, Domain und HTTPS sind in Betrieb. Bestätigungsmails, Passwort-Zurücksetzen, Admin-MFA, interne Betriebsstatistiken und verschlüsselte Backups sind eingerichtet und geprüft. Anbieter-Konfiguration für Social-Login und echte Zahlungen, fachliche Prüfung der Rechtstexte und Verträge sowie externe Angriffstests und Belastungstests stehen noch aus. Native Geräte-/Store-Prüfungen fehlen weiterhin. Der Stand ist keine Sicherheitszertifizierung oder vollständige kommerzielle Abnahme.
