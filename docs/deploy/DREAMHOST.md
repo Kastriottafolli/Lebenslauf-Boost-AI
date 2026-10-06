@@ -1,6 +1,6 @@
 # tafolliboost.com auf DreamHost
 
-Stand 06.10.2026: **https://tafolliboost.com** ist auf einem DreamHost Self-Managed VPS mit Docker/Caddy, persistentem Datenträger und HTTPS veröffentlicht. Der zentrale OpenAI-Zugang, Konto-Mails, Admin-MFA und tägliche verschlüsselte Sicherungen sind eingerichtet. Social-Login-Apps und Zahlungshändler sind noch nicht konfiguriert. Der folgende Ablauf dokumentiert Einrichtung und Wartung; alternative Hosting-Typen sind keine Behauptung über den tatsächlich gewählten Tarif.
+Stand 06.10.2026: **https://tafolliboost.com** ist auf einem DreamHost Self-Managed VPS mit Docker/Caddy, persistentem Datenträger und HTTPS veröffentlicht. Der zentrale OpenAI-Zugang, Konto-Mails, separate Admin-Anmeldung und tägliche verschlüsselte Sicherungen sind eingerichtet. Social-Login-Apps und Zahlungshändler sind noch nicht konfiguriert. Der folgende Ablauf dokumentiert Einrichtung und Wartung; alternative Hosting-Typen sind keine Behauptung über den tatsächlich gewählten Tarif.
 
 ## 1. Vorhandenen Hosting-Typ feststellen
 
@@ -46,6 +46,8 @@ APP_NAME=tafolliboost.com
 ALLOWED_HOSTS=tafolliboost.com,www.tafolliboost.com,localhost,127.0.0.1
 ALLOWED_ORIGINS=https://tafolliboost.com,capacitor://localhost,https://localhost
 SECURE_COOKIES=true
+# Aktueller Betreiberwunsch: E-Mail und Passwort; Standard für neue Installationen: true.
+ADMIN_REQUIRE_TOTP=false
 HOSTED_AI_ENABLED=true
 ALLOW_SERVER_KEYS=false
 OAUTH_BASE_URL=https://tafolliboost.com

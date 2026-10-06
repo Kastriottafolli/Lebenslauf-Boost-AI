@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, update
 
 from backend.account_models import AccountProfile, AccountSecurity, EmailOutbox
+from backend.config import get_settings
 from backend.database import engine, get_db
 from backend.models import (
     Account,
@@ -42,6 +43,11 @@ def protected(request: Request, db=Depends(get_db)):
     return admins.current_admin(db, request)
 
 
+@router.get("/auth-options")
+def auth_options():
+    return {"requires_totp": get_settings().admin_require_totp}
+
+
 class SetupRequest(BaseModel):
     email: str = Field(..., max_length=254)
     setup_code: str = Field(..., min_length=30, max_length=100)
@@ -67,7 +73,10 @@ def pending(db, req):
 def begin(req: SetupRequest, db=Depends(get_db)):
     limit_identity(db, req.email, "setup")
     _account, access = pending(db, req)
+    if not get_settings().admin_require_totp:
+        return {"requires_totp": False}
     return {
+        "requires_totp": True,
         "secret": admins.cipher().decrypt(access.secret_cipher.encode()).decode(),
         "issuer": "Boosty AI",
     }
@@ -75,14 +84,16 @@ def begin(req: SetupRequest, db=Depends(get_db)):
 
 class SetupFinish(SetupRequest):
     password: str = Field(..., min_length=14, max_length=128)
-    code: str = Field(..., pattern=r"^\d{6}$")
+    code: str | None = Field(None, pattern=r"^\d{6}$")
 
 
 @router.post("/setup/finish")
 def finish(req: SetupFinish, response: Response, db=Depends(get_db)):
     limit_identity(db, req.email, "setup")
     account, access = pending(db, req)
-    if not admins.accept_totp(db, access, req.code):
+    if get_settings().admin_require_totp and (
+        not req.code or not admins.accept_totp(db, access, req.code)
+    ):
         raise HTTPException(
             401, "Authenticator-Code ungültig oder bereits verwendet / invalid or reused code"
         )
@@ -105,7 +116,7 @@ def finish(req: SetupFinish, response: Response, db=Depends(get_db)):
 
 
 class AdminCredentials(Credentials):
-    code: str = Field(..., pattern=r"^\d{6}$")
+    code: str | None = Field(None, pattern=r"^\d{6}$")
 
 
 @router.post("/login")
@@ -119,7 +130,10 @@ def login(req: AdminCredentials, response: Response, db=Depends(get_db)):
         not valid_password
         or not access
         or not access.enabled
-        or not admins.accept_totp(db, access, req.code)
+        or (
+            get_settings().admin_require_totp
+            and (not req.code or not admins.accept_totp(db, access, req.code))
+        )
     ):
         admins.audit(db, None, "admin.login.denied")
         raise HTTPException(401, "Admin-Anmeldedaten ungültig / invalid admin credentials")

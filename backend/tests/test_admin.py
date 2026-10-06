@@ -42,6 +42,7 @@ def env(tmp_path, monkeypatch):
     factory = sessionmaker(bind=engine)
     monkeypatch.setattr(get_settings(), "admin_key_file", str(tmp_path / "encryption.key"))
     monkeypatch.setattr(get_settings(), "secure_cookies", True)
+    monkeypatch.setattr(get_settings(), "admin_require_totp", True)
     clock = [1800000000]
     monkeypatch.setattr(admins.time, "time", lambda: clock[0])
 
@@ -79,6 +80,89 @@ def complete(env):
 def test_rfc6238_totp_vector():
     # RFC 6238 SHA-1 test vector: 59 seconds -> 94287082 (last six digits).
     assert admins.totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", 1) == "287082"
+
+
+@pytest.mark.parametrize("requires_totp", [True, False])
+def test_authentication_mode_only_discloses_server_policy(env, monkeypatch, requires_totp):
+    client, _factory, _setup, _clock, _path = env
+    monkeypatch.setattr(get_settings(), "admin_require_totp", requires_totp)
+    response = client.get("/api/admin/auth-options")
+    assert response.status_code == 200
+    assert response.json() == {"requires_totp": requires_totp}
+    assert response.headers["cache-control"] == "no-store"
+    assert client.get("/api/admin/auth-options", headers={"Origin": "https://evil.invalid"}).status_code == 403
+    assert TestClient(app).get("/api/admin/auth-options").status_code == 403
+
+
+def test_password_only_login_preserves_credentials_and_mfa_state(env, monkeypatch):
+    client, factory, setup, _clock, _path = env
+    complete(env)
+    assert client.post("/api/admin/logout", json={}).status_code == 200
+    with factory() as db:
+        account = db.query(Account).one()
+        access = db.query(AdminAccess).one()
+        original = (account.id, account.password_hash, access.secret_cipher, access.last_counter)
+    monkeypatch.setattr(get_settings(), "admin_require_totp", False)
+    credentials = {"email": setup["email"], "password": PASSWORD}
+    assert client.post("/api/admin/login", json={**credentials, "password": "wrong-password-1234"}).status_code == 401
+    result = client.post("/api/admin/login", json=credentials)
+    assert result.status_code == 200
+    assert result.json()["email"] == setup["email"]
+    assert "HttpOnly" in result.headers["set-cookie"]
+    assert "SameSite=strict" in result.headers["set-cookie"]
+    assert client.get("/api/admin/overview").status_code == 200
+    with factory() as db:
+        account, access = db.query(Account).one(), db.query(AdminAccess).one()
+        assert (account.id, account.password_hash, access.secret_cipher, access.last_counter) == original
+    assert client.post("/api/admin/logout", json={}).status_code == 200
+    assert client.get("/api/admin/me").status_code == 401
+    # Re-enabling MFA still requires a valid code; client fields cannot bypass it.
+    monkeypatch.setattr(get_settings(), "admin_require_totp", True)
+    assert client.post("/api/admin/login", json=credentials).status_code == 401
+    assert client.post("/api/admin/login", json={**credentials, "requires_totp": False}).status_code == 422
+
+
+def test_password_only_private_setup_requires_private_code_and_is_single_use(env, monkeypatch):
+    client, factory, setup, _clock, _path = env
+    monkeypatch.setattr(get_settings(), "admin_require_totp", False)
+    assert client.post("/api/admin/setup/begin", json={**setup, "setup_code": secrets.token_urlsafe(32)}).status_code == 401
+    result = client.post("/api/admin/setup/begin", json=setup)
+    assert result.json() == {"requires_totp": False}
+    credentials = {**setup, "password": PASSWORD}
+    assert client.post("/api/admin/setup/finish", json={**credentials, "password": "too-short"}).status_code == 422
+    assert client.post("/api/admin/setup/finish", json=credentials).status_code == 200
+    assert client.post("/api/admin/setup/finish", json=credentials).status_code == 401
+    with factory() as db:
+        access = db.query(AdminAccess).one()
+        assert access.enabled and access.setup_hash is None and access.last_counter == -1
+        assert access.secret_cipher
+    assert client.get("/api/admin/me").status_code == 200
+
+
+def test_password_only_login_still_rejects_non_admin_disabled_and_unknown_accounts(env, monkeypatch):
+    client, factory, setup, _clock, _path = env
+    monkeypatch.setattr(get_settings(), "admin_require_totp", False)
+    with factory() as db:
+        db.add(Account(email="ordinary@example.com", password_hash=password_hash(PASSWORD), recovery_hash=token_hash("synthetic-recovery")))
+        # A provisioned but inactive admin must not sign in even with a matching password.
+        db.query(Account).filter_by(email=setup["email"]).one().password_hash = password_hash(PASSWORD)
+        db.commit()
+    for email in ("ordinary@example.com", "missing@example.com", setup["email"]):
+        assert client.post("/api/admin/login", json={"email": email, "password": PASSWORD}).status_code == 401
+    assert client.get("/api/admin/users").status_code == 401
+
+
+@pytest.mark.parametrize("requires_totp", [True, False])
+def test_identity_limits_apply_to_both_admin_authentication_modes(env, monkeypatch, requires_totp):
+    client, factory, setup, _clock, _path = env
+    complete(env)
+    monkeypatch.setattr(get_settings(), "admin_require_totp", requires_totp)
+    with factory() as db:
+        from backend.services.account_service import limit_identity
+
+        for _ in range(10):
+            limit_identity(db, setup["email"], "admin")
+    assert client.post("/api/admin/login", json={"email": setup["email"], "password": PASSWORD}).status_code == 429
 
 
 def test_admin_never_granted_by_public_registration_or_email(env, monkeypatch):

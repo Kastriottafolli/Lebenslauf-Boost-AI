@@ -83,3 +83,7 @@ Domain-Prüfung: Server-HTML und Browser-Build liefern die neue Canonical-/Open-
 ## Boosty-Neugestaltung und Kontoverlauf
 
 Die neue 3D-Illustration, ihre CSS-Animationen, Startoptionen, Gesprächsblasen und automatische Kontospeicherung sind in [BOOSTY-REDESIGN.md](BOOSTY-REDESIGN.md) dokumentiert. Aktueller Prüfstand: 62 Backend- und 22 Frontendtests. Browserprüfung mit separater Testdatenbank: Entwurf → Generierung → Design → Abmeldung → erneuter Login → Wiederherstellung, zusätzlich mobile albanische Hilfe bei 390 × 844 Pixeln. Keine echte Betreiber-KI oder private Nutzerdaten eingesetzt.
+
+## Admin-Anmeldung ohne Authenticator (06.10.2026)
+
+Der Betreiber wünscht E-Mail und Passwort als Anmeldung. `ADMIN_REQUIRE_TOTP=false` deaktiviert nur die zusätzliche Zeitcode-Prüfung. Tests decken beide Server-Einstellungen, fehlende Codes bei aktivierter MFA, private einmalige Einrichtung ohne MFA, falsche Passwörter, unbekannte/gewöhnliche/deaktivierte Konten, unveränderte Passwort- und TOTP-Daten, Session-Widerruf und Anmeldelimits ab. Die früher dokumentierten MFA-Prüfungen bleiben für die optionale Einstellung `true` gültig.

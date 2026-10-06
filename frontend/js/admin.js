@@ -6,14 +6,14 @@ export function mountAdmin(root) {
   const english = document.documentElement.lang === 'en';
   const tr = (de, en) => english ? en : de;
   root.innerHTML = `<div class="admin-intro"><img src="${new URL('static/boosty-3d.png', new URL(document.querySelector('meta[name="app-base"]')?.content || './', location.href))}" alt="Boosty" width="56" height="60"><div><p class="eyebrow">BOOSTY AI · ADMIN</p><h1>${tr('Dein Überblick. Geschützt.', 'Your overview. Protected.')}</h1><p>${tr('Konten, Bewerbungen und Nutzung an einem Ort.', 'Accounts, applications and usage in one place.')}</p></div></div>
-  <p class="admin-message" role="status" aria-live="polite"></p>
-  <section class="admin-auth"><h2>${tr('Admin-Anmeldung', 'Admin sign-in')}</h2><p>${tr('Passwort und Authenticator-Code erforderlich. Die Sitzung endet nach 15 Minuten.', 'Password and authenticator code required. Sessions expire after 15 minutes.')}</p>
-  <form class="admin-login"><label class="field">E-Mail<input name="email" type="email" autocomplete="username" maxlength="254" required></label><label class="field">${tr('Passwort', 'Password')}<input name="password" type="password" autocomplete="current-password" minlength="14" maxlength="128" required></label><label class="field">${tr('Authenticator-Code', 'Authenticator code')}<input name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required></label><button class="button primary">${tr('Geschützt anmelden', 'Sign in securely')}</button></form>
+  <p class="admin-message" role="status" aria-live="polite"></p><button type="button" class="button outline admin-auth-retry" hidden>${tr('Anmeldung erneut laden', 'Reload sign-in')}</button>
+  <section class="admin-auth" hidden><h2>${tr('Admin-Anmeldung', 'Admin sign-in')}</h2><p class="admin-auth-description"></p>
+  <form class="admin-login"><label class="field">E-Mail<input name="email" type="email" autocomplete="username" maxlength="254" required></label><label class="field">${tr('Passwort', 'Password')}<input name="password" type="password" autocomplete="current-password" minlength="14" maxlength="128" required></label><label class="field admin-code">${tr('Authenticator-Code', 'Authenticator code')}<input name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" maxlength="6" required></label><button class="button primary">${tr('Geschützt anmelden', 'Sign in securely')}</button></form>
   <details class="admin-setup"><summary>${tr('Ersteinrichtung mit privatem Einrichtungscode', 'First setup with private setup code')}</summary><p>${tr('Der Betreiber erstellt den Code auf dem Server. Öffentliche Registrierung vergibt keine Adminrechte.', 'The operator creates the code on the server. Public registration never grants administrator rights.')}</p><form class="admin-begin"><label class="field">E-Mail<input name="email" type="email" required maxlength="254" autocomplete="username"></label><label class="field">${tr('Einrichtungscode', 'Setup code')}<input name="setup_code" type="password" required autocomplete="off" maxlength="100"></label><button class="button outline">${tr('Authenticator verbinden', 'Connect authenticator')}</button></form>
-  <form class="admin-finish" hidden><p>${tr('In deiner Authenticator-App einen zeitbasierten Eintrag (TOTP, SHA-1, 6 Ziffern, 30 Sekunden) für Boosty AI hinzufügen. Diesen Schlüssel manuell eintragen:', 'Add a time-based entry (TOTP, SHA-1, 6 digits, 30 seconds) for Boosty AI in your authenticator app. Enter this key manually:')}</p><code class="admin-secret"></code><label class="field">${tr('Eigenes Passwort (mindestens 14 Zeichen)', 'Your password (at least 14 characters)')}<input name="password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required></label><label class="field">${tr('Aktueller Authenticator-Code', 'Current authenticator code')}<input name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required maxlength="6"></label><button class="button primary">${tr('Einrichtung abschließen', 'Complete setup')}</button></form></details></section>
+  <form class="admin-finish" hidden><div class="admin-totp-setup"><p>${tr('In deiner Authenticator-App einen zeitbasierten Eintrag (TOTP, SHA-1, 6 Ziffern, 30 Sekunden) für Boosty AI hinzufügen. Diesen Schlüssel manuell eintragen:', 'Add a time-based entry (TOTP, SHA-1, 6 digits, 30 seconds) for Boosty AI in your authenticator app. Enter this key manually:')}</p><code class="admin-secret"></code></div><label class="field">${tr('Eigenes Passwort (mindestens 14 Zeichen)', 'Your password (at least 14 characters)')}<input name="password" type="password" autocomplete="new-password" minlength="14" maxlength="128" required></label><label class="field admin-code">${tr('Aktueller Authenticator-Code', 'Current authenticator code')}<input name="code" inputmode="numeric" pattern="[0-9]{6}" autocomplete="one-time-code" required maxlength="6"></label><button class="button primary">${tr('Einrichtung abschließen', 'Complete setup')}</button></form></details></section>
   <section class="admin-dashboard" hidden><div class="admin-toolbar"><strong class="admin-email"></strong><span>${tr('Sitzung: höchstens 15 Minuten', 'Session: at most 15 minutes')}</span><button class="button outline admin-logout">${tr('Abmelden', 'Sign out')}</button></div><nav class="admin-nav" aria-label="Admin"><button data-view="overview">${tr('Übersicht', 'Overview')}</button><button data-view="users">${tr('Nutzer', 'Users')}</button><button data-view="sessions">${tr('Sitzungen', 'Sessions')}</button><button data-view="events">${tr('Nutzungsverlauf', 'Activity')}</button><button data-view="audit">${tr('Admin-Protokoll', 'Admin audit')}</button><button data-view="database">${tr('Datenbank', 'Database')}</button></nav><div class="admin-filter"><label class="field">${tr('Zeitraum', 'Period')}<select class="admin-days"><option value="7">7 ${tr('Tage', 'days')}</option><option value="30" selected>30 ${tr('Tage', 'days')}</option><option value="90">90 ${tr('Tage', 'days')}</option></select></label><label class="field admin-search-field">${tr('E-Mail suchen', 'Search email')}<input class="admin-search" type="search" maxlength="254"></label><button class="button outline admin-refresh">${tr('Aktualisieren', 'Refresh')}</button></div><div class="admin-content"></div><div class="admin-pagination"><button class="button quiet admin-prev">← ${tr('Zurück', 'Previous')}</button><span class="admin-page"></span><button class="button quiet admin-next">${tr('Weiter', 'Next')} →</button></div></section>`;
   const $ = s => root.querySelector(s), content = $('.admin-content');
-  let setupCredentials;
+  let setupCredentials, authReady = false, requiresTotp = true;
   function clear() {
     generation++; token = ''; clearTimeout(expiryTimer);
     $('.admin-dashboard').hidden = true; $('.admin-auth').hidden = false;
@@ -29,7 +29,39 @@ export function mountAdmin(root) {
     if (!response.ok) { if ((response.status === 401 || response.status === 403) && !$('.admin-dashboard').hidden) clear(); throw new Error(typeof data.detail === 'string' ? data.detail : tr('Eingaben prüfen.', 'Check input.')); }
     return data;
   }
-  const guarded = work => async e => { e?.preventDefault(); const buttons = [...root.querySelectorAll('button')]; buttons.forEach(b => b.disabled = true); $('.admin-message').textContent=''; try {await work(e);} catch(error){$('.admin-message').textContent=error.message;} finally {buttons.forEach(b => b.disabled=false);} };
+  const guarded = work => async e => { e?.preventDefault(); const buttons = [...root.querySelectorAll('button')]; buttons.forEach(b => b.disabled = true); $('.admin-message').textContent=''; try {await work(e);} catch(error){$('.admin-message').textContent=error.message;} finally {buttons.forEach(b => b.disabled=false); authButtons();} };
+  function authButtons() {
+    root.querySelectorAll('.admin-login button,.admin-begin button,.admin-finish button').forEach(b => b.disabled = !authReady);
+  }
+  function authMode(value) {
+    if (typeof value.requires_totp !== 'boolean') throw new Error(tr('Anmeldung konnte nicht geladen werden.', 'Sign-in could not be loaded.'));
+    requiresTotp = value.requires_totp; authReady = true;
+    $('.admin-auth').hidden = false;
+    root.querySelectorAll('.admin-code').forEach(field => {
+      field.hidden = !requiresTotp;
+      const input = field.querySelector('input'); input.required = requiresTotp; input.disabled = !requiresTotp;
+      if (!requiresTotp) input.value = '';
+    });
+    $('.admin-totp-setup').hidden = !requiresTotp;
+    $('.admin-auth-description').textContent = requiresTotp
+      ? tr('Passwort und Authenticator-Code erforderlich. Die Sitzung endet nach 15 Minuten.', 'Password and authenticator code required. Sessions expire after 15 minutes.')
+      : tr('Melde dich mit deiner E-Mail-Adresse und deinem Passwort an. Die Sitzung endet nach 15 Minuten.', 'Sign in with your email address and password. Sessions expire after 15 minutes.');
+    $('.admin-begin button').textContent = requiresTotp ? tr('Authenticator verbinden', 'Connect authenticator') : tr('Weiter zum Passwort', 'Continue to password');
+    $('.admin-auth-retry').hidden = true; authButtons();
+  }
+  function credentials(form) {
+    if (!authReady) throw new Error(tr('Bitte Anmeldung erneut laden.', 'Please reload sign-in.'));
+    const body = Object.fromEntries(new FormData(form));
+    if (!requiresTotp) delete body.code;
+    return body;
+  }
+  async function initializeAuth() {
+    authReady = false; authButtons(); $('.admin-auth-retry').hidden = true;
+    $('.admin-message').textContent = tr('Anmeldung wird geladen …', 'Loading sign-in …');
+    try { authMode(await request('auth-options')); }
+    catch { $('.admin-message').textContent = tr('Die Anmeldung konnte nicht geladen werden. Bitte erneut versuchen.', 'Sign-in could not be loaded. Please try again.'); $('.admin-auth-retry').hidden = false; return; }
+    $('.admin-message').textContent = '';
+  }
   function label(text, element='p') { const el=document.createElement(element); el.textContent=text; return el; }
   function table(headers, rows) {const box=document.createElement('div'); box.className='admin-table-scroll'; const t=document.createElement('table'), h=document.createElement('tr');headers.forEach(x=>h.append(label(x,'th'))); const head=document.createElement('thead');head.append(h);t.append(head);const body=document.createElement('tbody');rows.forEach(values=>{const row=document.createElement('tr');values.forEach(v=>{const c=document.createElement('td');if(v instanceof Node)c.append(v);else c.textContent=v??'–';row.append(c);});body.append(row);});t.append(body);box.append(t);return box;}
   const date=v=>v?new Date(/(?:Z|[+-]\d\d:\d\d)$/.test(v)?v:v+'Z').toLocaleString(english?'en-GB':'de-DE'):'–';
@@ -54,14 +86,15 @@ export function mountAdmin(root) {
     $('.admin-prev').hidden=offset===0;$('.admin-next').hidden=offset+25>=value.total;
   }
   async function signedIn(value) {token=value.access_token||'';$('.admin-email').textContent=value.email;$('.admin-auth').hidden=true;$('.admin-dashboard').hidden=false;root.querySelectorAll('form').forEach(f=>f.reset());$('.admin-secret').textContent='';setupCredentials=null;clearTimeout(expiryTimer);expiryTimer=setTimeout(()=>{clear();$('.admin-message').textContent=tr('Sitzung abgelaufen. Bitte erneut anmelden.','Session expired. Sign in again.');},(value.expires_in||900)*1000);await load();}
-  $('.admin-login').addEventListener('submit',guarded(async e=>signedIn(await request('login',Object.fromEntries(new FormData(e.target))))));
-  $('.admin-begin').addEventListener('submit',guarded(async e=>{setupCredentials=Object.fromEntries(new FormData(e.target));const value=await request('setup/begin',setupCredentials);$('.admin-secret').textContent=value.secret;$('.admin-finish').hidden=false;}));
-  $('.admin-finish').addEventListener('submit',guarded(async e=>signedIn(await request('setup/finish',{...setupCredentials,...Object.fromEntries(new FormData(e.target))}))));
+  $('.admin-login').addEventListener('submit',guarded(async e=>signedIn(await request('login',credentials(e.target)))));
+  $('.admin-begin').addEventListener('submit',guarded(async e=>{setupCredentials=credentials(e.target);const value=await request('setup/begin',setupCredentials);authMode(value);$('.admin-secret').textContent=value.secret||'';$('.admin-finish').hidden=false;}));
+  $('.admin-finish').addEventListener('submit',guarded(async e=>signedIn(await request('setup/finish',{...setupCredentials,...credentials(e.target)}))));
   $('.admin-logout').addEventListener('click',guarded(async()=>{try{await request('logout',{});}finally{clear();}}));
   root.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',guarded(async()=>{panel=b.dataset.view;offset=0;selectedAccount='';await load();})));
   $('.admin-refresh').addEventListener('click',guarded(async()=>{offset=0;await load();}));$('.admin-prev').addEventListener('click',guarded(async()=>{offset=Math.max(0,offset-25);await load();}));$('.admin-next').addEventListener('click',guarded(async()=>{offset+=25;await load();}));
   $('.admin-days').addEventListener('change',guarded(load));
   if(BROWSER_ONLY){$('.admin-auth').hidden=true;$('.admin-message').textContent=tr('Der Adminbereich benötigt den App-Server.','Administration requires the app server.');}
-  else request('me').then(signedIn).catch(()=>{});
+  else { authButtons(); initializeAuth().then(() => { if (authReady) request('me').then(signedIn).catch(()=>{}); }); }
+  $('.admin-auth-retry').addEventListener('click',guarded(initializeAuth));
   return {clear};
 }
