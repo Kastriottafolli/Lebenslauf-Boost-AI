@@ -1,6 +1,7 @@
 """Verified accounts, versioned consent, passwords and expiring login cookies."""
 
 import hashlib
+import json
 import secrets
 from datetime import UTC, datetime, timedelta
 
@@ -41,8 +42,10 @@ def now():
 
 
 def migrate_existing_accounts(engine):
+    from backend.account_migration import migrate_account_profiles
     from backend.account_models import AccountProfile, AccountSecurity
 
+    migrate_account_profiles(engine)
     with engine.begin() as connection:
         missing = select(Account.id).where(
             ~select(AccountSecurity.account_id)
@@ -54,6 +57,14 @@ def migrate_existing_accounts(engine):
                 account_id=account_id, verified_at=now(), verification_source="legacy_existing",
                 credential_version=1,
             ))
+        # Security and profile gaps are independent: preserve any existing profile
+        # and fill missing profiles for pending accounts without verifying them.
+        missing_profiles = select(Account.id).where(
+            ~select(AccountProfile.account_id)
+            .where(AccountProfile.account_id == Account.id)
+            .exists()
+        )
+        for account_id in connection.execute(missing_profiles).scalars().all():
             connection.execute(insert(AccountProfile).values(account_id=account_id))
 
 
@@ -153,6 +164,42 @@ def consume_token(db, token, purposes):
     return account, security, action
 
 
+def profile_fields_json(profile):
+    """Serialize only public profile fields; JSON storage stays an implementation detail."""
+    from backend.profile_schema import PROFILE_FIELDS, AccountProfileFields
+
+    defaults = AccountProfileFields().model_dump(mode="json")
+    values = {
+        name: getattr(profile, name, defaults[name]) if profile else defaults[name]
+        for name in PROFILE_FIELDS
+    }
+    try:
+        languages = json.loads(values["spoken_languages"]) if isinstance(values["spoken_languages"], str) else values["spoken_languages"]
+    except (ValueError, TypeError):
+        languages = []
+    values["spoken_languages"] = languages if isinstance(languages, list) else []
+    return values | {
+        "preferences": {"email_notifications": bool(profile and profile.email_notifications)},
+        "updated_at": profile.updated_at.isoformat() + "Z" if profile and profile.updated_at else None,
+    }
+
+
+def apply_profile_fields(profile, values):
+    """Write validated allowlisted values, including JSON languages and optional date."""
+    from backend.profile_schema import PROFILE_FIELDS
+
+    for field, value in values.items():
+        if field == "preferences":
+            if "email_notifications" in value:
+                profile.email_notifications = value["email_notifications"]
+        elif field in PROFILE_FIELDS:
+            if field == "spoken_languages":
+                value = json.dumps(value, ensure_ascii=False)
+            elif field == "date_of_birth" and value:
+                value = value.isoformat() if hasattr(value, "isoformat") else value
+            setattr(profile, field, value)
+
+
 def profile_json(db, account):
     from backend.account_models import AccountProfile, AccountSecurity
     from backend.account_terms import PRIVACY_VERSION, TERMS_VERSION
@@ -163,10 +210,7 @@ def profile_json(db, account):
         "email": account.email,
         "verified": bool(security and security.verified_at),
         "created_at": account.created_at.isoformat() + "Z",
-        "profile": {
-            name: getattr(profile, name, "de" if name == "language" else "")
-            for name in ("display_name", "first_name", "last_name", "phone", "location", "headline", "language")
-        } | {"preferences": {"email_notifications": bool(profile and profile.email_notifications)}},
+        "profile": profile_fields_json(profile),
         "terms": {
             "version": TERMS_VERSION,
             "privacy_version": PRIVACY_VERSION,

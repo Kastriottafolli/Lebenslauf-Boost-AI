@@ -72,6 +72,9 @@ def install_security(app):
                 "/api/oauth/providers",
                 "/api/usage",
                 "/api/billing/pricing",
+                "/api/traffic/start",
+                "/api/traffic/heartbeat",
+                "/api/traffic/end",
             }
             # Only these exact callback endpoints bypass user login. They reject
             # disabled payments and authenticate the provider signature themselves.

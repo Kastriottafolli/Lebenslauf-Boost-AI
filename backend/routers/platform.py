@@ -197,7 +197,11 @@ def register(
         terms_version=TERMS_VERSION, privacy_version=PRIVACY_VERSION,
         terms_accepted_at=accounts.now(), privacy_acknowledged_at=accounts.now(),
     ))
-    db.add(AccountProfile(account_id=account.id, display_name=req.display_name, language=req.language))
+    from backend.profile_schema import PROFILE_FIELDS
+
+    profile = AccountProfile(account_id=account.id)
+    accounts.apply_profile_fields(profile, req.model_dump(include=PROFILE_FIELDS))
+    db.add(profile)
     db.flush()
     accounts.action_token(db, account, "verify", email, req.language)
     try:
@@ -350,9 +354,7 @@ def update_account_profile(req: schemas.AccountProfileUpdate, request: Request, 
     if not profile:
         profile = AccountProfile(account_id=account.id)
         db.add(profile)
-    for field, value in req.model_dump(exclude={"preferences"}).items():
-        setattr(profile, field, value.strip())
-    profile.email_notifications = req.preferences.email_notifications
+    accounts.apply_profile_fields(profile, req.model_dump(exclude_unset=True))
     profile.updated_at = accounts.now()
     db.commit()
     return accounts.profile_json(db, account)

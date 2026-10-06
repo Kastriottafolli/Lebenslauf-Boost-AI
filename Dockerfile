@@ -19,6 +19,7 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt && useradd --create-home candidaro
 COPY backend backend
 COPY prompts prompts
+COPY scripts/update_geoip.py scripts/update_geoip.py
 COPY --from=frontend /app/frontend frontend
 COPY --from=frontend /app/static static
 COPY --from=frontend /app/_site _site

@@ -97,7 +97,7 @@ def allowed_source(name: str) -> bool:
     if path.parts[0] == "prompts":
         return path.suffix in {".txt", ".md"}
     if path.parts[0] == "scripts":
-        return path.name in {"build_pages.py", "bundle_pages.mjs", "package_release.py"}
+        return path.name in {"build_pages.py", "bundle_pages.mjs", "package_release.py", "update_geoip.py"}
     if path.parts[0] == "deploy":
         return name == "deploy/Caddyfile"
     return name in {"docs/product/HOSTED-OPENAI.md", "docs/product/ADMIN.md", "docs/product/BILLING.md"}

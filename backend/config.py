@@ -108,6 +108,9 @@ class Settings(BaseSettings):
     admin_key_file: str = "./data/admin-secrets.key"
     # Only the server operator can change the admin sign-in policy.
     admin_require_totp: bool = True
+    # Optional consent-based first-party statistics; no external IP lookup.
+    traffic_geoip_db_path: str = ""
+    traffic_store_masked_ip: bool = False
     database_url: str = "sqlite:///./data/app.db"
     upload_dir: str = "./data/uploads"
     max_upload_mb: int = 10

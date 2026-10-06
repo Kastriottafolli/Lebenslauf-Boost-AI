@@ -4,6 +4,10 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.profile_schema import AccountPreferences as AccountPreferences
+from backend.profile_schema import AccountProfileFields
+from backend.profile_schema import AccountProfileUpdate as AccountProfileUpdate
+
 
 class ApiKeys(BaseModel):
     """Vom Nutzer in der UI eingegebene API-Keys (überschreiben Server-Keys)."""
@@ -142,9 +146,8 @@ class AccountConsent(BaseModel):
             })
 
 
-class AccountRegistration(AccountCredentials, AccountConsent):
-    display_name: str = Field("", max_length=200)
-    language: str = Field("de", pattern="^(de|en|sq)$")
+class AccountRegistration(AccountCredentials, AccountConsent, AccountProfileFields):
+    pass
 
 
 class AccountEmailRequest(BaseModel):
@@ -163,23 +166,6 @@ class AccountTokenRequest(BaseModel):
 
 class AccountResetRequest(AccountTokenRequest):
     password: str = Field(..., min_length=12, max_length=128)
-
-
-class AccountPreferences(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    email_notifications: bool = False
-
-
-class AccountProfileUpdate(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    display_name: str = Field("", max_length=200)
-    first_name: str = Field("", max_length=100)
-    last_name: str = Field("", max_length=100)
-    phone: str = Field("", max_length=100)
-    location: str = Field("", max_length=300)
-    headline: str = Field("", max_length=300)
-    language: str = Field("de", pattern="^(de|en|sq)$")
-    preferences: AccountPreferences = Field(default_factory=AccountPreferences)
 
 
 class AccountPasswordChange(BaseModel):
