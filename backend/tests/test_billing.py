@@ -321,6 +321,22 @@ def _stripe_setup(settings, monkeypatch):
     monkeypatch.setattr(settings, "stripe_webhook_secret", "whsec_synthetic")
 
 
+def test_restricted_stripe_key_is_accepted_only_for_its_mode(store, monkeypatch):
+    _factory, _account_id, settings = store
+    monkeypatch.setattr(settings, "billing_payments_enabled", True)
+    monkeypatch.setattr(settings, "stripe_webhook_secret", "whsec_synthetic")
+
+    monkeypatch.setattr(settings, "billing_environment", "live")
+    monkeypatch.setattr(settings, "stripe_secret_key", "rk_live_synthetic")
+    assert payments.providers()["stripe"] is True
+
+    monkeypatch.setattr(settings, "billing_environment", "sandbox")
+    assert payments.providers()["stripe"] is False
+
+    monkeypatch.setattr(settings, "stripe_secret_key", "rk_test_synthetic")
+    assert payments.providers()["stripe"] is True
+
+
 def _stripe_signature(raw, timestamp=None):
     timestamp = str(int(time.time()) if timestamp is None else timestamp)
     signed = hmac.new(

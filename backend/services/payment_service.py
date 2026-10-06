@@ -47,10 +47,11 @@ def providers():
     s = get_settings()
     active = s.billing_payments_enabled and bool(_site()) and mail_ready()
     prefix = "sk_live_" if s.billing_environment == "live" else "sk_test_"
+    restricted_prefix = prefix.replace("sk_", "rk_", 1)
     return {
         "stripe": bool(
             active
-            and s.stripe_secret_key.startswith(prefix)
+            and s.stripe_secret_key.startswith((prefix, restricted_prefix))
             and s.stripe_webhook_secret.startswith("whsec_")
         ),
         "paypal": bool(
