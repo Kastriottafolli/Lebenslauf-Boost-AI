@@ -183,7 +183,6 @@ def checkout(db, account_id, request_id, provider, offer_id, *, language="de", *
                         },
                         data={
                             "mode": "payment",
-                            "payment_method_types[0]": "card",
                             "success_url": return_url,
                             "cancel_url": cancel_url,
                             "client_reference_id": order.id,

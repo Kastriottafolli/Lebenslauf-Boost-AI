@@ -284,6 +284,7 @@ def test_checkout_freezes_server_price_and_reuses_provider_idempotency(store, mo
         assert payments.checkout(db, account_id, request_id, "stripe", "single", **CONSENT) == first
         assert len(calls) == 1
         assert calls[0]["data"]["line_items[0][price_data][unit_amount]"] == "199"
+        assert "payment_method_types[0]" not in calls[0]["data"]
         assert calls[0]["headers"]["Idempotency-Key"] == first["order_id"]
         assert billing.balance(db, account_id)["available"] == 3
         with pytest.raises(HTTPException) as conflict:
