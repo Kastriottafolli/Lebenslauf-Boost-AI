@@ -79,27 +79,34 @@ def test_rfc6238_totp_vector():
     assert admins.totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", 1) == "287082"
 
 
-def test_admin_never_granted_by_public_registration_or_email(env):
+def test_admin_never_granted_by_public_registration_or_email(env, monkeypatch):
+    from backend.account_models import EmailOutbox
+    from backend.account_terms import TERMS_VERSION
+    from backend.services import account_mail
+
     client, factory, setup, _clock, _path = env
-    assert (
-        client.post(
-            "/api/account/register", json={"email": setup["email"], "password": PASSWORD}
-        ).status_code
-        == 409
-    )
-    normal = client.post(
-        "/api/account/register",
-        json={
-            "email": "normal@example.com",
-            "password": PASSWORD,
-            "is_admin": True,
-            "role": "admin",
-        },
-    )
+    monkeypatch.setattr(account_mail, "ready", lambda: True)
+    monkeypatch.setattr(get_settings(), "mail_key_file", str(_path.parent / "mail.key"))
+    consent = {"terms_accepted": True, "privacy_acknowledged": True, "terms_version": TERMS_VERSION}
+    existing = client.post("/api/account/register", json={"email": setup["email"], "password": PASSWORD, **consent})
+    assert existing.status_code == 200 and "access_token" not in existing.json()
+    assert client.post("/api/account/register", json={
+        "email": "normal@example.com", "password": PASSWORD, **consent,
+        "is_admin": True, "role": "admin",
+    }).status_code == 422
+    normal = client.post("/api/account/register", json={
+        "email": "normal@example.com", "password": PASSWORD, **consent,
+    })
     assert normal.status_code == 200
+    with factory() as db:
+        mail = db.query(EmailOutbox).filter_by(recipient="normal@example.com").one()
+        token = json.loads(account_mail.cipher().decrypt(mail.payload_cipher.encode()))["token"]
+    assert client.post("/api/account/verify-email", json={"token": token}).status_code == 200
+    login = client.post("/api/account/login", json={"email": "normal@example.com", "password": PASSWORD})
+    assert login.status_code == 200
     for route in ("overview", "users", "events", "audit", "database", "sessions"):
         assert client.get("/api/admin/" + route).status_code == 401
-    client.headers["Authorization"] = "Bearer " + normal.json()["access_token"]
+    client.headers["Authorization"] = "Bearer " + login.json()["access_token"]
     assert client.get("/api/admin/users").status_code == 401
     with factory() as db:
         assert db.query(AdminAccess).count() == 1
@@ -150,7 +157,7 @@ def test_private_provisioning_and_one_time_setup(env):
                 "recovery_code": setup["setup_code"],
             },
         ).status_code
-        == 401
+        == 410
     )
 
 
@@ -334,7 +341,7 @@ def test_admin_recovery_only_from_server_revokes_sessions(env):
 def test_password_work_factor_upgrade_and_malformed_hashes(env):
     import hashlib
 
-    from backend.services.account_service import password_matches
+    from backend.services.account_service import migrate_existing_accounts, password_matches
 
     client, factory, _setup, _clock, _path = env
     salt = secrets.token_hex(16)
@@ -354,6 +361,7 @@ def test_password_work_factor_upgrade_and_malformed_hashes(env):
             )
         )
         db.commit()
+    migrate_existing_accounts(factory.kw["bind"])
     assert (
         client.post(
             "/api/account/login", json={"email": "legacy@example.com", "password": PASSWORD}
@@ -367,3 +375,44 @@ def test_password_work_factor_upgrade_and_malformed_hashes(env):
             .one()
             .password_hash.startswith("scrypt$32768$8$3$")
         )
+
+
+def test_admin_verification_and_mail_statistics_reveal_metadata_only(env):
+    from backend.account_models import AccountProfile, AccountSecurity, EmailOutbox
+
+    client, factory, _setup, _clock, _path = env
+    complete(env)
+    with factory() as db:
+        pending_account = Account(email="pending@example.com", password_hash="hidden-pending-hash", recovery_hash="hidden-recovery")
+        verified_account = Account(email="confirmed@example.com", password_hash="hidden-verified-hash", recovery_hash="hidden-recovery")
+        db.add_all([pending_account, verified_account])
+        db.flush()
+        db.add_all([
+            AccountSecurity(account_id=pending_account.id, verification_source="email_pending"),
+            AccountSecurity(account_id=verified_account.id, verification_source="email_confirmed", verified_at=admins.now()),
+            AccountProfile(account_id=pending_account.id, display_name="Pending profile"),
+            AccountProfile(account_id=verified_account.id, display_name="Confirmed profile"),
+        ])
+        for status in ("pending", "sent", "failed"):
+            db.add(EmailOutbox(account_id=pending_account.id, recipient=pending_account.email,
+                purpose="verify", status=status, payload_cipher="never-disclose-mail-payload",
+                expires_at=admins.now() + timedelta(hours=24)))
+        db.commit()
+        pending_id = pending_account.id
+    overview = client.get("/api/admin/overview")
+    assert overview.status_code == 200
+    assert overview.json()["totals"]["pending_verifications"] == 1
+    assert overview.json()["totals"]["verified_users"] == 1
+    assert overview.json()["email_delivery"]["pending"] == 1
+    assert overview.json()["email_delivery"]["failed"] == 1
+    assert overview.json()["email_delivery"]["sent"] == 1
+    users = client.get("/api/admin/users")
+    row = next(value for value in users.json()["items"] if value["id"] == pending_id)
+    assert row["display_name"] == "Pending profile"
+    assert row["verified_at"] is None and row["verification_source"] == "email_pending"
+    detail = client.get("/api/admin/users/" + pending_id)
+    assert detail.json()["display_name"] == "Pending profile"
+    for response in (overview, users, detail, client.get("/api/admin/database")):
+        assert "never-disclose-mail-payload" not in response.text
+        assert "hidden-pending-hash" not in response.text
+        assert "payload_cipher" not in response.text and "credential_version" not in response.text

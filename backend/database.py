@@ -55,7 +55,10 @@ def get_db(request: Request):
 
 
 def init_db() -> None:
-    from backend import models  # noqa: F401  (Modelle registrieren)
+    from backend import (
+        account_models,  # noqa: F401
+        models,  # noqa: F401  (Modelle registrieren)
+    )
 
     Base.metadata.create_all(bind=engine)
 
@@ -65,6 +68,18 @@ def init_db() -> None:
         for name in ("owner_token_hash", "owner_id"):
             if name not in columns:
                 connection.execute(text(f"ALTER TABLE sessions ADD COLUMN {name} VARCHAR(64)"))
+        reservation_columns = {
+            c["name"] for c in inspect(engine).get_columns("package_reservations")
+        }
+        if "response_expires_at" not in reservation_columns:
+            connection.execute(text(
+                "ALTER TABLE package_reservations ADD COLUMN response_expires_at DATETIME"
+            ))
+        if "project_id" not in reservation_columns:
+            connection.execute(text(
+                "ALTER TABLE package_reservations ADD COLUMN project_id VARCHAR(36) "
+                "REFERENCES applications(id) ON DELETE SET NULL"
+            ))
         # Preserve historic generations in the old table; safely copy once into expanded schema.
         if "generations" in inspect(engine).get_table_names():
             connection.execute(
@@ -77,3 +92,9 @@ def init_db() -> None:
     from backend.language_migration import migrate_session_languages
 
     migrate_session_languages(engine)
+
+    # Existing users must retain access; this is explicitly a legacy migration,
+    # never a claim that their old addresses were confirmed by email.
+    from backend.services.account_service import migrate_existing_accounts
+
+    migrate_existing_accounts(engine)

@@ -16,6 +16,8 @@ from backend.services.account_service import current_account
 
 
 def authenticated_session(db, request, session):
+    from backend.account_terms import require_current_terms
+
     account = current_account(db, request, True)
     if db.get(AdminAccess, account.id):
         raise HTTPException(403, "Bitte ein normales Nutzerkonto verwenden / use a user account")
@@ -23,6 +25,7 @@ def authenticated_session(db, request, session):
         raise HTTPException(
             403, "Sitzung gehört nicht zu deinem Konto / session ownership mismatch"
         )
+    require_current_terms(db, account)
     return account
 
 

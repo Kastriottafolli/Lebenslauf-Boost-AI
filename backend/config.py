@@ -52,6 +52,23 @@ class Settings(BaseSettings):
     operator_address: str = "Hauptstraße 1\n18609 Ostseebad Binz\nDeutschland"
     operator_email: str = "info@tafolli.net"
 
+    # Transactional account email: never expose credentials to the browser.
+    smtp_enabled: bool = False
+    smtp_host: str = ""
+    smtp_port: int = Field(587, ge=1, le=65535)
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = "info@tafolli.net"
+    smtp_from_name: str = "TafolliBoost"
+    smtp_security: str = Field("starttls", pattern="^(starttls|ssl)$")
+    mail_transport: str = Field("smtp", pattern="^(smtp|https_relay)$")
+    mail_relay_url: str = ""
+    mail_relay_secret: str = ""
+    # Optional operator-only DNS pin; TLS still verifies the relay's hostname.
+    mail_relay_connect_ip: str = ""
+    mail_key_file: str = "./data/mail-secrets.key"
+    mail_poll_seconds: int = Field(15, ge=5, le=300)
+
     # Hosted service: only server credentials and operator-selected models.
     hosted_ai_enabled: bool = True
     hosted_openai_model: str = "gpt-4.1-mini"

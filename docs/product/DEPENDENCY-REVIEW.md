@@ -1,0 +1,7 @@
+# Word-import dependency review (2026-10-06)
+
+`mammoth@1.12.3` formerly depended on argparse 1.x and the unpatched `sprintf-js` advisory [GHSA-hp3w-g68c-fv3c](https://github.com/advisories/GHSA-hp3w-g68c-fv3c). A scoped exact npm override uses `mammoth -> argparse@2.0.1`, whose [upstream manifest](https://raw.githubusercontent.com/nodeca/argparse/2.0.1/package.json) has no runtime dependencies or install hooks. It removes the affected transitive package without downgrading Mammoth or changing its browser conversion code.
+
+Argparse 2 preserves the legacy CLI aliases used by Mammoth. The registry integrity is locked in package-lock.json; installation disabled lifecycle scripts. Installed graph no longer contains sprintf-js. npm audit reports zero vulnerabilities. Existing frontend checks, production build, synthetic Unicode DOCX raw-text import, CLI help and actual CLI conversion all pass.
+
+The dependency-reviewer package-decision workflow was invoked read-only. Endor risk evidence was unavailable because endorctl and its connector are not configured; its formal verdict is evidence-limited NOT_RECOMMENDED, which is not a finding that this package is unsafe. The implementation decision relies on primary upstream/registry metadata, the vulnerability advisory and executed compatibility checks, within the user's authorized security work. This is not an assertion of an Endor approval or a guarantee against future advisories.

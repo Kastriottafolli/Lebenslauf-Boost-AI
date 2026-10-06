@@ -1,0 +1,38 @@
+{
+  "project": "TafolliBoost explainer",
+  "created": "2026-10-06",
+  "artwork": "Existing Boosty artwork and brand graphics",
+  "font_license": "Noto Sans, SIL Open Font License",
+  "videos": [
+    {
+      "language": "de",
+      "duration_seconds": 29.997,
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "voice": "AI-generated",
+      "music": "Original locally composed instrumental; no third-party samples",
+      "bytes": 1080735
+    },
+    {
+      "language": "en",
+      "duration_seconds": 27,
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "voice": "AI-generated",
+      "music": "Original locally composed instrumental; no third-party samples",
+      "bytes": 967016
+    },
+    {
+      "language": "sq",
+      "duration_seconds": 29.226,
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "voice": "AI-generated",
+      "music": "Original locally composed instrumental; no third-party samples",
+      "bytes": 1025164
+    }
+  ]
+}

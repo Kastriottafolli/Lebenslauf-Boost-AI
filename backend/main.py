@@ -42,12 +42,27 @@ def create_app() -> FastAPI:
                     logging.getLogger(__name__).exception("Scheduled database cleanup failed")
 
         task = asyncio.create_task(hourly_cleanup())
+        async def deliver_account_mail():
+            from backend.services.account_mail import drain
+
+            while True:
+                try:
+                    await asyncio.to_thread(drain)
+                except Exception:
+                    # Mail errors must never include payloads or SMTP credentials.
+                    logging.getLogger(__name__).warning("Transactional mail worker unavailable")
+                await asyncio.sleep(settings.mail_poll_seconds)
+
+        mail_task = asyncio.create_task(deliver_account_mail())
         try:
             yield
         finally:
             task.cancel()
+            mail_task.cancel()
             with suppress(asyncio.CancelledError):
                 await task
+            with suppress(asyncio.CancelledError):
+                await mail_task
 
     app = FastAPI(
         title=settings.app_name,

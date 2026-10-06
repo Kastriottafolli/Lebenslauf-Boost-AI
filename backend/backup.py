@@ -62,7 +62,9 @@ def _encryption_key(path: Path, *excluded_directories: Path) -> Fernet:
         raise ValueError("The backup encryption key is invalid.") from None
 
 
-def _database_checks(connection: sqlite3.Connection, admin_key: bytes | None) -> None:
+def _database_checks(
+    connection: sqlite3.Connection, admin_key: bytes | None, mail_key: bytes | None = None
+) -> None:
     if connection.execute("PRAGMA quick_check").fetchone()[0] != "ok":
         raise ValueError("SQLite integrity verification failed.")
     exists = connection.execute(
@@ -81,8 +83,28 @@ def _database_checks(connection: sqlite3.Connection, admin_key: bytes | None) ->
         except (ValueError, InvalidToken, TypeError, AttributeError):
             raise ValueError("The admin encryption key does not match the database.") from None
 
+    mail_exists = connection.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='email_outbox'"
+    ).fetchone()
+    messages = (
+        connection.execute(
+            "SELECT payload_cipher FROM email_outbox WHERE payload_cipher IS NOT NULL"
+        ).fetchall()
+        if mail_exists
+        else []
+    )
+    if messages and not mail_key:
+        raise ValueError("A mail encryption key is required for pending messages.")
+    if mail_key:
+        try:
+            mail_cipher = Fernet(mail_key.strip())
+            for (encrypted_payload,) in messages:
+                mail_cipher.decrypt(encrypted_payload.encode())
+        except (ValueError, InvalidToken, TypeError, AttributeError):
+            raise ValueError("The mail encryption key does not match the database.") from None
 
-def _snapshot(database: Path, admin_key: bytes | None) -> bytes:
+
+def _snapshot(database: Path, admin_key: bytes | None, mail_key: bytes | None = None) -> bytes:
     if database.is_symlink() or not database.is_file():
         raise ValueError("The SQLite database must be an existing regular file.")
     source_uri = database.resolve().as_uri() + "?mode=ro"
@@ -101,7 +123,7 @@ def _snapshot(database: Path, admin_key: bytes | None) -> bytes:
 
         with sqlite3.connect(":memory:") as snapshot:
             source.backup(snapshot, pages=1024, progress=progress, sleep=0.1)
-            _database_checks(snapshot, admin_key)
+            _database_checks(snapshot, admin_key, mail_key)
             data = snapshot.serialize()
     if len(data) > MAX_DATABASE_BYTES:
         raise ValueError("Database exceeds the 256 MiB backup limit.")
@@ -119,11 +141,14 @@ def _add_member(archive: tarfile.TarFile, name: str, data: bytes) -> None:
     archive.addfile(member, io.BytesIO(data))
 
 
-def _bundle(snapshot: bytes, admin_key: bytes | None, created_at: datetime) -> bytes:
+def _bundle(
+    snapshot: bytes, admin_key: bytes | None, created_at: datetime, mail_key: bytes | None = None
+) -> bytes:
     metadata = {
-        "format": 1,
+        "format": 2,
         "created_at": created_at.isoformat(),
         "admin_key_included": admin_key is not None,
+        "mail_key_included": mail_key is not None,
     }
     output = io.BytesIO()
     with tarfile.open(fileobj=output, mode="w:gz") as archive:
@@ -131,17 +156,20 @@ def _bundle(snapshot: bytes, admin_key: bytes | None, created_at: datetime) -> b
         _add_member(archive, "metadata.json", json.dumps(metadata).encode())
         if admin_key is not None:
             _add_member(archive, "admin-secrets.key", admin_key)
+        if mail_key is not None:
+            _add_member(archive, "mail-secrets.key", mail_key)
     return output.getvalue()
 
 
 def _validate_bundle(data: bytes) -> dict:
     try:
         with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as archive:
-            allowed = {"database.sqlite3", "metadata.json", "admin-secrets.key"}
+            allowed = {"database.sqlite3", "metadata.json", "admin-secrets.key", "mail-secrets.key"}
             limits = {
                 "database.sqlite3": MAX_DATABASE_BYTES,
                 "metadata.json": 4096,
                 "admin-secrets.key": 512,
+                "mail-secrets.key": 512,
             }
             contents = {}
             for member in archive:
@@ -155,11 +183,18 @@ def _validate_bundle(data: bytes) -> dict:
         metadata = json.loads(contents["metadata.json"])
         if (
             not isinstance(metadata, dict)
-            or metadata.get("format") != 1
+            or metadata.get("format") not in {1, 2}
             or type(metadata.get("admin_key_included")) is not bool
             or metadata["admin_key_included"] != ("admin-secrets.key" in contents)
         ):
             raise ValueError("Backup metadata is invalid.")
+        if metadata["format"] == 2 and (
+            type(metadata.get("mail_key_included")) is not bool
+            or metadata["mail_key_included"] != ("mail-secrets.key" in contents)
+        ):
+            raise ValueError("Mail backup metadata is invalid.")
+        if metadata["format"] == 1 and "mail-secrets.key" in contents:
+            raise ValueError("Unexpected mail key in legacy backup.")
         try:
             created_at = datetime.fromisoformat(metadata["created_at"])
         except ValueError:
@@ -168,7 +203,9 @@ def _validate_bundle(data: bytes) -> dict:
             raise ValueError("Backup timestamp must include its timezone.")
         with sqlite3.connect(":memory:") as connection:
             connection.deserialize(contents["database.sqlite3"])
-            _database_checks(connection, contents.get("admin-secrets.key"))
+            _database_checks(
+                connection, contents.get("admin-secrets.key"), contents.get("mail-secrets.key")
+            )
         return metadata
     except (
         tarfile.TarError,
@@ -207,6 +244,7 @@ def create_backup(
     directory: Path,
     *,
     admin_key_file: Path | None = None,
+    mail_key_file: Path | None = None,
     retention_days: int = 14,
 ) -> Path:
     if not 1 <= retention_days <= 365:
@@ -214,8 +252,9 @@ def create_backup(
     directory = _private_directory(directory)
     cipher = _encryption_key(key_file, database.resolve().parent, directory)
     admin_key = _private_file(admin_key_file) if admin_key_file else None
+    mail_key = _private_file(mail_key_file) if mail_key_file and mail_key_file.exists() else None
     created_at = _utcnow()
-    bundle = _bundle(_snapshot(database, admin_key), admin_key, created_at)
+    bundle = _bundle(_snapshot(database, admin_key, mail_key), admin_key, created_at, mail_key)
     _validate_bundle(bundle)
     encrypted = cipher.encrypt(bundle)
     if len(encrypted) > MAX_ARCHIVE_BYTES:
@@ -253,6 +292,7 @@ def main() -> None:
     create.add_argument("--key-file", type=Path, required=True)
     create.add_argument("--directory", type=Path, required=True)
     create.add_argument("--admin-key", type=Path)
+    create.add_argument("--mail-key", type=Path)
     create.add_argument("--retention-days", type=int, default=14)
     verify = commands.add_parser(
         "verify", help="Verify without extracting or modifying any database"
@@ -267,13 +307,15 @@ def main() -> None:
                 args.key_file,
                 args.directory,
                 admin_key_file=args.admin_key,
+                mail_key_file=args.mail_key,
                 retention_days=args.retention_days,
             )
             print(f"Encrypted backup created and verified: {destination}")
         else:
             metadata = verify_backup(args.archive, args.key_file)
             print(
-                f"Backup verified: SQLite integrity OK; admin key included: {metadata['admin_key_included']}"
+                f"Backup verified: SQLite integrity OK; admin key included: {metadata['admin_key_included']}; "
+                f"mail key included: {metadata.get('mail_key_included', False)}"
             )
     except (OSError, ValueError, sqlite3.Error) as error:
         parser.exit(1, f"{error}\n")

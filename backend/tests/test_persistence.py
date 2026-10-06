@@ -16,17 +16,35 @@ def test_registration_and_projects_survive_restart(tmp_path):
         "ALLOWED_HOSTS": "testserver",
         "ALLOW_SERVER_KEYS": "false",
         "TEST_BACKUP_DIR": str(tmp_path / "backups"),
+        "MAIL_KEY_FILE": str(tmp_path / "mail.key"),
     }
     common = """
 from fastapi.testclient import TestClient
 from backend.main import app
 client = TestClient(app, base_url="https://testserver")
 credentials = {"email":"persistence@example.invalid", "password":"synthetic-test-password-123"}
+from unittest.mock import patch
+import json
+from backend.account_terms import TERMS_VERSION
+from backend.account_models import EmailOutbox
+from backend.database import SessionLocal
+from backend.services import account_mail
+consent = {"terms_accepted":True,"privacy_acknowledged":True,"terms_version":TERMS_VERSION}
+def register_verified(target,email):
+    with patch.object(account_mail,"ready",return_value=True):
+        response = target.post("/api/account/register",json={**credentials,**consent,"email":email})
+    assert response.status_code==200,response.text
+    with SessionLocal() as db:
+        row=db.query(EmailOutbox).filter_by(recipient=email,purpose="verify").one()
+        token=json.loads(account_mail.cipher().decrypt(row.payload_cipher.encode()))["token"]
+    with patch.object(account_mail,"ready",return_value=True):
+        assert target.post("/api/account/verify-email",json={"token":token}).status_code==200
+    return target.post("/api/account/login",json={**credentials,"email":email})
 """
     first = (
         common
         + """
-response = client.post("/api/account/register",json=credentials)
+response = register_verified(client,credentials["email"])
 assert response.status_code == 200, response.text
 cookie = response.headers["set-cookie"].lower()
 assert "httponly" in cookie and "secure" in cookie
@@ -71,7 +89,7 @@ project = client.get("/api/projects/"+projects[0]["id"]).json()
 assert project["status"] == "ready" and project["notes"] == "Persisted notes"
 assert project["profile"]["source_text"] == "Synthetic resume with original facts."
 stranger = TestClient(app,base_url="https://testserver")
-assert stranger.post("/api/account/register",json={**credentials,"email":"stranger@example.invalid"}).status_code == 200
+assert register_verified(stranger,"stranger@example.invalid").status_code == 200
 assert stranger.get("/api/projects/"+projects[0]["id"]).status_code == 404
 backup_database(Path(os.environ["TEST_BACKUP_DIR"]))
 """

@@ -42,8 +42,10 @@ def _site():
 
 
 def providers():
+    from backend.services.account_mail import ready as mail_ready
+
     s = get_settings()
-    active = s.billing_payments_enabled and bool(_site())
+    active = s.billing_payments_enabled and bool(_site()) and mail_ready()
     prefix = "sk_live_" if s.billing_environment == "live" else "sk_test_"
     return {
         "stripe": bool(
@@ -71,11 +73,16 @@ def require(provider):
 
 
 def pricing():
+    from backend.account_terms import TERMS_VERSION
+
     enabled = providers()
     return {
         "currency": "EUR",
         "free_packages": get_settings().billing_free_packages,
-        "free_period": "lifetime",
+        "free_period": "calendar_week",
+        "free_timezone": billing.FREE_TIMEZONE,
+        "terms_version": TERMS_VERSION,
+        "withdrawal_version": TERMS_VERSION,
         "offers": billing.offers(),
         "payments_enabled": any(enabled.values()),
         "providers": enabled,
@@ -148,9 +155,15 @@ def _checkout_response(order):
     }
 
 
-def checkout(db, account_id, request_id, provider, offer_id):
+def checkout(db, account_id, request_id, provider, offer_id, *, language="de", **consent):
+    from backend.account_terms import require_current_terms
+    from backend.models import Account
+
     require(provider)
-    order_id = billing.prepare_order(db, account_id, request_id, provider, offer_id)
+    require_current_terms(db, db.get(Account, account_id))
+    order_id = billing.prepare_order(
+        db, account_id, request_id, provider, offer_id, language=language, **consent
+    )
     order = db.get(PaymentOrder, order_id)
     if order.checkout_url:
         return _checkout_response(order)

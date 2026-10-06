@@ -3,7 +3,8 @@ import { parseLines } from "./browser/export.js";
 import { jobDetails, validJobUrl, jobImportProblem } from "./core/job.js";
 import { LANGUAGES, translate } from "./core/locale.js";
 import { liveAccountUrl, accountModeFromSearch } from "./core/live-app.js";
-import { PLANNED_PRICING, readPricing, readBalance, checkoutProviders, safeCheckoutUrl, packageProject, PackageRequests } from "./core/billing.js";
+import { TERMS_VERSION, consumeAccountLink, registrationPayload, readAccountProfile, accountErrorCopy, explainerMedia } from "./core/account.js";
+import { PLANNED_PRICING, readPricing, readBalance, purchaseAcknowledged, checkoutProviders, safeCheckoutUrl, packageProject, PackageRequests } from "./core/billing.js";
 import { DOCUMENTS, parseProfile, profileSource, applicationPrompt, demoPackage, validatePackage, assessPackage } from "./core/application.js";
 import { API_BASE, BROWSER_ONLY, api, newSession, getSession, setLoginToken } from "./core/client.js";
 import { SAMPLE } from "./browser/demo.js";
@@ -12,6 +13,7 @@ import branding from "../../static/branding.json" with { type: "json" };
 import { TOUR, GUIDES, helpForTopic, boostyAnswer, questionContainsSecret } from "./core/boosty.js";
 import { mountAdmin } from "./admin.js";
 const $ = (selector) => document.querySelector(selector), $$ = (selector) => [...document.querySelectorAll(selector)];
+const accountLink = consumeAccountLink(location, history);
 const labels = { name: ["Name", "Name"], email: ["E-Mail", "Email"], phone: ["Telefon", "Phone"], location: ["Ort / Adresse", "Location / address"], headline: ["Berufliche \xDCberschrift", "Professional headline"], experience: ["Berufserfahrung (Korrekturen / Erg\xE4nzungen)", "Experience (corrections / additions)"], education: ["Ausbildung", "Education"], skills: ["Kenntnisse", "Skills"], languages: ["Sprachen", "Languages"] };
 const docLabels = { cv: ["Lebenslauf", "Resume"], cover_letter: ["Anschreiben", "Cover letter"], motivation_letter: ["Motivation", "Motivation"], email: ["E-Mail", "Email"] };
 const state = { language: LANGUAGES.includes(new URLSearchParams(location.search).get("lang")) ? new URLSearchParams(location.search).get("lang") : "de", profile: parseProfile(""), documents: null, document: "cv", photo: null, keys: {}, models: {}, provider: "openai", step: 1, isDemo: true, projectId: null, account: null, analysis: null, versions: [] };
@@ -22,19 +24,26 @@ let tourIndex = 0, tourTarget, tourActive = false, embeddedAdmin;
 let chatEpoch = 0, chatPending = false;
 let saveTimer, saveEpoch = 0, saveChain = Promise.resolve(), saveDirty = false, savePaused=false, generationPending=false;
 let boostyConfig = {enabled:false}, boostyTopic="start", guideFrame;
-let pricing=PLANNED_PRICING, creditBalance=null, socialProviders=[], checkoutBusy=false, jobImportPending=false;
+let accountData=null, accountSection="profile", pendingEmail="", emailFlow="verify", resetToken=null, accountActionBusy=false, selectedWithdrawal=null;
+let pricing=PLANNED_PRICING, creditBalance=null, creditRefreshTimer, welcomeTimer, socialProviders=[], checkoutBusy=false, jobImportPending=false;
 const packageRequests=new PackageRequests(), checkoutRequests=new PackageRequests();
 
 function billingView() {
   const available=creditBalance?.available;
-  const summary=!state.account ? tr("Konto erstellen: drei kostenlose Bewerbungen einmalig.","Create an account: three free applications, once.","Krijo llogari: tre aplikime falas, vetëm një herë.")
+  const summary=!state.account ? tr("Konto erstellen: drei kostenlose Bewerbungen pro Kalenderwoche.","Create an account: three free applications each calendar week.","Krijo llogari: tre aplikime falas çdo javë kalendarike.")
     : available==null ? tr("Dein Guthaben wird geladen. Du kannst deine Angaben schon vorbereiten.","Loading your credits. You can already prepare your details.","Po ngarkohen kreditet. Mund t’i përgatitësh të dhënat ndërkohë.")
     : (available===1 ? tr("1 Bewerbung verfügbar","1 application available","1 aplikim në dispozicion")
     : tr(`${available} Bewerbungen verfügbar`,`${available} applications available`,`${available} aplikime në dispozicion`))
       + (creditBalance.reserved ? tr(` · ${creditBalance.reserved} in Bearbeitung`,` · ${creditBalance.reserved} in progress`,` · ${creditBalance.reserved} në përpunim`) : "");
-  $("#creditBalance").textContent=summary;
-  $("#billingBalance").textContent=summary;
-  $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen einmalig pro Konto.`,`${pricing.free_packages} free applications once per account.`,`${pricing.free_packages} aplikime falas vetëm një herë për llogari.`);
+  let detail='';
+  if(creditBalance){
+    const date=new Intl.DateTimeFormat({de:'de-DE',en:'en-GB',sq:'sq-AL'}[state.language],{timeZone:'Europe/Berlin',weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(creditBalance.week_end));
+    detail=tr(`${creditBalance.free_remaining} kostenlos diese Woche · ${creditBalance.paid_remaining} gekauft · Neue Woche: ${date} (Berlin)`,`${creditBalance.free_remaining} free this week · ${creditBalance.paid_remaining} purchased · Resets ${date} (Berlin)`,`${creditBalance.free_remaining} falas këtë javë · ${creditBalance.paid_remaining} të blera · Rinovimi: ${date} (Berlin)`);
+  }
+  $("#creditBalance").textContent=summary+(detail?' · '+detail:'');
+  $("#billingBalance").textContent=summary+(detail?' · '+detail:'');
+  $("#checkoutConsents").hidden=!checkoutProviders(pricing).length;
+  $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen pro Kalenderwoche und Konto.`,`${pricing.free_packages} free applications per calendar week and account.`,`${pricing.free_packages} aplikime falas për javë kalendarike dhe llogari.`);
   $$('[data-free-count]').forEach(el=>el.textContent=pricing.free_packages);
   $$('[data-free-action]').forEach(el=>el.hidden=!!state.account);
   const enabled=checkoutProviders(pricing);
@@ -50,20 +59,25 @@ function billingView() {
     const actions=card.querySelector('[data-checkout-actions]');actions.hidden=!enabled.length;
     actions.replaceChildren(...enabled.map(provider=>{
       const button=document.createElement('button');button.type='button';button.className='button outline';
-      button.disabled=checkoutBusy;button.dataset.checkoutOffer=offer.id;button.dataset.checkoutProvider=provider;
-      button.textContent=provider==='paypal'?tr("Mit PayPal bezahlen","Pay with PayPal","Paguaj me PayPal"):tr("Sicher bezahlen","Pay securely","Paguaj në mënyrë të sigurt");
+      button.disabled=checkoutBusy||(!!card.closest('#billingDialog')&&!purchaseReady());button.dataset.checkoutOffer=offer.id;button.dataset.checkoutProvider=provider;
+      button.textContent=tr("Zahlungspflichtig bestellen","Place paid order","Porosit me detyrim pagese")+" · "+(provider==='paypal'?'PayPal':tr("Karte / Wallet","Card / wallet","Kartë / portofol"));
       return button;
     }));
   });
   $$('[data-pricing-intro]').forEach(el=>el.textContent=enabled.length
-    ? tr("Drei kostenlose Bewerbungen einmalig pro Konto. Danach entscheidest du, ob du weiteres Bewerbungsguthaben kaufen möchtest. Jede Bewerbung enthält alle vier Dokumente.","Three free applications once per account. Then choose whether to buy additional application credits. Each application includes all four documents.","Tre aplikime falas vetëm një herë për llogari. Më pas vendos nëse dëshiron të blesh kredite të tjera. Çdo aplikim përfshin katër dokumentet.")
+    ? tr("Drei kostenlose Bewerbungen pro Kalenderwoche und Konto. Danach entscheidest du, ob du weiteres Bewerbungsguthaben kaufen möchtest. Jede Bewerbung enthält alle vier Dokumente.","Three free applications per calendar week and account. Then choose whether to buy additional application credits. Each application includes all four documents.","Tre aplikime falas për javë kalendarike dhe llogari. Më pas vendos nëse dëshiron të blesh kredite të tjera. Çdo aplikim përfshin katër dokumentet.")
     : el.dataset[state.language]);
 }
 async function refreshBalance() {
+  clearTimeout(creditRefreshTimer);
   if(BROWSER_ONLY||!state.account){creditBalance=null;billingView();return;}
   try {
     const result=readBalance(await api('/api/billing/balance',undefined,'GET',{timeoutMs:15000}));
-    if(result)creditBalance=result;
+    if(result){
+      creditBalance=result;
+      const untilReset=Date.parse(result.week_end)-Date.now();
+      if(untilReset>0&&untilReset<8*24*60*60*1000)creditRefreshTimer=setTimeout(refreshBalance,untilReset+1500);
+    }
   } catch { /* A missing balance never pretends to grant credits. Server enforces it. */ }
   billingView();
 }
@@ -71,16 +85,22 @@ async function loadPricing() {
   if(!BROWSER_ONLY){try {const result=readPricing(await api('/api/billing/pricing',undefined,'GET',{timeoutMs:15000}));if(result)pricing=result;}catch{/* Planned offers stay non-purchasable. */}}
   billingView();
 }
+function purchaseReady() {
+  return purchaseAcknowledged({termsAccepted:$("#checkoutTerms").checked,immediatePerformance:$("#checkoutImmediate").checked,withdrawalAcknowledged:$("#checkoutWithdrawal").checked});
+}
 function openPricing() {
-  $("#billingStatus").textContent='';$("#billingDialog").showModal();
-  refreshBalance();
+  for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).checked=false;
+  $("#billingStatus").textContent='';billingView();if(!$("#billingDialog").open)$("#billingDialog").showModal();
+  refreshBalance();loadOrders();
 }
 async function checkout(offerId,provider) {
   if(checkoutBusy||!checkoutProviders(pricing).includes(provider)||!pricing.offers.some(offer=>offer.id===offerId))return;
   if(BROWSER_ONLY){openAccount('register');return;}
   if(!state.account){$("#billingDialog").close();openAccount('login');return;}
+  if(checkCurrentTerms())return;
+  if(!purchaseReady()){openPricing();$("#billingStatus").textContent=tr("Lies bitte die Kaufbedingungen und bestätige sie ausdrücklich, bevor du fortfährst.","Please read and explicitly confirm the purchase conditions before continuing.","Lexo dhe konfirmo shprehimisht kushtet e blerjes përpara se të vazhdosh.");return;}
   checkoutBusy=true;billingView();
-  const body=checkoutRequests.start({offer_id:offerId,provider});
+  const body=checkoutRequests.start({offer_id:offerId,provider,terms_version:pricing.terms_version,terms_accepted:true,immediate_performance:true,withdrawal_acknowledged:true,language:state.language});
   $("#billingStatus").textContent=tr("Sichere Zahlungsseite wird geöffnet …","Opening secure checkout …","Po hapet faqja e sigurt e pagesës …");
   try {
     const result=await api('/api/billing/checkout',body,'POST',{timeoutMs:20000});
@@ -91,6 +111,32 @@ async function checkout(offerId,provider) {
     checkoutRequests.failed(error,body.request_id);
     $("#billingStatus").textContent=tr("Die Zahlung konnte nicht geöffnet werden. Es wurde hier kein Guthaben gekauft. Bitte später erneut versuchen.","Checkout could not be opened. No credits were purchased here. Please try again later.","Faqja e pagesës nuk u hap. Nuk janë blerë kredite këtu. Provo përsëri më vonë.");
   } finally {checkoutBusy=false;billingView();}
+}
+async function loadOrders() {
+  const list=$("#billingOrders");list.replaceChildren();
+  if(!state.account){$("#billingOrdersStatus").textContent=tr("Melde dich an, um deine Käufe und Widerrufe zu sehen.","Sign in to see your purchases and withdrawals.","Hyr për të parë blerjet dhe tërheqjet.");return;}
+  $("#billingOrdersStatus").textContent=tr("Käufe werden geladen …","Loading purchases …","Po ngarkohen blerjet …");
+  try {
+    const orders=await api('/api/billing/orders',undefined,'GET',{timeoutMs:15000});
+    $("#billingOrdersStatus").textContent=orders.length?'':tr("Du hast noch kein Guthaben gekauft. Dein kostenloses Wochenguthaben findest du oben.","You have not purchased credits yet. Your free weekly credits are shown above.","Nuk ke blerë ende kredite. Kreditet javore falas shfaqen sipër.");
+    for(const order of orders){
+      const item=document.createElement('article');item.className='project-item';
+      const title=document.createElement('strong');title.textContent=new Intl.NumberFormat({de:'de-DE',en:'en-IE',sq:'sq-AL'}[state.language],{style:'currency',currency:'EUR'}).format(order.amount_cents/100)+' · '+order.credits+' '+tr("Bewerbungsguthaben","application credits","kredite aplikimi");
+      const detail=document.createElement('small');detail.textContent=tr("Bestellung: ","Order: ","Porosia: ")+order.id+' · '+new Date(order.created_at).toLocaleString(state.language)+' · '+(order.status==='paid'?tr("Bezahlt","Paid","Paguar"):tr("Zahlung ausstehend","Payment pending","Pagesa në pritje"));
+      item.append(title,detail);
+      if(order.withdrawal_status==='requested'){
+        const status=document.createElement('p');status.textContent=tr("Widerruf eingegangen · Prüfung läuft. Dies bestätigt keine automatische Erstattung.","Withdrawal received · review in progress. This does not confirm an automatic refund.","Tërheqja u mor · shqyrtimi vazhdon. Kjo nuk konfirmon rimbursim automatik.");item.append(status);
+      }else if(order.status==='paid'){
+        const button=document.createElement('button');button.type='button';button.className='button quiet';button.textContent=tr("Vertrag widerrufen …","Withdraw from contract …","Tërhiqu nga kontrata …");
+        button.addEventListener('click',()=>{
+          selectedWithdrawal=order;$("#withdrawalOrderSummary").textContent=title.textContent+' · '+detail.textContent;
+          $("#withdrawalName").value=[accountData?.profile?.first_name,accountData?.profile?.last_name].filter(Boolean).join(' ')||accountData?.profile?.display_name||'';
+          $("#withdrawalStatus").textContent='';$("#withdrawalForm").hidden=false;$("#withdrawalDialog").showModal();$("#withdrawalName").focus();
+        });item.append(button);
+      }
+      list.append(item);
+    }
+  }catch{$("#billingOrdersStatus").textContent=tr("Deine Käufe konnten gerade nicht geladen werden. Öffne das Guthaben später erneut oder schreibe an info@tafolli.net.","Your purchases could not be loaded. Open credits again later or email info@tafolli.net.","Blerjet nuk u ngarkuan. Hap kreditet më vonë ose shkruaj te info@tafolli.net.");}
 }
 function renderSocialProviders() {
   const order=['google','apple','facebook','x'];
@@ -372,49 +418,49 @@ function notify(message, error = false) {
   toastTimer = setTimeout(() => $("#status").hidden = true, error ? 15e3 : 6500);
 }
 const waitingFacts = [
- ["Ein klar gegliederter Lebenslauf hilft Menschen und Recruiting-Systemen beim Lesen.", "A clearly structured resume helps people and recruiting systems read it."],
- ["Nutze konkrete Beispiele aus deiner Erfahrung. Ergänze nur Fähigkeiten, die du belegen kannst.", "Use concrete examples from your experience. Add only skills you can substantiate."],
- ["Ein gutes Motivationsschreiben erklärt, warum dich die konkreten Aufgaben interessieren.", "A good motivation letter explains why the specific tasks interest you."],
- ["Prüfe vor dem Versand Namen, Kontaktdaten und die Anhänge deiner E-Mail.", "Check names, contact details and email attachments before sending."],
- ["Keyword-Abdeckung misst Wortüberschneidungen. Sie garantiert keine Einladung.", "Keyword coverage measures word overlap. It does not guarantee an interview."]
+ ["Ein klar gegliederter Lebenslauf hilft Menschen und Recruiting-Systemen beim Lesen.","A clearly structured resume helps people and recruiting systems read it.","Një CV e strukturuar qartë ndihmon njerëzit dhe sistemet e rekrutimit ta lexojnë."],
+ ["Nutze konkrete Beispiele aus deiner Erfahrung. Ergänze nur Fähigkeiten, die du belegen kannst.","Use concrete examples from your experience. Add only skills you can substantiate.","Përdor shembuj konkretë nga përvoja jote. Shto vetëm aftësi që mund t’i dëshmosh."],
+ ["Ein gutes Motivationsschreiben erklärt, warum dich die konkreten Aufgaben interessieren.","A good motivation letter explains why the specific tasks interest you.","Një letër e mirë motivimi shpjegon pse të interesojnë detyrat konkrete."],
+ ["Prüfe vor dem Versand Namen, Kontaktdaten und die Anhänge deiner E-Mail.","Check names, contact details and email attachments before sending.","Kontrollo emrat, të dhënat e kontaktit dhe bashkëngjitjet para dërgimit."],
+ ["Keyword-Abdeckung misst Wortüberschneidungen. Sie garantiert keine Einladung.","Keyword coverage measures word overlap. It does not guarantee an interview.","Përputhja e fjalëve kyçe mat mbivendosjen e fjalëve. Nuk garanton ftesë për intervistë."]
 ];
 async function busy(label, work, stages = false) {
   const previousPause=savePaused;savePaused=true;clearTimeout(saveTimer);
-  $("#busyTitle").textContent = label;
-  $("#busy").hidden = false;
-  $("#workspace").setAttribute("aria-busy", "true");
-  const blocked = $$("main, header, footer, #boostyLauncher, #boostyGuide").map(el => [el, el.inert]);
-  blocked.forEach(([el]) => el.inert = true);
-  const report = (percent, phase) => {
-    $("#busyProgress").value = percent;
-    $("#busyPercent").textContent = `${percent}% ` + tr("der Arbeitsschritte abgeschlossen", "of workflow stages completed");
-    $("#busyPhase").textContent = phase;
+  $("#busyTitle").textContent=label;$("#busy").hidden=false;$("#workspace").setAttribute("aria-busy","true");
+  const blocked=$$(".skip, main, header, footer, #firstVisitBoosty, #boostyLauncher, #boostyGuide").map(el=>[el,el.inert]);blocked.forEach(([el])=>el.inert=true);
+  $("#busyChecklist").hidden=!stages;
+  const report=(completed,phase)=>{
+    // These are completed client milestones, never a simulated server progress.
+    const count=stages?Math.min(4,Math.floor(completed/25)):0;
+    $$("[data-busy-stage]").forEach(item=>{
+      const n=Number(item.dataset.busyStage),status=n<=count?'complete':n===count+1?'active':'pending';item.dataset.state=status;
+      item.querySelector('.busy-stage-icon').textContent=status==='complete'?'✓':status==='active'?'◌':'○';
+      item.querySelector('.busy-stage-state').textContent=status==='complete'?tr("Abgeschlossen","Complete","Përfunduar"):status==='active'?tr("In Bearbeitung","In progress","Në përpunim"):tr("Danach","Next","Më pas");
+    });
+    if(completed===100){$("#busyProgress").value=100;$("#busyPercent").textContent=tr("Fertig","Complete","Përfunduar");}
+    else{$("#busyProgress").removeAttribute('value');$("#busyPercent").textContent=stages?tr(`${count} von 4 Schritten abgeschlossen`,`${count} of 4 steps complete`,`${count} nga 4 hapa të përfunduar`):tr("Boosty arbeitet für dich …","Boosty is working for you …","Boosty po punon për ty …");}
+    $("#busyPhase").textContent=phase;
   };
-  let index = 0;
-  const fact = () => $("#busyFact").textContent = tr(...waitingFacts[index++ % waitingFacts.length]);
-  if (stages) {
-    report(25, tr("Angaben geprüft · Anfrage läuft", "Inputs checked · Request in progress"));
-    $("#busyExplanation").textContent = tr("Fortschritt der Arbeitsschritte. Die Dauer einer KI-Anfrage lässt sich nicht vorhersagen.", "Completed workflow stages. AI request duration cannot be predicted.");
-  } else {
-    $("#busyProgress").removeAttribute("value");
-    $("#busyPercent").textContent = tr("Boosty arbeitet für dich …", "Boosty is working for you …", "Boosty po punon për ty …");
-    $("#busyPhase").textContent = "";
-    $("#busyExplanation").textContent = tr("Bitte einen Moment warten. Die Dauer hängt von deinem Anbieter ab.", "Please wait. Timing depends on your provider.");
-  }
-  fact();
-  const timer = setInterval(fact, 7000);
-  try {
-    await new Promise(requestAnimationFrame);
-    const result = await work(report);
-    report(100, tr("Fertig", "Complete"));
-    return result;
-  } finally {
-    clearInterval(timer);
-    blocked.forEach(([el, previous]) => el.inert = previous);
-    $("#busy").hidden = true;
-    $("#workspace").removeAttribute("aria-busy");
-    savePaused=previousPause;if(!savePaused&&saveDirty)scheduleSave();
-  }
+  $("#busyExplanation").textContent=stages
+    ?tr("Abgeschlossene Schritte werden einzeln angezeigt. Während die KI antwortet, gibt es keinen verlässlichen Prozentwert.","Completed steps are shown individually. There is no reliable percentage while the AI is responding.","Hapat e përfunduar shfaqen veçmas. Nuk ka përqindje të besueshme ndërsa IA përgjigjet.")
+    :tr("Bitte einen Moment warten. Die Dauer hängt von der Aufgabe und der Verbindung ab.","Please wait a moment. Timing depends on the task and connection.","Prit pak. Koha varet nga detyra dhe lidhja.");
+  report(stages?25:0,stages?tr("Deine Angaben sind geprüft. Die Anfrage läuft auf unserem Server.","Your details are checked. The request is running on our server.","Të dhënat u kontrolluan. Kërkesa po përpunohet në serverin tonë."):'');
+  let index=0;const fact=()=>$("#busyFact").textContent=tr(...waitingFacts[index++%waitingFacts.length]);fact();const timer=setInterval(fact,7000);
+  try{await new Promise(requestAnimationFrame);const result=await work(report);report(100,tr("Deine Unterlagen sind bereit.","Your documents are ready.","Dokumentet janë gati."));return result;}
+  finally{clearInterval(timer);blocked.forEach(([el,previous])=>el.inert=previous);$("#busy").hidden=true;$("#workspace").removeAttribute("aria-busy");savePaused=previousPause;if(!savePaused&&saveDirty)scheduleSave();}
+}
+
+function dismissFirstVisit() {
+  clearTimeout(welcomeTimer);$("#firstVisitBoosty").hidden=true;
+}
+function firstVisitWelcome() {
+  if(accountLink||new URLSearchParams(location.search).has('account'))return;
+  try{if(sessionStorage.getItem('tafolliboost.welcome.v1'))return;sessionStorage.setItem('tafolliboost.welcome.v1','shown');}catch{/* The welcome remains usable with storage disabled. */}
+  $("#firstVisitBoosty").hidden=false;
+  welcomeTimer=setTimeout(()=>{
+    const welcome=$("#firstVisitBoosty");
+    if(!welcome.contains(document.activeElement)&&!welcome.matches(':hover'))dismissFirstVisit();
+  },14000);
 }
 
 function action(work) {
@@ -436,9 +482,19 @@ function boostyConnectionView() {
 }
 function applyLanguage() {
   document.documentElement.lang = state.language;
+  $(".skip").textContent=tr("Zum Bewerbungseditor","Skip to application editor","Kalo te redaktori i aplikimit");
+  $(".topbar nav").setAttribute('aria-label',tr("Hauptnavigation","Main navigation","Navigimi kryesor"));
+  $(".account-navigation").setAttribute('aria-label',tr("Kontoeinstellungen","Account settings","Cilësimet e llogarisë"));
+  $("#busyProgress").setAttribute('aria-label',tr("Bearbeitungsstatus","Processing status","Statusi i përpunimit"));
   $("#guideHeading").textContent=tr("Boosty zeigt’s dir","Boosty shows you","Boosty të tregon");
   $("#privacyBtn").href=new URL("datenschutz/"+(__RUNTIME__ === "browser" && state.language!=="de"?state.language+"/":"?lang="+state.language),new URL($("meta[name=app-base]")?.content || "./",location.href)).href;
   $("#legalBtn").href=new URL("impressum/"+(__RUNTIME__ === "browser" && state.language!=="de"?state.language+"/":"?lang="+state.language),new URL($("meta[name=app-base]")?.content || "./",location.href)).href;
+  const legalBase=new URL($("meta[name=app-base]")?.content||"./",location.href);
+  const legalPath=(page)=>page+"/"+(__RUNTIME__==="browser"&&state.language!=="de"?state.language+"/":"?lang="+state.language);
+  $("#termsBtn").href=new URL(legalPath("agb"),legalBase).href;
+  $("#withdrawalLink").href=new URL(legalPath("widerruf"),legalBase).href;
+  $$('[data-terms-link]').forEach(link=>link.href=$("#termsBtn").href);
+  $$('[data-privacy-link]').forEach(link=>link.href=$("#privacyBtn").href);
   document.title = branding.name + " – " + tr("Lebenslauf und Bewerbung mit KI", "AI resume and application builder");
   $$("[data-de]").forEach((el) => el.textContent = el.dataset[state.language] ?? tr(el.dataset.de, el.dataset.en));
   $$("[data-placeholder-de]").forEach((el) => el.placeholder = el.dataset["placeholder" + ({de:"De",en:"En",sq:"Sq"}[state.language])]);
@@ -456,6 +512,8 @@ function applyLanguage() {
   $("#guideLink").href = new URL(({de:"de/lebenslauf-mit-ki/",en:"en/ai-resume-builder/",sq:"sq/cv-me-ia/"}[state.language]), baseURL()).href;
   accountView();
   setAccountMode(accountMode);
+  if(accountMode==='check-email')showEmailPending(pendingEmail,emailFlow);
+  updateExplainer();
   boostyConnectionView();
   billingView();
   renderSocialProviders();
@@ -662,6 +720,7 @@ function usePackage(result) {
 }
 async function generate() {
   const demo=false;
+  if(checkCurrentTerms())return;
   if(generationPending)return;generationPending=true;
   let request;
   try {
@@ -690,8 +749,10 @@ async function generate() {
     if(error.code==='PACKAGE_REPLAY_UNAVAILABLE') {
       message=tr("Diese Antwort ist bereits gelöscht oder abgelaufen. Bereits gespeicherte Bewerbungsmappen findest du in deinem Verlauf. Öffne die vorhandene Mappe dort, statt erneut eine Bewerbung aus deinem Guthaben zu verwenden.","This response was deleted or has expired. Saved application packages are in your history. Open the existing package there instead of spending another application credit.","Kjo përgjigje është fshirë ose ka skaduar. Dosjet e ruajtura i gjen në historik. Hap dosjen ekzistuese atje në vend që të përdorësh një kredit tjetër.");
       $("#retryGeneration").hidden=true;$("#openGeneratedHistory").hidden=false;
+    } else if(['TERMS_REQUIRED','TERMS_ACCEPTANCE_REQUIRED'].includes(error.code)) {
+      checkCurrentTerms();return;
     } else if(error.status===402||error.code==='CREDITS_EXHAUSTED') {
-      message=tr("Dein Bewerbungsguthaben ist aufgebraucht. Deine vorhandenen Mappen bleiben gespeichert und können weiter bearbeitet werden. Unter „Preise & Guthaben“ siehst du die weiteren Optionen.","Your application credits are used up. Existing documents stay saved and editable. Open Pricing & credits to see your options.","Kreditet e aplikimit janë përdorur. Dokumentet ekzistuese mbeten të ruajtura dhe mund të redaktohen. Hap Çmimet & kreditet për mundësitë e tjera.");
+      message=tr("Dein aktuelles Bewerbungsguthaben ist aufgebraucht. Am nächsten Montag beginnt dein neues kostenloses Wochenguthaben. Deine vorhandenen Mappen bleiben bearbeitbar. Unter „Preise & Guthaben“ siehst du den Zeitpunkt und die optionalen Kaufangebote.","Your current application credits are used up. Your next free weekly credits start on Monday. Existing documents stay editable. Open Pricing & credits for the reset time and optional paid offers.","Kreditet aktuale të aplikimit janë përdorur. Kreditet e reja javore falas fillojnë të hënën. Dokumentet ekzistuese mund të redaktohen. Hap Çmimet & kreditet për kohën e rinovimit dhe ofertat opsionale me pagesë.");
       $("#retryGeneration").hidden=true;
     } else if(error.code==='PACKAGE_IN_PROGRESS') {
       message=tr("Deine Mappe wird noch erstellt. Warte kurz und prüfe dann erneut. Diese Wiederholung verwendet dieselbe Anfrage und bucht keine zweite Bewerbung ab.","Your application is still being created. Wait a moment, then check again. This retry uses the same request and does not spend a second application credit.","Dosja jote është ende duke u krijuar. Prit pak dhe kontrollo sërish. Kjo përsëritje përdor të njëjtën kërkesë dhe nuk shpenzon një kredit të dytë.");
@@ -857,71 +918,153 @@ function accountView() {
   $("#welcomeActions").hidden=!!state.account;
   $("#signedInWelcome").hidden=!state.account;
   $("#welcomeNote").hidden=!!state.account;
-  $("#accountInfo").textContent = state.account ? state.account + " · " + tr("Deine gespeicherten Bewerbungen findest du unter „Meine Bewerbungen“, auch nach dem nächsten Anmelden.", "Find your saved applications under ‘My applications’, including after signing in again.") : BROWSER_ONLY ? tr("Konto und KI nutzt du in der vollständigen App auf tafolliboost.com. Die Startseite hier ist eine Vorschau.", "Use accounts and AI in the complete app on tafolliboost.com. This landing page is a preview.", "Llogarinë dhe IA i përdor në aplikacionin e plotë në tafolliboost.com. Kjo faqe hyrëse është pamje paraprake.") : tr("Dein Konto und gespeicherte Bewerbungen bleiben nach dem Abmelden erhalten. Bewahre den Wiederherstellungscode sicher auf.", "Your account and saved applications persist after sign-out. Keep your recovery code safe.");
-  $("#accountForm").hidden = BROWSER_ONLY || !!state.account;
-  $("#signedInActions").hidden = !state.account;
-  $("#socialLogin").hidden=BROWSER_ONLY || !!state.account;
-  $("#socialLoginNotice").hidden=BROWSER_ONLY || !!state.account;
-  $("#accountBtn").textContent = state.account ? tr("Mein Konto", "My account") : tr("Anmelden", "Sign in");
+  $("#accountInfo").textContent=state.account
+    ? tr("Dein Profil, deine Unterlagen und deine Kontoeinstellungen an einem Ort.","Your profile, documents and account settings in one place.","Profili, dokumentet dhe cilësimet e llogarisë në një vend.")
+    : tr("Drei Bewerbungen pro Kalenderwoche kostenlos. Bestätige deine E-Mail, um dein Konto zu schützen und loszulegen.","Three free applications each calendar week. Confirm your email to protect your account and get started.","Tre aplikime falas çdo javë kalendarike. Konfirmo email-in për të mbrojtur llogarinë dhe për të filluar.");
+  $("#accountHub").hidden=!state.account;
+  $("#signedInActions").hidden=!state.account;
+  $("#accountForm").hidden=BROWSER_ONLY||!!state.account||accountMode==="check-email";
+  $("#emailPending").hidden=!!state.account||accountMode!=="check-email";
+  $("#socialLogin").hidden=BROWSER_ONLY||!!state.account||!["login","register"].includes(accountMode);
+  $("#socialLoginNotice").hidden=$("#socialLogin").hidden;
+  $("#accountBtn").textContent=state.account?tr("Mein Konto","My account","Llogaria ime"):tr("Anmelden","Sign in","Hyr");
+  if(state.account){
+    const name=accountData?.profile?.display_name||[accountData?.profile?.first_name,accountData?.profile?.last_name].filter(Boolean).join(" ")||tr("Dein Konto","Your account","Llogaria jote");
+    $("#accountDisplayTitle").textContent=name;
+    $("#accountAvatar").textContent=[...name.trim()][0]?.toLocaleUpperCase()||"B";
+    $("#accountIdentityEmail").textContent=state.account;
+    $("#accountVerified").textContent=accountData?.verified?tr("✓ E-Mail bestätigt","✓ Email verified","✓ Email-i i konfirmuar"):tr("E-Mail-Bestätigung erforderlich","Email verification required","Kërkohet konfirmimi i email-it");
+  }
   billingView();
 }
 function setAccountMode(mode) {
-  accountMode=mode;
-  $("#loginMode").setAttribute("aria-pressed",String(mode!=="register"));
-  $("#register").setAttribute("aria-pressed",String(mode==="register"));
-  $("#accountPassword").autocomplete=mode==="login"?"current-password":"new-password";
-  $("#recoveryField").hidden=mode!=="recover";$("#recoveryCode").required=mode==="recover";
-  $("#recover").hidden=mode==="register"||mode==="recover";
-  $("#accountSubmit").textContent=mode==="recover"?tr("Passwort zurücksetzen","Reset password","Rivendos fjalëkalimin"):mode==="register"?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
+  accountMode=["login","register","forgot","reset","check-email"].includes(mode)?mode:"login";
+  const isRegister=accountMode==="register", isReset=accountMode==="reset", passwordNeeded=["login","register","reset"].includes(accountMode);
+  $("#loginMode").setAttribute("aria-pressed",String(accountMode==="login"));
+  $("#register").setAttribute("aria-pressed",String(isRegister));
+  $("#registerNameField").hidden=!isRegister;
+  $("#accountEmailField").hidden=isReset;
+  $("#accountEmail").required=!isReset;
+  $("#accountPasswordField").hidden=!passwordNeeded;
+  $("#accountPassword").required=passwordNeeded;
+  $("#accountPassword").autocomplete=accountMode==="login"?"current-password":"new-password";
+  $("#accountConfirmField").hidden=!isReset;$("#accountPasswordConfirm").required=isReset;
+  $("#registrationTerms").hidden=!isRegister;
+  $("#registerTerms").required=isRegister;$("#registerPrivacy").required=isRegister;
+  $("#recover").hidden=accountMode!=="login";
+  $("#accountSubmit").textContent=accountMode==="forgot"?tr("Link zum Zurücksetzen senden","Send password reset link","Dërgo linkun për rivendosje"):isReset?tr("Neues Passwort speichern","Save new password","Ruaj fjalëkalimin e ri"):isRegister?tr("Konto erstellen","Create account","Krijo llogari"):tr("Einloggen","Sign in","Hyr");
+  $("#accountModeHint").textContent=accountMode==="forgot"
+    ?tr("Gib die E-Mail-Adresse deines Kontos ein. Falls das Konto existiert, erhältst du einen Link zum Zurücksetzen.","Enter your account email. If the account exists, you will receive a password reset link.","Shkruaj email-in e llogarisë. Nëse llogaria ekziston, do të marrësh një link për rivendosjen e fjalëkalimit.")
+    :isReset?tr("Wähle ein neues, einzigartiges Passwort. Du meldest dich anschließend damit erneut an.","Choose a new, unique password. Afterwards, sign in again using it.","Zgjidh një fjalëkalim të ri dhe unik. Më pas hyr sërish me të.")
+    :tr("Bestätige deine E-Mail einmal. Danach bleiben Profil, Entwürfe und Bewerbungen in deinem Konto gespeichert.","Confirm your email once. Then your profile, drafts and applications stay saved in your account.","Konfirmo email-in një herë. Pastaj profili, draftet dhe aplikimet ruhen në llogarinë tënde.");
+  accountView();
+}
+function showEmailPending(email, flow="verify") {
+  pendingEmail=email.trim();emailFlow=flow;setAccountMode("check-email");
+  $("#emailPendingInfo").textContent=flow==="forgot"
+    ?tr(`Falls ein Konto mit ${pendingEmail} existiert, wurde ein Link zum Zurücksetzen verschickt.`,`If an account with ${pendingEmail} exists, a reset link has been sent.`,`Nëse ekziston një llogari me ${pendingEmail}, është dërguar një link për rivendosje.`)
+    :tr(`Falls die Adresse ${pendingEmail} bestätigt werden muss, wurde ein Bestätigungslink verschickt. Öffne den Link und melde dich danach an.`,`If ${pendingEmail} needs verification, a verification link has been sent. Open it, then sign in.`,`Nëse adresa ${pendingEmail} duhet konfirmuar, është dërguar një link konfirmimi. Hape dhe më pas hyr.`);
+  $("#resendVerification").textContent=flow==="forgot"?tr("Link erneut senden","Resend link","Ridërgo linkun"):tr("Bestätigungslink erneut senden","Resend verification link","Ridërgo linkun e konfirmimit");
+}
+async function loadAccount() {
+  accountData=await api("/api/account",undefined,"GET",{timeoutMs:15000});
+  state.account=accountData.email||null;accountView();return accountData;
+}
+function fillAccountProfile() {
+  const profile=readAccountProfile(accountData)||readAccountProfile({});
+  for(const key of ["display_name","first_name","last_name","phone","location","headline","language"])$("#account-profile-"+key).value=profile[key];
+}
+function selectAccountSection(section="profile") {
+  if(!["profile","documents","security","data"].includes(section))return;
+  accountSection=section;
+  $$('[data-account-panel]').forEach(panel=>panel.hidden=panel.dataset.accountPanel!==section);
+  $$('[data-account-section]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.accountSection===section)));
+  $("#accountHubStatus").textContent='';
 }
 function openAccount(mode="login") {
-  if (BROWSER_ONLY) {
-    const target = liveAccountUrl(branding.live_app_url, state.language, mode);
-    if (target) { location.assign(target); return; }
-    notify(tr("Der Link zur App ist nicht verfügbar. Bitte öffne https://tafolliboost.com direkt.", "The app link is unavailable. Please open https://tafolliboost.com directly.", "Linku i aplikacionit nuk është i disponueshëm. Hap drejtpërdrejt https://tafolliboost.com."), true);
-    return;
+  if(BROWSER_ONLY){
+    const target=liveAccountUrl(branding.live_app_url,state.language,["login","register"].includes(mode)?mode:"login");
+    if(target){location.assign(target);return;}
+    notify(tr("Öffne bitte https://tafolliboost.com direkt.","Please open https://tafolliboost.com directly.","Hap drejtpërdrejt https://tafolliboost.com."),true);return;
   }
-  setAccountMode(mode); accountView();
-  $("#accountError").hidden=true; $("#accountError").textContent="";
-  $("#accountDialog").showModal();
-  if(!state.account && !BROWSER_ONLY) $("#accountEmail").focus();
+  dismissFirstVisit();setAccountMode(mode);$("#accountError").hidden=true;$("#accountResult").textContent='';
+  $("#accountPassword").value='';$("#accountPasswordConfirm").value='';
+  if(state.account){fillAccountProfile();selectAccountSection(accountSection);}
+  if(!$("#accountDialog").open)$("#accountDialog").showModal();
+  if(!state.account)$("#accountEmail").focus();
+}
+function accountError(error) {
+  $("#accountError").textContent=accountErrorCopy(error,state.language);$("#accountError").hidden=false;
 }
 async function credentials(mode) {
-  if (accountBusy || !$("#accountForm").reportValidity()) return;
-  if(BROWSER_ONLY) {openAccount(mode);return;}
-  accountBusy=true;$("#accountForm").inert=true;
-  $("#accountForm").setAttribute("aria-busy","true");
-  $("#accountError").hidden=true; $("#accountError").textContent="";
-  $("#accountSubmit").disabled=true;
+  if(accountBusy||!$("#accountForm").reportValidity())return;
+  if(BROWSER_ONLY){openAccount(mode);return;}
+  if(mode==="reset"&&$("#accountPassword").value!==$("#accountPasswordConfirm").value){
+    accountError({code:"PASSWORD_MISMATCH"});$("#accountPasswordConfirm").setCustomValidity(tr("Die Passwörter stimmen nicht überein.","The passwords do not match.","Fjalëkalimet nuk përputhen."));$("#accountPasswordConfirm").reportValidity();return;
+  }
+  accountBusy=true;$("#accountForm").inert=true;$("#accountForm").setAttribute("aria-busy","true");$("#accountError").hidden=true;$("#accountResult").textContent='';$("#accountSubmit").disabled=true;
   $("#accountSubmit").textContent=tr("Einen Moment …","One moment …","Një çast …");
   try {
-  const body = { email: $("#accountEmail").value, password: $("#accountPassword").value };
-  if (mode === "recover") body.recovery_code = $("#recoveryCode").value;
-  const result = await api("/api/account/" + mode, body, "POST", {timeoutMs:20000});
-  $("#accountPassword").value = "";
-  $("#recoveryCode").value = "";
-  if (result.recovery_code) {
-    $("#accountResult").textContent = tr("Wiederherstellungscode \u2014 jetzt sicher speichern. Er wird nur einmal angezeigt:\n", "Recovery code \u2014 save it securely now. It is shown only once:\n") + result.recovery_code;
-  }
-  if (result.email) {
-    state.account = result.email;
-    setLoginToken(result.access_token);
-    await newSession(state.language, {timeoutMs:15000});
-    accountView();
-    enterStudio();
-    await refreshBalance();
-    if(hasDraft())scheduleSave();
-    if(mode!=="register"){$("#accountDialog").close();if(!hasDraft())await showProjects();}
-    else $("#workspace").scrollIntoView({behavior:"instant",block:"start"});
-  }
-  } catch(error) {
-    $("#accountError").textContent=error.message || tr("Anmeldung fehlgeschlagen. Bitte erneut versuchen.","Sign-in failed. Please try again.","Hyrja dështoi. Provo përsëri.");
-    $("#accountError").hidden=false;
+    const email=$("#accountEmail").value.trim(),password=$("#accountPassword").value;
+    if(mode==="forgot"){
+      await api("/api/account/forgot-password",{email,language:state.language},"POST",{timeoutMs:20000});showEmailPending(email,"forgot");
+    } else if(mode==="register"){
+      const body=registrationPayload({email,password,displayName:$("#accountDisplayName").value,language:state.language,termsAccepted:$("#registerTerms").checked,privacyAcknowledged:$("#registerPrivacy").checked});
+      await api("/api/account/register",body,"POST",{timeoutMs:20000});showEmailPending(email);
+    } else if(mode==="reset"){
+      if(!resetToken)throw {code:"INVALID_TOKEN"};
+      await api("/api/account/reset-password",{token:resetToken,password},"POST",{timeoutMs:20000});resetToken=null;setAccountMode("login");
+      $("#accountResult").textContent=tr("Dein Passwort wurde geändert. Melde dich jetzt mit deinem neuen Passwort an.","Your password was changed. Sign in using your new password.","Fjalëkalimi u ndryshua. Hyr me fjalëkalimin e ri.");
+    } else {
+      const result=await api("/api/account/login",{email,password},"POST",{timeoutMs:20000});
+      setLoginToken(result.access_token);await loadAccount();await newSession(state.language,{timeoutMs:15000});
+      enterStudio();await refreshBalance();$("#accountDialog").close();
+      if(hasDraft())scheduleSave();else await showProjects();
+      checkCurrentTerms();
+    }
+    $("#accountPassword").value='';$("#accountPasswordConfirm").value='';
+  } catch(error){
+    if(error.code==="EMAIL_VERIFICATION_REQUIRED")showEmailPending($("#accountEmail").value);
+    accountError(error);
   } finally {
-    accountBusy=false;$("#accountForm").inert=false;
-    $("#accountForm").removeAttribute("aria-busy");$("#accountSubmit").disabled=false;
-    setAccountMode(accountMode);
+    accountBusy=false;$("#accountForm").inert=false;$("#accountForm").removeAttribute("aria-busy");$("#accountSubmit").disabled=false;setAccountMode(accountMode);
   }
+}
+function checkCurrentTerms() {
+  if(!state.account||accountData?.terms?.current===true)return false;
+  $("#acceptCurrentTerms").checked=false;$("#acceptCurrentPrivacy").checked=false;$("#termsStatus").textContent='';
+  if(!$("#termsDialog").open)$("#termsDialog").showModal();return true;
+}
+async function processAccountLink() {
+  if(!accountLink)return;
+  if(state.account){await api('/api/account/logout',{});await signedOut();}
+  openAccount(accountLink.kind==="reset-password"?"reset":"login");
+  if(!accountLink.token){accountError({code:"INVALID_TOKEN"});setAccountMode(accountLink.kind==="reset-password"?"forgot":"login");return;}
+  if(accountLink.kind==="reset-password"){
+    resetToken=accountLink.token;accountLink.token=null;$("#accountPassword").focus();return;
+  }
+  $("#accountResult").textContent=tr("E-Mail wird bestätigt …","Verifying email …","Po konfirmohet email-i …");
+  const token=accountLink.token;accountLink.token=null;
+  try {
+    const result=await api("/api/account/verify-email",{token},"POST",{timeoutMs:20000});
+    if(result.email)$("#accountEmail").value=result.email;
+    $("#accountResult").textContent=tr("✓ E-Mail bestätigt. Melde dich jetzt mit deinem Passwort an.","✓ Email verified. Sign in with your password now.","✓ Email-i u konfirmua. Hyr tani me fjalëkalimin tënd.");
+  } catch(error){$("#accountResult").textContent='';accountError(error.code?error:{code:"INVALID_TOKEN"});}
+}
+async function accountAction(form, action) {
+  if(accountActionBusy||!form.reportValidity())return;
+  accountActionBusy=true;form.inert=true;form.setAttribute("aria-busy","true");$("#accountHubStatus").textContent='';
+  try {await action();$("#accountHubStatus").dataset.state='success';}
+  catch(error){$("#accountHubStatus").textContent=accountErrorCopy(error,state.language);$("#accountHubStatus").dataset.state='error';}
+  finally {accountActionBusy=false;form.inert=false;form.removeAttribute("aria-busy");}
+}
+function updateExplainer() {
+  const video=$("#explainerVideo"),media=explainerMedia(state.language,baseURL());
+  if(video.dataset.language===media.language)return;
+  video.pause();video.dataset.language=media.language;video.poster=media.poster;
+  $("#explainerSource").src=media.video;$("#explainerCaptions").src=media.captions;
+  $("#explainerCaptions").srclang=media.language;$("#explainerCaptions").label={de:"Deutsch",en:"English",sq:"Shqip"}[media.language];
+  video.setAttribute("aria-label",tr("TafolliBoost in 30 Sekunden erklärt","TafolliBoost explained in 30 seconds","TafolliBoost i shpjeguar në 30 sekonda"));video.load();
 }
 async function showProjects() {
   if (BROWSER_ONLY || !state.account) {
@@ -972,7 +1115,7 @@ async function showProjects() {
 }
 function clearPersonalMemory() {
   cancelSave();chatEpoch++;chatPending=false;$("#boostyForm button").disabled=false;
-  packageRequests.clear();creditBalance=null;
+  packageRequests.clear();creditBalance=null;clearTimeout(creditRefreshTimer);
   $("#generationProblem").hidden=true;$("#jobImportActions").hidden=true;
   stopGuide();
   $("#boostyAnswer").textContent = "";
@@ -989,7 +1132,7 @@ function clearPersonalMemory() {
   fillProfile(parseProfile(""));
   fillJob({});
   $("#projectStatus").value="draft";
-  for(const id of ["cvFile","photo","projectFile","scanInput","accountPassword","recoveryCode","accountEmail"])if($("#"+id))$("#"+id).value="";
+  for(const id of ["cvFile","photo","projectFile","scanInput","accountPassword","accountPasswordConfirm","accountEmail"])if($("#"+id))$("#"+id).value="";
   $("#generationInfo").textContent="";$("#quality").replaceChildren();
   for (const id of ["documentEditor", "wishes", "projectNotes", "projectTitle", "fileStatus", "jobImportStatus"]) {
     const field = $("#" + id);
@@ -1000,6 +1143,13 @@ function clearPersonalMemory() {
   $("#comparisonChoices").hidden = true;
   $("#aiConsent").checked = false;
   showStep(1);
+}
+async function signedOut() {
+  setLoginToken("");state.account=null;accountData=null;resetToken=null;pendingEmail="";
+  clearPersonalMemory();
+  for(const form of [$("#accountProfileForm"),$("#changePasswordForm"),$("#changeEmailForm"),$("#deleteAccountForm")])form.reset();
+  $("#accountDialog").close();accountView();returnWelcome();
+  try{await newSession(state.language,{timeoutMs:15000});}catch{/* The next sign-in creates its own session. */}
 }
 async function deleteData() {
   if (!confirm(tr("Diese Sitzung und die aktuell ge\xF6ffneten Daten l\xF6schen? Gespeicherte Bewerbungen dieser Sitzung werden ebenfalls gel\xF6scht.", "Delete this session and its open data? Saved applications in this session will also be deleted."))) return;
@@ -1072,9 +1222,12 @@ async function init() {
   $("#newApplication").addEventListener("click",action(async()=>{if(!await leaveCurrent())return;if(!state.account&&hasDraft()&&!confirm(tr("Gastdaten verwerfen und neu beginnen? Sichere vorher deine Projektdatei.","Discard guest data and start again? Download your project first.","Fshi të dhënat e vizitorit dhe fillo sërish? Ruaj fillimisht projektin.")))return;clearPersonalMemory();accountView();followStep();}));
   $("#infoBtn").addEventListener("click",()=>$("#infoDialog").showModal());
   $$("a.brand").forEach(link=>link.addEventListener("click",event=>{event.preventDefault();window.scrollTo({top:0,behavior:"smooth"});}));
+  $("#firstVisitSkip").addEventListener("click",()=>{dismissFirstVisit();if(studioEntered)$("#workspaceTitle").focus({preventScroll:true});else $("#welcomeRegister").focus({preventScroll:true});});
+  $("#firstVisitStart").addEventListener("click",()=>{dismissFirstVisit();if(state.account){enterStudio();showStep(1);}else openAccount('register');});
   $("#welcomeRegister").addEventListener("click",()=>openAccount("register"));
   $("#welcomeLogin").addEventListener("click",()=>openAccount());
   $$("[data-open-account]").forEach(button => button.addEventListener("click", () => {if($("#billingDialog").open)$("#billingDialog").close();openAccount(button.dataset.openAccount);}));
+  for(const id of ["checkoutTerms","checkoutImmediate","checkoutWithdrawal"])$("#"+id).addEventListener("change",billingView);
   $("#openPricing").addEventListener('click',openPricing);
   $$('[data-open-pricing]').forEach(button=>button.addEventListener('click',openPricing));
   for(const root of [$("#landingPlans"),$("#billingOptions")])root.addEventListener('click',event=>{const button=event.target.closest('[data-checkout-offer]');if(button)checkout(button.dataset.checkoutOffer,button.dataset.checkoutProvider);});
@@ -1226,33 +1379,93 @@ async function init() {
   }));
   $("#register").addEventListener("click",()=>setAccountMode("register"));
   $("#loginMode").addEventListener("click",()=>setAccountMode("login"));
-  $("#recover").addEventListener("click",()=>{setAccountMode('recover');$("#recoveryCode").focus();});
-  $("#logout").addEventListener("click", action(async () => {
-    if(!await leaveCurrent())return;
-    await api("/api/account/logout", {});
-    setLoginToken("");
-    state.account = null;
-    clearPersonalMemory();
-    await newSession(state.language);
-    $("#accountResult").textContent = "";
-    accountView();
-    returnWelcome();
-    notify(tr("Abgemeldet. Gespeicherte Bewerbungen bleiben in deinem Konto erhalten.", "Signed out. Saved applications remain in your account."));
+  $("#recover").addEventListener("click",()=>{ $("#accountPassword").value='';setAccountMode('forgot');$("#accountEmail").focus();});
+  $("#accountPasswordConfirm").addEventListener("input",()=>$("#accountPasswordConfirm").setCustomValidity(''));
+  $("#resendVerification").addEventListener("click",async()=>{
+    if(accountBusy||!pendingEmail)return;
+    accountBusy=true;$("#resendVerification").disabled=true;$("#accountError").hidden=true;
+    try {
+      await api('/api/account/'+(emailFlow==='forgot'?'forgot-password':'resend-verification'),{email:pendingEmail,language:state.language},'POST',{timeoutMs:20000});
+      $("#accountResult").textContent=tr("Falls eine Bestätigung erforderlich ist, wurde ein neuer Link verschickt. Bitte prüfe dein Postfach und den Spam-Ordner.","If confirmation is needed, a new link has been sent. Check your inbox and spam folder.","Nëse kërkohet konfirmim, është dërguar një link i ri. Kontrollo email-in dhe dosjen spam.");
+    }catch(error){accountError(error);}finally{accountBusy=false;$("#resendVerification").disabled=false;}
+  });
+  $("#emailBackLogin").addEventListener("click",()=>{setAccountMode('login');$("#accountError").hidden=true;$("#accountResult").textContent='';$("#accountPassword").focus();});
+  $("#profileAccount").addEventListener("click",()=>{accountSection='profile';openAccount();});
+  $$('[data-account-section]').forEach(button=>button.addEventListener('click',()=>selectAccountSection(button.dataset.accountSection)));
+  $("#accountDocuments").addEventListener("click",action(async()=>{$("#accountDialog").close();await showProjects();}));
+  $("#cancelWithdrawal").addEventListener('click',()=>$("#withdrawalDialog").close());
+  $("#withdrawalForm").addEventListener('submit',async event=>{
+    event.preventDefault();if(accountActionBusy||!selectedWithdrawal||!event.target.reportValidity())return;
+    accountActionBusy=true;event.target.inert=true;$("#withdrawalStatus").textContent='';
+    try {
+      const result=await api('/api/billing/withdrawals',{order_id:selectedWithdrawal.id,name:$("#withdrawalName").value.trim(),confirmed:true,language:state.language},'POST',{timeoutMs:20000});
+      if(result.status!=='requested')throw new Error('WITHDRAWAL_UNAVAILABLE');
+      $("#withdrawalStatus").textContent=tr("Dein Widerruf ist eingegangen. Eine Eingangsbestätigung wird dir per E-Mail zugesandt. Wir prüfen die Voraussetzungen einer Erstattung.","Your withdrawal was received. An acknowledgement will be sent by email. We will review the refund requirements.","Tërheqja u mor. Konfirmimi do të dërgohet me email. Do të shqyrtojmë kushtet e rimbursimit.");
+      event.target.hidden=true;selectedWithdrawal=null;await loadOrders();
+    }catch(error){$("#withdrawalStatus").textContent=accountErrorCopy(error,state.language);}
+    finally{accountActionBusy=false;event.target.inert=false;}
+  });
+  $("#accountCredits").addEventListener("click",()=>{$("#accountDialog").close();openPricing();});
+  $("#accountProfileForm").addEventListener("submit",event=>{
+    event.preventDefault();accountAction(event.target,async()=>{
+      const body={};for(const key of ['display_name','first_name','last_name','phone','location','headline','language'])body[key]=$("#account-profile-"+key).value.trim();
+      body.preferences={email_notifications:accountData?.profile?.preferences?.email_notifications===true};
+      await api('/api/account/profile',body,'PUT',{timeoutMs:20000});await loadAccount();
+      $("#accountHubStatus").textContent=tr("✓ Dein Profil wurde gespeichert.","✓ Your profile was saved.","✓ Profili u ruajt.");
+    });
+  });
+  $("#changePasswordForm").addEventListener('submit',event=>{
+    event.preventDefault();
+    const confirm=$("#securityNewPasswordConfirm");confirm.setCustomValidity($("#securityNewPassword").value!==confirm.value?tr("Die Passwörter stimmen nicht überein.","The passwords do not match.","Fjalëkalimet nuk përputhen."):'');
+    accountAction(event.target,async()=>{
+      if(!await leaveCurrent())return;
+      await api('/api/account/change-password',{current_password:$("#securityCurrentPassword").value,new_password:$("#securityNewPassword").value},'POST',{timeoutMs:20000});
+      event.target.reset();await signedOut();openAccount('login');
+      $("#accountResult").textContent=tr("✓ Passwort geändert. Melde dich mit dem neuen Passwort erneut an.","✓ Password changed. Sign in again with your new password.","✓ Fjalëkalimi u ndryshua. Hyr sërish me fjalëkalimin e ri.");
+    });
+  });
+  $("#securityNewPasswordConfirm").addEventListener('input',event=>event.target.setCustomValidity(''));
+  $("#securityNewPassword").addEventListener('input',()=>$("#securityNewPasswordConfirm").setCustomValidity(''));
+  $("#changeEmailForm").addEventListener('submit',event=>{
+    event.preventDefault();accountAction(event.target,async()=>{
+      await api('/api/account/change-email',{current_password:$("#securityEmailPassword").value,email:$("#securityNewEmail").value.trim(),language:state.language},'POST',{timeoutMs:20000});
+      $("#securityEmailPassword").value='';
+      $("#accountHubStatus").textContent=tr("Bestätigungslink an deine neue Adresse verschickt. Deine bisherige Adresse bleibt bis zur Bestätigung aktiv.","A verification link was sent to your new address. Your existing address remains active until you confirm it.","Linku i konfirmimit u dërgua te adresa e re. Adresa ekzistuese mbetet aktive deri në konfirmim.");
+    });
+  });
+  $("#exportAccount").addEventListener('click',action(async()=>{
+    if(accountActionBusy)return;accountActionBusy=true;$("#exportAccount").disabled=true;
+    try {await flushSave();const data=await api('/api/account/export',undefined,'GET',{timeoutMs:30000});saveBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'TafolliBoost-Meine-Daten.json');$("#accountHubStatus").textContent=tr("Deine Datenkopie wurde heruntergeladen. Bewahre sie sicher auf.","Your data copy was downloaded. Store it securely.","Kopja e të dhënave u shkarkua. Ruaje në mënyrë të sigurt.");}
+    finally{accountActionBusy=false;$("#exportAccount").disabled=false;}
   }));
-  $("#deleteAccount").addEventListener("click", action(async () => {
-    if (!confirm(tr("Konto und alle Bewerbungen endg\xFCltig l\xF6schen?", "Permanently delete your account and every application?"))) return;
-    cancelSave();
-    await saveChain.catch(()=>{});
-    await api("/api/account", null, "DELETE");
-    setLoginToken("");
-    state.account = null;
-    clearPersonalMemory();
-    $("#accountDialog").close();
-    accountView();
-    returnWelcome();
-    await newSession(state.language);
-    notify(tr("Konto gel\xF6scht.", "Account deleted."));
+  $("#acceptTermsForm").addEventListener('submit',async event=>{
+    event.preventDefault();if(accountActionBusy||!event.target.reportValidity())return;
+    accountActionBusy=true;event.target.inert=true;$("#termsStatus").textContent='';
+    try{await api('/api/account/accept-terms',{terms_version:TERMS_VERSION,terms_accepted:true,privacy_acknowledged:true},'POST',{timeoutMs:20000});await loadAccount();$("#termsDialog").close();notify(tr("Nutzungsbedingungen bestätigt. Du kannst jetzt deine Bewerbung erstellen.","Terms confirmed. You can now create your application.","Kushtet u konfirmuan. Tani mund të krijosh aplikimin."));}
+    catch(error){$("#termsStatus").textContent=accountErrorCopy(error,state.language);}
+    finally{accountActionBusy=false;event.target.inert=false;}
+  });
+  $("#reviewTermsLater").addEventListener('click',()=>$("#termsDialog").close());
+  $("#logout").addEventListener("click",action(async()=>{
+    if(!await leaveCurrent())return;await api('/api/account/logout',{});await signedOut();
+    notify(tr("Abgemeldet. Dein Profil und deine Unterlagen bleiben gespeichert.","Signed out. Your profile and documents stay saved.","Dole nga llogaria. Profili dhe dokumentet mbeten të ruajtura."));
   }));
+  $("#deleteAccount").addEventListener('click',()=>{
+    $("#deleteAccountIntro").hidden=false;$("#deleteAccountForm").hidden=true;$("#deleteAccountForm").reset();$("#deleteAccountStatus").textContent='';$("#deleteAccountDialog").showModal();
+  });
+  $("#cancelDeleteAccount").addEventListener('click',()=>$("#deleteAccountDialog").close());
+  $("#continueDeleteAccount").addEventListener('click',()=>{$("#deleteAccountIntro").hidden=true;$("#deleteAccountForm").hidden=false;$("#deleteAccountPassword").focus();});
+  $("#deleteAccountForm").addEventListener('submit',async event=>{
+    event.preventDefault();if(accountActionBusy||!event.target.reportValidity())return;
+    accountActionBusy=true;event.target.inert=true;$("#deleteAccountStatus").textContent='';
+    try{
+      await flushSave();
+      await api('/api/account',{current_password:$("#deleteAccountPassword").value,confirmation:$("#deleteAccountConfirmation").value},'DELETE',{timeoutMs:20000});
+      cancelSave();event.target.reset();$("#deleteAccountDialog").close();await signedOut();
+      notify(tr("Dein Konto und deine gespeicherten Bewerbungen wurden gelöscht.","Your account and saved applications were deleted.","Llogaria dhe aplikimet e ruajtura u fshinë."));
+    }catch(error){$("#deleteAccountStatus").textContent=accountErrorCopy(error,state.language);}
+    finally{accountActionBusy=false;event.target.inert=false;}
+  });
   $$("[data-close]").forEach((button) => button.addEventListener("click", () => button.closest("dialog").close()));
   $("#clearData").addEventListener("click", action(deleteData));
   $("#helpBtn").addEventListener("click", () => {
@@ -1338,11 +1551,9 @@ async function init() {
       else if (state.step > 1) showStep(state.step - 1);
     });
   }
-  await newSession(state.language, {timeoutMs:15000});
+  try{await newSession(state.language,{timeoutMs:15000});}catch{/* Retrying email entry remains possible. */}
   if (!BROWSER_ONLY) {
-    const result = await api("/api/account", undefined, "GET", {timeoutMs:15000});
-    state.account = result.email;
-    accountView();
+    try{await loadAccount();}catch{state.account=null;accountData=null;accountView();}
     if(state.account)enterStudio();
     const requestedAccount = accountModeFromSearch(location.search);
     if (requestedAccount) {
@@ -1354,13 +1565,14 @@ async function init() {
   }
   if (!BROWSER_ONLY) {try {boostyConfig=await api("/api/assistant/config", undefined, "GET", {timeoutMs:15000});} catch { /* Local help remains available. */ }}
   if(!BROWSER_ONLY){
-    const config=await api("/api/hosted-config", undefined, "GET", {timeoutMs:15000});
+    let config={ready:false};try{config=await api("/api/hosted-config", undefined, "GET", {timeoutMs:15000});}catch{/* Account forms remain available when AI is temporarily unavailable. */}
     if(!config.ready)$("#aiCapacity").textContent=tr("Die KI-Erstellung wird gerade vorbereitet. Deine Angaben kannst du bereits speichern.","AI generation is being prepared. You can already save your inputs.","Krijimi me IA po përgatitet. Mund t’i ruash të dhënat ndërkohë.");
-    const providers=await api("/api/oauth/providers", undefined, "GET", {timeoutMs:15000});
-    socialProviders=providers.filter(provider=>['google','apple','facebook','x'].includes(provider.id));renderSocialProviders();
+    try{const providers=await api("/api/oauth/providers",undefined,"GET",{timeoutMs:15000});socialProviders=providers.filter(provider=>['google','apple','facebook','x'].includes(provider.id));}catch{socialProviders=[];}renderSocialProviders();
   }
   await loadPricing();await refreshBalance();
+  if(!BROWSER_ONLY){await processAccountLink();if(!accountLink&&state.account)checkCurrentTerms();}
   boostyConnectionView();
+  firstVisitWelcome();
   const params = new URLSearchParams(location.search);
   if(params.get("auth")==="failed")notify(tr("Die Anmeldung konnte nicht abgeschlossen werden. Nutze deine E-Mail-Anmeldung oder versuche es erneut.","Sign-in could not be completed. Use email sign-in or try again.","Hyrja nuk u përfundua. Përdor email-in ose provo sërish."),true);
   if (params.has("jobUrl")) {
