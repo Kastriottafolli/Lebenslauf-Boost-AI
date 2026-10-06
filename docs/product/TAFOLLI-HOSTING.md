@@ -4,13 +4,13 @@
 
 Kastriot Tafolli, Hauptstraße 1, 18609 Ostseebad Binz, Deutschland. Kontakt: **info@tafolli.net**, Hauptwebsite: **https://www.tafolli.net**. Die Anschrift wurde am 05.10.2026 aus dem bestehenden [Impressum](https://tafolli.net/impressum.html) übernommen. Name/Kontakt erscheinen in der App, im Impressum und in den Datenschutzinformationen; Website-/Mail-Links im Footer und auf Ratgeberseiten.
 
-Die vom Betreiber gekaufte App-Domain ist **https://tafolliboost.com**. Die Produktionsvorlage verwendet diese Adresse für APP_DOMAIN, SITE_URL, ALLOWED_HOSTS und ALLOWED_ORIGINS. **https://www.tafolliboost.com** wird einschließlich Pfad und Query auf die Hauptadresse weitergeleitet. Die Betreiberwebsite www.tafolli.net und info@tafolli.net bleiben bestehen. DNS und Hosting sind noch nicht eingerichtet.
+Die vom Betreiber gekaufte App-Domain ist **https://tafolliboost.com**. DNS, DreamHost Self-Managed VPS und HTTPS sind eingerichtet. Die Produktionskonfiguration verwendet diese Adresse für APP_DOMAIN, SITE_URL, ALLOWED_HOSTS und ALLOWED_ORIGINS. **https://www.tafolliboost.com** wird einschließlich Pfad und Query auf die Hauptadresse weitergeleitet. Die Betreiberwebsite www.tafolli.net und info@tafolli.net bleiben bestehen. Die übernommenen Betreiberangaben und zugehörigen Verträge müssen weiterhin bestätigt und fachlich geprüft werden.
 
 ## Datenbank und Anmeldung
 
-Die lokale Konfiguration verwendet `data/tafolli.db`. Die Datei wird nicht ins Git-Repository aufgenommen. Sie enthält Accounts, gehashte Passwörter/Recovery-Codes, ablaufende Login-Tokens, Upload-Sitzungen und ausdrücklich gespeicherte Bewerbungen. API-Keys bleiben ungespeichert. Beim Erstellen eines Kontos wird kein festes gemeinsames Passwort vergeben. Jeder Nutzer registriert seine eigene E-Mail-Adresse und sein eigenes Passwort.
+Die lokale Konfiguration verwendet `data/tafolli.db`; die Produktionsdatei liegt im privaten persistenten Docker-Volume. Sie wird nicht ins Git-Repository aufgenommen. Die Datenbank enthält Accounts, scrypt-Passwort-Hashes, ablaufende Login-Tokens, gehashte Einmallinks, temporär verschlüsselte Mailnutzlasten, Upload-Sitzungen, gespeicherte Bewerbungen und Guthaben. Betreiber-API-Keys liegen in der privaten Serverumgebung und werden nicht in der Datenbank gespeichert. Beim Erstellen eines Kontos wird kein festes gemeinsames Passwort vergeben. Jeder Nutzer registriert seine eigene E-Mail-Adresse und sein eigenes Passwort.
 
-Registrierung und Anmeldung sind bereits vorhanden: **Anmelden → Konto erstellen**. Nach dem Erstellen wird der einmalige Wiederherstellungscode angezeigt. Bewerbungen über **Bewerbung speichern & verfolgen → Auf dem Server speichern** speichern; später über **Meine Bewerbungen** wieder öffnen. Sie bleiben nach Abmelden und nach einem Serverneustart erhalten. Tests verwenden eine getrennte Datenbank.
+Registrierung und Anmeldung sind vorhanden: **Konto erstellen**, AGB ausdrücklich annehmen, Bestätigungslink im eigenen Postfach öffnen und anschließend anmelden. Passwort-Zurücksetzen erfolgt per E-Mail-Einmallink, nicht mehr über den früheren Wiederherstellungscode. Das Konto bietet Profil, Unterlagen, Verlauf, Guthaben, Sicherheit und Datenexport. Erfolgreiche Bewerbungsmappen werden vor der API-Antwort im eigenen Verlauf gespeichert; eigene Entwürfe und Änderungen können ebenfalls gespeichert werden. Sie bleiben nach Abmelden und nach einem Serverneustart erhalten. Automatisierte Tests verwenden eine getrennte Datenbank.
 
 SQLite nutzt WAL, Fremdschlüsselprüfung, fünf Sekunden Busy-Timeout und eingeschränkte Dateirechte. Das ist ein Ansatz für einen einzelnen Server mit persistentem lokalen Datenträger, keine verifizierte Mehrserver-Konfiguration.
 
@@ -20,11 +20,11 @@ SQLite nutzt WAL, Fremdschlüsselprüfung, fünf Sekunden Busy-Timeout und einge
 .venv/bin/python -m backend.manage_database backup
 ```
 
-Backup verwendet die SQLite-Backup-API, prüft die Kopie und überschreibt keine vorhandene Sicherung. Ein automatischer externer Sicherungsdienst ist nicht eingerichtet. Backups verschlüsselt und außerhalb des Servers aufbewahren; Wiederherstellung regelmäßig prüfen. Die Datenbank darf weder in einem öffentlich ausgelieferten Webordner liegen noch per statischem Download erreichbar sein.
+Der Verwaltungsbefehl erzeugt eine SQLite-Kopie; im Produktionsbetrieb wird zusätzlich der eigene verschlüsselte Backup-Helfer täglich um 03:30 UTC verwendet. Er prüft die Sicherung, überschreibt keine vorhandene Datei und bewahrt Sicherungen 14 Tage auf. Ein echter Sicherungslauf und eine getrennte Wiederherstellungsprüfung wurden durchgeführt. Ein automatischer externer Sicherungsdienst ist noch nicht eingerichtet. Verschlüsselte Sicherungen zusätzlich außerhalb des Servers aufbewahren und Wiederherstellung regelmäßig prüfen. Die Datenbank darf weder in einem öffentlich ausgelieferten Webordner liegen noch per statischem Download erreichbar sein. Details: [BACKUPS.md](../deploy/BACKUPS.md).
 
 ## Öffentlicher Betrieb auf eigenem Docker-Server
 
-GitHub Pages liefert ausschließlich die Browser-Version, ohne laufenden Python-Server und Kontodatenbank. Für Konten ist ein FastAPI-fähiger Server mit persistentem Datenträger erforderlich.
+GitHub Pages liefert ausschließlich die Browser-Oberfläche und ist im aktuellen Build mit der Produktions-API verbunden. Auf Pages selbst laufen weder Python-Server noch Kontodatenbank. Diese liegen auf dem DreamHost-VPS mit persistentem Datenträger. Die folgende Anleitung beschreibt Einrichtung und spätere Wartung dieses Serverbetriebs.
 
 1. Hostingzugang und Server-IP bereitstellen. Beim Domainanbieter `@` (tafolliboost.com) als A-Eintrag auf die Server-IP setzen und `www` per CNAME auf tafolliboost.com verweisen lassen (oder ebenfalls als A-Eintrag). AAAA nur mit funktionierendem IPv6 setzen. Bestehende E-Mail-/MX-Einträge beibehalten.
 2. Projekt auf den Server bringen, `.env.production.example` als private `.env.production` kopieren und die vier Adressfelder oben prüfen.
@@ -46,4 +46,6 @@ Vor Freigabe: Testkonto registrieren → Bewerbung speichern → abmelden → ne
 
 ## Offen
 
-Kein DNS-/Hostingzugang liegt vor. Es wurde kein öffentlicher Server eingerichtet und keine bestehende Website ersetzt. Docker/Caddy-Start und Zertifikatsausstellung können hier mangels Docker/Server nicht live geprüft werden. info@tafolli.net ist der Betreiber-/Supportkontakt; es wird keine automatische E-Mail versendet. Mail-Verifikation oder Passwort-Reset per E-Mail benötigt einen separat konfigurierten Maildienst. Hostingbezogene Datenschutzangaben und Anbietervereinbarungen vor öffentlichem Betrieb vervollständigen.
+Domain, Docker/Caddy und HTTPS sind öffentlich in Betrieb; die bestehende Betreiberhomepage wurde nicht ersetzt. info@tafolli.net ist der öffentliche Betreiber-/Supportkontakt und feste Absender des geschützten Konto-Mailrelays. Bestätigungs-, Passwort-Zurücksetzungs- und Vertrags-E-Mails sind eingerichtet. Echte Zustellung und Aktivierung eines eigenen Testkontos wurden geprüft.
+
+Offen bleiben konfigurierte und freigegebene Social-Login-Apps, Händlerkonten und Zahlungsprüfung, externe Sicherungen sowie die Bestätigung der Betreiberangaben und erforderlichen Anbietervereinbarungen. Android/iOS benötigen weiterhin Geräteprüfung, Signierung und Store-Veröffentlichung. Das Hosting bleibt DreamHost; ein Hostinger-Traffic-Dashboard wurde nicht eingerichtet. Die MFA-geschützte App-Adminübersicht stellt Nutzungsdiagramm und CSV-Export bereit: [TRAFFIC.md](TRAFFIC.md).
