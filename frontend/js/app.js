@@ -51,7 +51,7 @@ function billingView() {
   const enabled=checkoutProviders(pricing);
   const selectedOffers=pricing.offers.filter(offer=>cartItems.includes(offer.id));
   const cartBadge=$('#cartBadge');
-  if(cartBadge){cartBadge.hidden=!selectedOffers.length;cartBadge.textContent=String(selectedOffers.length);cartBadge.setAttribute('aria-label',selectedOffers.length?tr(`${selectedOffers.length} Pakete im Warenkorb`,`${selectedOffers.length} packages in cart`,`${selectedOffers.length} paketa në shportë`):tr('Warenkorb leer','Cart is empty','Shporta është bosh'));}
+  if(cartBadge){cartBadge.hidden=!selectedOffers.length;cartBadge.textContent=String(selectedOffers.length);cartBadge.setAttribute('aria-label',selectedOffers.length===1?tr('1 Paket im Warenkorb','1 package in cart','1 paket në shportë'):selectedOffers.length?tr(`${selectedOffers.length} Pakete im Warenkorb`,`${selectedOffers.length} packages in cart`,`${selectedOffers.length} paketa në shportë`):tr('Warenkorb leer','Cart is empty','Shporta është bosh'));}
   $('#cartLauncher')?.classList.toggle('has-items',!!selectedOffers.length);
   $("#checkoutConsents").hidden=!enabled.length||!selectedOffers.length;
   $("#aiCapacity").textContent=summary+" · "+tr(`${pricing.free_packages} kostenlose Bewerbungen pro Kalenderwoche und Konto.`,`${pricing.free_packages} free applications per calendar week and account.`,`${pricing.free_packages} aplikime falas për javë kalendarike dhe llogari.`);
