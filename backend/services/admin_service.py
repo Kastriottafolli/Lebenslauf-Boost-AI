@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import os
+import re
 import secrets
 import struct
 import time
@@ -12,8 +13,10 @@ from pathlib import Path
 
 from cryptography.fernet import Fernet
 from fastapi import HTTPException
-from sqlalchemy import update
+from sqlalchemy import text, update
+from sqlalchemy.exc import IntegrityError
 
+from backend.account_models import AccountActionToken, AccountSecurity, EmailOutbox
 from backend.config import get_settings
 from backend.models import Account, AdminAccess, AdminAudit, AdminLogin, Login
 from backend.services.account_service import password_hash
@@ -104,6 +107,71 @@ def provision(db, email, directory, reset_existing=False):
         )
     db.commit()
     return destination
+
+
+def normalized_email(email):
+    """Apply the same address syntax and normalization as account sign-in."""
+    try:
+        local, domain = email.strip().lower().split("@")
+        domain = domain.encode("idna").decode("ascii")
+        if (
+            not 1 <= len(local) <= 64
+            or local.startswith(".")
+            or local.endswith(".")
+            or ".." in local
+            or not re.fullmatch(r"[a-z0-9.!#$%&'*+/=?^_`{|}~-]+", local)
+            or not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+", domain)
+            or len(local + "@" + domain) > 254
+        ):
+            raise ValueError("Email syntax")
+    except (ValueError, UnicodeError):
+        raise ValueError("Ungültige E-Mail") from None
+    return local + "@" + domain
+
+
+def rename_email(db, source_email, target_email):
+    """Server-only identity correction; keep credentials, MFA and owned data intact.
+
+    Call with a fresh database session. The rename, session revocations and audit
+    commit together. An occupied address is never merged or granted admin rights.
+    """
+    source_email = normalized_email(source_email)
+    target_email = normalized_email(target_email)
+    if source_email == target_email:
+        raise ValueError("Die neue E-Mail entspricht bereits der bisherigen Adresse.")
+    try:
+        if db.bind.dialect.name == "sqlite":
+            db.execute(text("BEGIN IMMEDIATE"))
+        account = db.query(Account).filter_by(email=source_email).with_for_update().first()
+        access = db.get(AdminAccess, account.id) if account else None
+        if not access or not access.enabled:
+            raise ValueError("Die bisherige Adresse muss zu einem eingerichteten, aktiven Adminkonto gehören.")
+        if db.query(Account).filter_by(email=target_email).first():
+            raise ValueError("Die neue E-Mail ist bereits belegt. Konten werden nicht zusammengeführt.")
+        account.email = target_email
+        db.query(AdminLogin).filter_by(account_id=account.id).delete()
+        db.query(Login).filter_by(account_id=account.id).delete()
+        db.query(AccountActionToken).filter_by(account_id=account.id).delete()
+        security = db.get(AccountSecurity, account.id)
+        if security:
+            security.credential_version += 1
+        # Only links become obsolete. Contract receipts and security notices
+        # keep their original recipient and delivery guarantees.
+        db.query(EmailOutbox).filter(
+            EmailOutbox.account_id == account.id,
+            EmailOutbox.purpose.in_(["verify", "reset", "change_email"]),
+            EmailOutbox.status.in_(["pending", "sending"]),
+        ).update({"status": "failed", "payload_cipher": None, "lease_until": None})
+        db.add(AdminAudit(admin_id=account.id, action="admin.cli.email_changed", subject_id=account.id))
+        account_id = account.id
+        db.commit()
+        return account_id
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Die neue E-Mail ist bereits belegt. Konten werden nicht zusammengeführt.") from None
+    except Exception:
+        db.rollback()
+        raise
 
 
 def current_admin(db, request):
